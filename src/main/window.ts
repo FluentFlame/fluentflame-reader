@@ -57,7 +57,6 @@ export class WindowManager {
                 height: this.mainWindowState.height,
                 minWidth: 450,
                 minHeight: 300,
-                frame: process.platform === "darwin",
                 fullscreenable: process.platform === "darwin",
                 webPreferences: {
                     webviewTag: true,
