@@ -94,17 +94,6 @@ class Nav extends React.Component<NavProps, NavState> {
         document.removeEventListener("keydown", this.navShortcutsHandler)
     }
 
-    minimize = () => {
-        window.utils.minimizeWindow()
-    }
-    maximize = () => {
-        window.utils.maximizeWindow()
-        this.setState({ maximized: !this.state.maximized })
-    }
-    close = () => {
-        window.utils.closeWindow()
-    }
-
     canFetch = () =>
         this.props.state.sourceInit &&
         this.props.state.feedInit &&
@@ -205,37 +194,7 @@ class Nav extends React.Component<NavProps, NavState> {
                         title={intl.get("nav.settings")}
                         onClick={this.props.settings}>
                         <Icon iconName="Settings" />
-                    </a>
-                    <span className="seperator"></span>
-                    <a
-                        className="btn system"
-                        title={intl.get("nav.minimize")}
-                        onClick={this.minimize}
-                        style={{ fontSize: 12 }}>
-                        <Icon iconName="Remove" />
-                    </a>
-                    <a
-                        className="btn system"
-                        title={intl.get("nav.maximize")}
-                        onClick={this.maximize}>
-                        {this.state.maximized ? (
-                            <Icon
-                                iconName="ChromeRestore"
-                                style={{ fontSize: 11 }}
-                            />
-                        ) : (
-                            <Icon
-                                iconName="Checkbox"
-                                style={{ fontSize: 10 }}
-                            />
-                        )}
-                    </a>
-                    <a
-                        className="btn system close"
-                        title={intl.get("close")}
-                        onClick={this.close}>
-                        <Icon iconName="Cancel" />
-                    </a>
+                    </a> 
                 </div>
                 {!this.canFetch() && (
                     <ProgressIndicator
