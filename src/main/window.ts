@@ -58,9 +58,7 @@ export class WindowManager {
                 minWidth: 450,
                 minHeight: 300,
                 frame: process.platform === "darwin",
-                titleBarStyle: "hiddenInset",
                 fullscreenable: process.platform === "darwin",
-                show: false,
                 webPreferences: {
                     webviewTag: true,
                     contextIsolation: true,
