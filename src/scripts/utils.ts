@@ -170,6 +170,8 @@ export function getSearchEngineName(engine: SearchEngines) {
             return intl.get("searchEngine.baidu")
         case SearchEngines.DuckDuckGo:
             return intl.get("searchEngine.duckduckgo")
+        case SearchEngines.Startpage:
+            return intl.get("searchEngine.startpage")
     }
 }
 export function webSearch(text: string, engine = SearchEngines.Google) {
@@ -189,6 +191,10 @@ export function webSearch(text: string, engine = SearchEngines.Google) {
         case SearchEngines.DuckDuckGo:
             return window.utils.openExternal(
                 "https://duckduckgo.com/?q=" + encodeURIComponent(text)
+            )
+        case SearchEngines.Startpage:
+            return window.utils.openExternal(
+                "https://www.startpage.com/do/search?query=" + encodeURIComponent(text)
             )
     }
 }

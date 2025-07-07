@@ -105,7 +105,8 @@
         "google": "Google",
         "bing": "Bing",
         "baidu": "Baidu",
-        "duckduckgo": "DuckDuckGo"
+        "duckduckgo": "DuckDuckGo",
+        "startpage": "Startpage"
     },
     "settings": {
         "writeError": "An error has occurred while writing the file.",

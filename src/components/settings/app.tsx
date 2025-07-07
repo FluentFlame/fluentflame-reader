@@ -99,6 +99,7 @@ class AppTab extends React.Component<AppTabProps, AppTabState> {
             SearchEngines.Bing,
             SearchEngines.Baidu,
             SearchEngines.DuckDuckGo,
+            SearchEngines.Startpage,
         ].map(engine => ({
             key: engine,
             text: getSearchEngineName(engine),

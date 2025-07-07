@@ -148,7 +148,7 @@ ipcMain.handle("set-fetch-interval", (_, interval: number) => {
 
 const SEARCH_ENGINE_STORE_KEY = "searchEngine"
 ipcMain.on("get-search-engine", event => {
-    event.returnValue = store.get(SEARCH_ENGINE_STORE_KEY, SearchEngines.Google)
+    event.returnValue = store.get(SEARCH_ENGINE_STORE_KEY, SearchEngines.Startpage)
 })
 ipcMain.handle("set-search-engine", (_, engine: SearchEngines) => {
     store.set(SEARCH_ENGINE_STORE_KEY, engine)

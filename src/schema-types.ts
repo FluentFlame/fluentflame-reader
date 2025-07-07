@@ -43,6 +43,7 @@ export const enum SearchEngines {
     Bing,
     Baidu,
     DuckDuckGo,
+    Startpage,
 }
 
 export const enum ImageCallbackTypes {
@@ -62,6 +63,7 @@ export const enum SyncService {
     Miniflux,
     Nextcloud,
 }
+
 export interface ServiceConfigs {
     type: SyncService
     importGroups?: boolean
