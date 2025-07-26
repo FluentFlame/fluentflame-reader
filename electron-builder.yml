@@ -67,6 +67,7 @@ nsis:
 linux:
     target:
         - AppImage
+        - Dir
     icon: build/icons
     category: Utility
     desktop:
