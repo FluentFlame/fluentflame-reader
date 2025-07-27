@@ -15,6 +15,7 @@ import {
 import { importOPML, exportOPML } from "../../scripts/models/group"
 import { AppDispatch, validateFavicon } from "../../scripts/utils"
 import { saveSettings, toggleSettings } from "../../scripts/models/app"
+import { fetchItems } from "../../scripts/models/item"
 import { SyncService } from "../../schema-types"
 
 const getSources = (state: RootState) => state.sources
@@ -36,7 +37,13 @@ const mapDispatchToProps = (dispatch: AppDispatch) => {
         acknowledgeSIDs: () => dispatch(toggleSettings(true)),
         addSource: (url: string) => dispatch(addSource(url)),
         updateSourceUrl: (source: RSSSource, url: string) => {
-            dispatch(updateSource({ ...source, url: url } as RSSSource))
+            dispatch(updateSource({ ...source, url: url } as RSSSource)).then(
+                () => {
+                    // We need to fetch after updating because otherwise
+                    // nothing will actually happen when we set the URL.
+                    return dispatch(fetchItems(true, [source.sid]))
+                },
+            )
         },
         updateSourceName: (source: RSSSource, name: string) => {
             dispatch(updateSource({ ...source, name: name } as RSSSource))
