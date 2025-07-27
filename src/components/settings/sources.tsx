@@ -345,7 +345,9 @@ class SourcesTab extends React.Component<SourcesTabProps, SourcesTabState> {
                                     <DefaultButton
                                         disabled={
                                             this.state.newSourceName.trim()
-                                                .length == 0
+                                                .length == 0 ||
+                                            this.state.newSourceName ===
+                                                this.state.selectedSource.name
                                         }
                                         onClick={this.updateSourceName}
                                         text={intl.get("sources.editName")}
@@ -377,7 +379,10 @@ class SourcesTab extends React.Component<SourcesTabProps, SourcesTabState> {
                                         disabled={
                                             !urlTest(
                                                 this.state.newSourceIcon.trim(),
-                                            )
+                                            ) ||
+                                            this.state.newSourceIcon ===
+                                                this.state.selectedSource
+                                                    .iconurl
                                         }
                                         onClick={this.updateSourceIcon}
                                         text={intl.get("edit")}
@@ -407,7 +412,10 @@ class SourcesTab extends React.Component<SourcesTabProps, SourcesTabState> {
                                 <Stack.Item>
                                     <DefaultButton
                                         disabled={
-                                            this.state.newUrl.trim().length == 0
+                                            this.state.newUrl.trim().length ==
+                                                0 ||
+                                            this.state.newUrl ===
+                                                this.state.selectedSource.url
                                         }
                                         onClick={this.updateSourceUrl}
                                         text={intl.get("edit")}
