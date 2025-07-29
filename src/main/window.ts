@@ -43,7 +43,7 @@ export class WindowManager {
     createWindow = () => {
         if (!this.hasWindow()) {
             this.mainWindow = new BrowserWindow({
-                title: "Fluent Reader",
+                title: "Fluentflame Reader",
                 backgroundColor:
                     process.platform === "darwin"
                         ? "#00000000"

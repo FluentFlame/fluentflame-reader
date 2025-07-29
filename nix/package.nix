@@ -5,15 +5,21 @@
   fetchFromGitHub,
   makeDesktopItem,
   makeWrapper,
-  ...
 }:
 let
+  pname = "fluentflame-reader";
   myElectron = electron;
-
+  desktopItem = makeDesktopItem {
+      name = pname;
+      exec = pname;
+      desktopName = "Fluentflame Reader";
+      categories = [ "Utility" ];
+      icon = pname;
+    };
 in
 
-buildNpmPackage rec {
-  pname = "fluentflame-reader";
+buildNpmPackage {
+  inherit pname;
   version = "1.1.4";
   src = ../.;
   npmDepsHash = "sha256-gSBSVea4vdz9wotqDiZmm56GxvfU4uRNt5cbQ17mDt4=";
@@ -69,13 +75,5 @@ buildNpmPackage rec {
     runHook postInstall
   '';
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = pname;
-      exec = pname;
-      desktopName = "Fluentflame Reader";
-      categories = [ "Utility" ];
-      icon = pname;
-    })
-  ];
+  desktopItems = [ desktopItem ];
 }

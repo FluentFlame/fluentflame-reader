@@ -1,7 +1,7 @@
-appId: DevHYLiu.FluentReader
+appId: DevHYLiu.FluentflameReader
 buildVersion: 29
-productName: Fluent Reader
-copyright: Copyright © 2020 Haoyuan Liu
+productName: Fluentflame Reader
+copyright: Copyright @ 2025 Community Contributors. Original Copyright © 2020 Haoyuan Liu.
 files:
     - "./dist/**/*"
     - "!./dist/fonts.vbs"

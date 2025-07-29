@@ -7,12 +7,16 @@ class AboutTab extends React.Component {
         <div className="tab-body">
             <Stack className="settings-about" horizontalAlign="center">
                 <img src="icons/logo.svg" style={{ width: 120, height: 120 }} />
-                <h3 style={{ fontWeight: 600 }}>Fluent Reader</h3>
+                <h3 style={{ fontWeight: 600 }}>Fluentflame Reader</h3>
                 <small>
                     {intl.get("settings.version")} {window.utils.getVersion()}
                 </small>
                 <p className="settings-hint">
-                    Copyright © 2020 Haoyuan Liu. All rights reserved.
+                    Licensed under BSD 3-Clause License.
+                    <br/>
+                    Copyright © 2025 Community Contributors.
+                    <br/>
+                    Original Copyright © 2020 Haoyuan Liu.
                 </p>
                 <Stack
                     horizontal
@@ -32,7 +36,7 @@ class AboutTab extends React.Component {
                         <Link
                             onClick={() =>
                                 window.utils.openExternal(
-                                    "https://github.com/yang991178/fluent-reader"
+                                    "https://github.com/FluentFlame/fluent-flame-reader"
                                 )
                             }>
                             {intl.get("settings.openSource")}
@@ -42,7 +46,7 @@ class AboutTab extends React.Component {
                         <Link
                             onClick={() =>
                                 window.utils.openExternal(
-                                    "https://github.com/yang991178/fluent-reader/issues"
+                                    "https://github.com/FluentFlame/fluent-flame-reader/issues"
                                 )
                             }>
                             {intl.get("settings.feedback")}
