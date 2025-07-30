@@ -69,5 +69,4 @@ linux:
         - AppImage
     icon: build/icons
     category: Utility
-    desktop:
-        StartupWMClass: fluent-reader
+    desktop: {}
