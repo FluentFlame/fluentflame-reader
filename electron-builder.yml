@@ -70,4 +70,5 @@ linux:
     icon: build/icons
     category: Utility
     desktop:
-        StartupWMClass: fluent-reader
+        entry:
+            StartupWMClass: fluent-flame-reader
