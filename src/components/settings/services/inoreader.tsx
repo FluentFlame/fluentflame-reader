@@ -18,7 +18,6 @@ import {
     Link,
 } from "@fluentui/react"
 import DangerButton from "../../utils/danger-button"
-import LiteExporter from "./lite-exporter"
 
 type GReaderConfigsTabState = {
     existing: boolean
@@ -307,9 +306,6 @@ class InoreaderConfigsTab extends React.Component<
                             )}
                         </Stack.Item>
                     </Stack>
-                    {this.state.existing && (
-                        <LiteExporter serviceConfigs={this.props.configs} />
-                    )}
                 </Stack>
             </>
         )

@@ -19,7 +19,6 @@ import {
 } from "@fluentui/react"
 import DangerButton from "../../utils/danger-button"
 import { urlTest } from "../../../scripts/utils"
-import LiteExporter from "./lite-exporter"
 
 type FeverConfigsTabState = {
     existing: boolean
@@ -242,9 +241,6 @@ class FeverConfigsTab extends React.Component<
                             )}
                         </Stack.Item>
                     </Stack>
-                    {this.state.existing && (
-                        <LiteExporter serviceConfigs={this.props.configs} />
-                    )}
                 </Stack>
             </>
         )
