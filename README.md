@@ -18,10 +18,6 @@ macOS users can also get Fluent Reader from the [Mac App Store](https://apps.app
 
 If you are using Linux or an older version of Windows, you can [get Fluent Reader from GitHub releases](https://github.com/yang991178/fluent-reader/releases).
 
-### Mobile App
-
-The repo of the mobile version of this app [can be found here](https://github.com/yang991178/fluent-reader-lite).
-
 ## Features
 
 <p align="center">
