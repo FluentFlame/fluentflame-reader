@@ -15,7 +15,7 @@ buildNpmPackage rec {
   pname = "fluent-flame-reader";
   version = "1.1.4";
   src = ../.;
-  npmDepsHash = "sha256-RfofIgU7cKbv4dKSZljVD5jzrymW4gxEYuJ/qTSeK4A=";
+  npmDepsHash = "sha256-BvQrfVDu1B6boEIOG7DWFH8lPghn0FepFDlKrbqAxHA=";
   makeCacheWritable = true;
 
   env = {
