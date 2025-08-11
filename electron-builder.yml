@@ -68,7 +68,7 @@ linux:
     target:
         - AppImage
         - Dir
-    icon: build/icons
+    icon: icons
     category: Utility
     desktop:
         entry:
