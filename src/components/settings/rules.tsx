@@ -22,7 +22,7 @@ import {
     Link,
     IIconProps,
 } from "@fluentui/react"
-import { SourceRule, RuleActions } from "../../scripts/models/rule"
+import { SourceRule, RuleActions, GlobalRules } from "../../scripts/models/rule"
 import { FilterType } from "../../scripts/models/feed"
 import { MyParserItem, validateRegex } from "../../scripts/utils"
 import { RSSItem } from "../../scripts/models/item"
@@ -56,6 +56,7 @@ type RulesTabState = {
     mockCreator: string
     mockContent: string
     mockResult: string
+    isGlobalRules: boolean
 }
 
 class RulesTab extends React.Component<RulesTabProps, RulesTabState> {
@@ -64,7 +65,7 @@ class RulesTab extends React.Component<RulesTabProps, RulesTabState> {
     rulesDraggedItem: SourceRule
     rulesDraggedIndex = -1
 
-    constructor(props) {
+    constructor(props: RulesTabProps) {
         super(props)
         this.state = {
             sid: null,
@@ -79,6 +80,7 @@ class RulesTab extends React.Component<RulesTabProps, RulesTabState> {
             mockCreator: "",
             mockContent: "",
             mockResult: "",
+            isGlobalRules: false,
         }
         this.rulesSelection = new Selection({
             getKey: (_, i) => i,
@@ -143,7 +145,16 @@ class RulesTab extends React.Component<RulesTabProps, RulesTabState> {
         })
     }
 
-    getSourceRules = () => this.props.sources[parseInt(this.state.sid)].rules
+    getSourceRules = () => {
+        if (this.state.isGlobalRules) {
+            return GlobalRules.getGlobalRules()
+        }
+        return this.props.sources[parseInt(this.state.sid)]?.rules || []
+    }
+
+    saveGlobalRules = (rules: SourceRule[]) => {
+        GlobalRules.setGlobalRules(rules)
+    }
 
     ruleColumns = (): IColumn[] => [
         {
@@ -272,14 +283,25 @@ class RulesTab extends React.Component<RulesTabProps, RulesTabState> {
             filterType,
             this.state.match
         )
-        let source = this.props.sources[parseInt(this.state.sid)]
-        let rules = source.rules ? [...source.rules] : []
-        if (this.state.editIndex === -1) {
-            rules.push(rule)
+        
+        if (this.state.isGlobalRules) {
+            let rules = GlobalRules.getGlobalRules()
+            if (this.state.editIndex === -1) {
+                rules.push(rule)
+            } else {
+                rules.splice(this.state.editIndex, 1, rule)
+            }
+            this.saveGlobalRules(rules)
         } else {
-            rules.splice(this.state.editIndex, 1, rule)
+            let source = this.props.sources[parseInt(this.state.sid)]
+            let rules = source.rules ? [...source.rules] : []
+            if (this.state.editIndex === -1) {
+                rules.push(rule)
+            } else {
+                rules.splice(this.state.editIndex, 1, rule)
+            }
+            this.props.updateSourceRules(source, rules)
         }
-        this.props.updateSourceRules(source, rules)
         this.setState({ editIndex: -1 })
         this.initRuleEdit()
     }
@@ -294,11 +316,16 @@ class RulesTab extends React.Component<RulesTabProps, RulesTabState> {
     deleteRules = () => {
         let rules = this.getSourceRules()
         for (let i of this.state.selectedRules) rules[i] = null
-        let source = this.props.sources[parseInt(this.state.sid)]
-        this.props.updateSourceRules(
-            source,
-            rules.filter(r => r !== null)
-        )
+        
+        if (this.state.isGlobalRules) {
+            this.saveGlobalRules(rules.filter(r => r !== null))
+        } else {
+            let source = this.props.sources[parseInt(this.state.sid)]
+            this.props.updateSourceRules(
+                source,
+                rules.filter(r => r !== null)
+            )
+        }
         this.initRuleEdit()
     }
 
@@ -353,6 +380,16 @@ class RulesTab extends React.Component<RulesTabProps, RulesTabState> {
     toggleCaseSensitivity = () => {
         this.setState({ caseSensitive: !this.state.caseSensitive })
     }
+
+    toggleGlobalRules = () => {
+        this.setState({ 
+            isGlobalRules: !this.state.isGlobalRules,
+            sid: null,
+            selectedRules: [],
+            editIndex: -1
+        })
+        this.initRuleEdit()
+    }
     regexCaseIconProps = (): IIconProps => ({
         title: intl.get("context.caseSensitive"),
         children: "Aa",
@@ -373,21 +410,36 @@ class RulesTab extends React.Component<RulesTabProps, RulesTabState> {
         <div className="tab-body">
             <Stack horizontal tokens={{ childrenGap: 16 }}>
                 <Stack.Item>
-                    <Label>{intl.get("rules.source")}</Label>
+                    <Label>{intl.get("rules.mode")}</Label>
                 </Stack.Item>
-                <Stack.Item grow>
-                    <Dropdown
-                        placeholder={intl.get("rules.selectSource")}
-                        options={this.sourceOptions()}
-                        onRenderOption={this.onRenderSourceOption}
-                        onRenderTitle={this.onRenderSourceTitle}
-                        selectedKey={this.state.sid}
-                        onChange={this.onSourceOptionChange}
+                <Stack.Item>
+                    <DefaultButton
+                        text={this.state.isGlobalRules ? intl.get("rules.globalRules") : intl.get("rules.sourceRules")}
+                        onClick={this.toggleGlobalRules}
+                        iconProps={{ iconName: this.state.isGlobalRules ? "Globe" : "Source" }}
                     />
                 </Stack.Item>
             </Stack>
 
-            {this.state.sid ? (
+            {!this.state.isGlobalRules && (
+                <Stack horizontal tokens={{ childrenGap: 16 }}>
+                    <Stack.Item>
+                        <Label>{intl.get("rules.source")}</Label>
+                    </Stack.Item>
+                    <Stack.Item grow>
+                        <Dropdown
+                            placeholder={intl.get("rules.selectSource")}
+                            options={this.sourceOptions()}
+                            onRenderOption={this.onRenderSourceOption}
+                            onRenderTitle={this.onRenderSourceTitle}
+                            selectedKey={this.state.sid}
+                            onChange={this.onSourceOptionChange}
+                        />
+                    </Stack.Item>
+                </Stack>
+            )}
+
+            {(this.state.isGlobalRules || this.state.sid) ? (
                 this.state.editIndex > -1 ||
                 !this.getSourceRules() ||
                 this.getSourceRules().length === 0 ? (

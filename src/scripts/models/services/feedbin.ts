@@ -199,7 +199,8 @@ export const feedbinServiceHooks: ServiceHooks = {
                     if (img && img.src) item.thumb = img.src
                 }
                 // Apply rules and sync back to the service
-                if (source.rules) SourceRule.applyAll(source.rules, item)
+                if (source.rules) SourceRule.applyAllWithGlobalRules(source.rules, item)
+                else SourceRule.applyAllWithGlobalRules([], item)
                 if (unread.has(i.id) === item.hasRead)
                     markItems(
                         configs,
