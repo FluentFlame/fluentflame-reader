@@ -1,6 +1,6 @@
 appId: org.fluentflame.fluentflamereader
-productName: Fluent Flame Reader
-copyright: Fluent Flame Copyright © 2025 Nube & Individual Collaborators. Original copyright © 2020 Haoyuan Liu
+productName: Fluentflame Reader
+copyright: Fluentflame Copyright © 2025 Nube & Individual Collaborators. Original copyright © 2020 Haoyuan Liu
 files:
     - "./dist/**/*"
     - "!./dist/fontlist"
@@ -72,4 +72,4 @@ linux:
     category: Utility
     desktop:
         entry:
-            StartupWMClass: fluent-flame-reader
+            StartupWMClass: fluentflame-reader

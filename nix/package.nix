@@ -1,9 +1,10 @@
 {
   buildNpmPackage,
+  copyDesktopItems,
   electron,
   fetchFromGitHub,
-  makeWrapper,
   makeDesktopItem,
+  makeWrapper,
   ...
 }:
 let
@@ -12,10 +13,10 @@ let
 in
 
 buildNpmPackage rec {
-  pname = "fluent-flame-reader";
+  pname = "fluentflame-reader";
   version = "1.1.4";
   src = ../.;
-  npmDepsHash = "sha256-BvQrfVDu1B6boEIOG7DWFH8lPghn0FepFDlKrbqAxHA=";
+  npmDepsHash = "sha256-gSBSVea4vdz9wotqDiZmm56GxvfU4uRNt5cbQ17mDt4=";
   makeCacheWritable = true;
 
   env = {
@@ -26,6 +27,7 @@ buildNpmPackage rec {
   npmFlags = [ "--legacy-peer-deps" ];
 
   nativeBuildInputs = [
+    copyDesktopItems
     makeWrapper
     myElectron
   ];
@@ -71,7 +73,7 @@ buildNpmPackage rec {
     (makeDesktopItem {
       name = pname;
       exec = pname;
-      desktopName = "Fluent Flame Reader";
+      desktopName = "Fluentflame Reader";
       categories = [ "Utility" ];
       icon = pname;
     })

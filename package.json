@@ -1,5 +1,5 @@
 {
-  "name": "fluent-flame-reader",
+  "name": "fluentflame-reader",
   "version": "1.1.4",
   "description": "Modern desktop RSS reader",
   "main": "./dist/electron.js",
@@ -17,7 +17,7 @@
   "keywords": [],
   "author": "Haoyuan Liu",
   "license": "BSD-3-Clause",
-  "repository": "github:FluentFlame/fluent-flame-reader",
+  "repository": "github:FluentFlame/fluentflame-reader",
   "devDependencies": {
     "@fluentui/react": "^7.126.2",
     "@types/lovefield": "^2.1.3",

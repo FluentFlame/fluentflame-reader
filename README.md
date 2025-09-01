@@ -1,7 +1,7 @@
 <p align="center">
   <img width="120" height="120" src="https://github.com/yang991178/fluent-reader/raw/master/build/icon.png">
 </p>
-<h3 align="center">Fluent Reader</h3>
+<h3 align="center">Fluentflame Reader</h3>
 <p align="center">A modern desktop RSS reader</p>
 <p align="center">
   <img src="https://img.shields.io/github/v/release/yang991178/fluent-reader?label=version" />

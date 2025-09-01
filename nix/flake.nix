@@ -28,14 +28,14 @@
         formatter = pkgs.nixfmt-tree;
         devShells = rec {
           ffr-fhs = pkgs.callPackage ./fhs_shell.nix { };
-          fluent-flame-reader = pkgs.callPackage ./shell.nix {
-            fluent-flame-reader = packages.fluent-flame-reader;
+          fluentflame-reader = pkgs.callPackage ./shell.nix {
+            fluentflame-reader = packages.fluentflame-reader;
           };
-          default = fluent-flame-reader;
+          default = fluentflame-reader;
         };
         packages = rec {
-          fluent-flame-reader = pkgs.callPackage ./package.nix { };
-          default = fluent-flame-reader;
+          fluentflame-reader = pkgs.callPackage ./package.nix { };
+          default = fluentflame-reader;
         };
       }
     );

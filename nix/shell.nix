@@ -2,7 +2,7 @@
   mkShell,
 
   appimage-run,
-  fluent-flame-reader,
+  fluentflame-reader,
   nodePackages,
 }:
 
@@ -12,6 +12,6 @@ mkShell {
     appimage-run
   ];
   inputsFrom = [
-    fluent-flame-reader
+    fluentflame-reader
   ];
 }
