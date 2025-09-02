@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="120" height="120" src="https://github.com/FluentFlame/fluentflame-reader/raw/master/build/icon.png">
+  <img width="120" height="120" src="https://github.com/FluentFlame/fluentflame-reader/raw/master/build/icons/256x256.png">
 </p>
 <h3 align="center">Fluentflame Reader</h3>
 <p align="center">A modern desktop RSS reader given new life</p>
