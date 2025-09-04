@@ -113,6 +113,7 @@ class Nav extends React.Component<NavProps, NavState> {
     fetching = () => (!this.canFetch() ? " fetching" : "")
     getClassNames = () => {
         const classNames = new Array<string>()
+        classNames.push("top-nav");
         if (this.props.state.settings.display) classNames.push("hide-btns")
         if (this.props.state.menu) classNames.push("menu-on")
         if (this.props.itemShown) classNames.push("item-on")
@@ -152,8 +153,8 @@ class Nav extends React.Component<NavProps, NavState> {
                         />
                     </a>
                 </div>
-                <span className="title">{this.props.state.title}</span>
-                <div className="btn-group" style={{ float: "right" }}>
+                <span className="title hide-on-tiny">{this.props.state.title}</span>
+                <div className="btn-group corner-btn-group">
                     <a
                         className={"btn" + this.fetching()}
                         onClick={this.fetch}
@@ -161,7 +162,7 @@ class Nav extends React.Component<NavProps, NavState> {
                         <Icon iconName="Refresh" />
                     </a>
                     <a
-                        className="btn"
+                        className="btn hide-on-tiny"
                         id="mark-all-toggle"
                         onClick={this.props.markAllRead}
                         title={intl.get("nav.markAllRead")}
@@ -186,7 +187,7 @@ class Nav extends React.Component<NavProps, NavState> {
                         )}
                     </a>
                     <a
-                        className="btn"
+                        className="btn hide-on-tiny"
                         id="view-toggle"
                         title={intl.get("nav.view")}
                         onClick={this.props.views}

@@ -8,7 +8,7 @@
 }
 .article-wrapper {
     margin: 32px auto 0;
-    width: 860px;
+    max-width: 860px;
     height: calc(100% - 50px);
     background-color: var(--white);
     box-shadow: 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.132),
@@ -59,6 +59,7 @@
     display: inline-block;
     vertical-align: middle;
 }
+
 .article .actions .source-name {
     line-height: 35px;
     user-select: none;
@@ -68,6 +69,13 @@
     white-space: nowrap;
     display: inline-block;
 }
+/* Hide the source name on small screens. We need the space for buttons. */
+@media (max-width: 600px) {
+    .article .actions .source-name {
+        display: none;
+    }
+}
+
 .article .actions .creator {
     color: var(--neutralSecondaryAlt);
     user-select: text;
@@ -128,7 +136,6 @@
 
 .list-main {
     display: flex;
-    flex-wrap: wrap;
     height: 100%;
     position: relative;
     margin-top: calc(-1 * var(--navHeight));
@@ -136,7 +143,7 @@
     background: var(--white);
 }
 .list-feed-container {
-    width: 350px;
+    max-width: 350px;
     background-color: var(--neutralLighterAlt);
     height: 100%;
     position: relative;
