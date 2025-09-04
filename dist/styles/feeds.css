@@ -8,7 +8,7 @@
 }
 .article-wrapper {
     margin: 32px auto 0;
-    width: 860px;
+    max-width: 860px;
     height: calc(100% - 50px);
     background-color: var(--white);
     box-shadow: 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.132),
