@@ -196,3 +196,11 @@ ipcMain.handle(
         }
     }
 )
+
+const GLOBAL_RULES_STORE_KEY = "globalRules"
+ipcMain.on("get-global-rules", event => {
+    event.returnValue = store.get(GLOBAL_RULES_STORE_KEY, [])
+})
+ipcMain.handle("set-global-rules", (_, rules: any[]) => {
+    store.set(GLOBAL_RULES_STORE_KEY, rules)
+})

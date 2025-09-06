@@ -86,7 +86,8 @@ export class RSSSource {
             .exec()) as RSSItem[]
         if (items.length === 0) {
             RSSItem.parseContent(i, item)
-            if (source.rules) SourceRule.applyAll(source.rules, i)
+            if (source.rules) SourceRule.applyAllWithGlobalRules(source.rules, i)
+            else SourceRule.applyAllWithGlobalRules([], i)
             return i
         } else {
             return null

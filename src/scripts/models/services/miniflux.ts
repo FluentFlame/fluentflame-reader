@@ -211,7 +211,7 @@ export const minifluxServiceHooks: ServiceHooks = {
             if (img && img.src) parsedItem.thumb = img.src
 
             if (source.rules) {
-                SourceRule.applyAll(source.rules, parsedItem)
+                SourceRule.applyAllWithGlobalRules(source.rules, parsedItem)
                 if ((item.status === "read") !== parsedItem.hasRead)
                     minifluxServiceHooks.markRead(parsedItem)
                 if (item.starred !== parsedItem.starred)
