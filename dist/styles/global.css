@@ -220,6 +220,10 @@ body.darwin .btn-group .seperator {
     user-select: none;
     app-region: none;
 
+    a {
+      display: inline-block;
+    }
+
     .seperator {
         width: var(--navHeight);
         font-size: 12px;
