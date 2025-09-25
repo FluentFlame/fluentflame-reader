@@ -3,6 +3,7 @@
     position: relative;
     margin: 10px 12px;
     line-height: 16px;
+    min-width: 0;
 }
 .info img {
     width: 16px;

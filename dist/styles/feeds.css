@@ -16,6 +16,9 @@
     border-radius: 5px;
     overflow: hidden;
     animation-name: slideUp20;
+    /* In general, we try to aim for 900px, but we can accept some crush. */
+    flex-basis: 600px;
+    flex-grow: 1;
 }
 .article-container .btn-group .btn {
     color: #fff;
@@ -51,6 +54,12 @@
     color: var(--black);
     border-bottom: 1px solid var(--neutralQuaternaryAlt);
 }
+.actions-spacer-left {
+    flex-basis: 96px;
+}
+.actions-spacer-right {
+    flex-basis: 112px;
+}
 .article .actions .favicon,
 .article .actions .ms-Spinner {
     margin: 8px 8px 11px 0;
@@ -63,7 +72,6 @@
 .article .actions .source-name {
     line-height: 35px;
     user-select: none;
-    max-width: 320px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -141,9 +149,14 @@
     margin-top: calc(-1 * var(--navHeight));
     overflow: hidden;
     background: var(--white);
+    /* Critical to ensure the flexbox doesn't default to fit-width */
+    min-width: 0;
 }
 .list-feed-container {
     max-width: 350px;
+    flex-basis: 0;
+    flex-grow: 1;
+    min-width: 120px;
     background-color: var(--neutralLighterAlt);
     height: 100%;
     position: relative;
