@@ -3,7 +3,6 @@ import { ThunkAction, ThunkDispatch } from "redux-thunk"
 import { AnyAction } from "redux"
 import { RootState } from "./reducer"
 import Parser from "rss-parser"
-import Url from "url"
 import { SearchEngines } from "../schema-types"
 
 export enum ActionStatus {
@@ -83,7 +82,7 @@ export async function parseRSS(url: string) {
     if (result && result.ok) {
         try {
             return await rssParser.parseString(
-                await decodeFetchResponse(result)
+                await decodeFetchResponse(result),
             )
         } catch {
             throw new Error(intl.get("log.parseError"))
@@ -95,37 +94,63 @@ export async function parseRSS(url: string) {
 
 export const domParser = new DOMParser()
 
-export async function fetchFavicon(url: string) {
+export async function fetchFavicon(urlString: string): Promise<string | null> {
+    const url = URL.parse(urlString)
+    if (!url) {
+        return null
+    }
     try {
-        url = url.split("/").slice(0, 3).join("/")
-        let result = await fetch(url, { credentials: "omit" })
+        let result = await fetch(url.origin, { credentials: "omit" })
         if (result.ok) {
-            let html = await result.text()
-            let dom = domParser.parseFromString(html, "text/html")
-            let links = dom.getElementsByTagName("link")
-            for (let link of links) {
-                let rel = link.getAttribute("rel")
-                if (
-                    (rel === "icon" || rel === "shortcut icon") &&
-                    link.hasAttribute("href")
-                ) {
-                    let href = link.getAttribute("href")
-                    let parsedUrl = Url.parse(url)
-                    if (href.startsWith("//")) return parsedUrl.protocol + href
-                    else if (href.startsWith("/")) return url + href
-                    else return href
-                }
+            const html = await result.text()
+            const dom = domParser.parseFromString(html, "text/html")
+            const potentialFavicons = getPotentialFavicons(
+                dom,
+                new URL(url.origin),
+            )
+            if (potentialFavicons) {
+                return potentialFavicons[0].href
             }
         }
-        url = url + "/favicon.ico"
-        if (await validateFavicon(url)) {
-            return url
-        } else {
-            return null
+        if (await validateFavicon(`${url.hostname}/favicon.ico`)) {
+            return url.href
         }
+        return null
     } catch {
         return null
     }
+}
+
+/**
+ * Return favicons for a given targetUrl and its associated fetch dom.
+ * Ranked in order of preference to fetch.
+ */
+function getPotentialFavicons(dom: Document, baseUrl: URL): URL[] {
+    const links = dom.getElementsByTagName("link")
+    const out = new Array()
+    for (const link of links) {
+        const rel = link.getAttribute("rel")
+        const href = link.getAttribute("href")
+        if ((rel === "icon" || rel === "shortcut icon") && href) {
+            const sizes: string | null = link.getAttribute("sizes")
+            let ranking = 0
+            if (sizes) {
+                if (sizes === "any") {
+                    ranking = -2
+                } else {
+                    const sizesSplit = sizes.split(" ")
+                    // We only ever use Favicons that are 16x16. Save data by choosing that
+                    // explicitly if available.
+                    if (sizesSplit.includes("16x16")) {
+                        ranking = -1
+                    }
+                }
+            }
+            out.push({ ranking: ranking, target: new URL(href, baseUrl) })
+        }
+    }
+    out.sort((left, right) => left.ranking - right.ranking)
+    return out.map(item => item.target)
 }
 
 export async function validateFavicon(url: string) {
@@ -151,7 +176,7 @@ export function htmlDecode(input: string) {
 
 export const urlTest = (s: string) =>
     /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,63}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/gi.test(
-        s
+        s,
     )
 
 export const getWindowBreakpoint = () => window.outerWidth >= 1440
@@ -178,23 +203,24 @@ export function webSearch(text: string, engine = SearchEngines.Google) {
     switch (engine) {
         case SearchEngines.Google:
             return window.utils.openExternal(
-                "https://www.google.com/search?q=" + encodeURIComponent(text)
+                "https://www.google.com/search?q=" + encodeURIComponent(text),
             )
         case SearchEngines.Bing:
             return window.utils.openExternal(
-                "https://www.bing.com/search?q=" + encodeURIComponent(text)
+                "https://www.bing.com/search?q=" + encodeURIComponent(text),
             )
         case SearchEngines.Baidu:
             return window.utils.openExternal(
-                "https://www.baidu.com/s?wd=" + encodeURIComponent(text)
+                "https://www.baidu.com/s?wd=" + encodeURIComponent(text),
             )
         case SearchEngines.DuckDuckGo:
             return window.utils.openExternal(
-                "https://duckduckgo.com/?q=" + encodeURIComponent(text)
+                "https://duckduckgo.com/?q=" + encodeURIComponent(text),
             )
         case SearchEngines.Startpage:
             return window.utils.openExternal(
-                "https://www.startpage.com/do/search?query=" + encodeURIComponent(text)
+                "https://www.startpage.com/do/search?query=" +
+                    encodeURIComponent(text),
             )
     }
 }
@@ -202,7 +228,7 @@ export function webSearch(text: string, engine = SearchEngines.Google) {
 export function mergeSortedArrays<T>(
     a: T[],
     b: T[],
-    cmp: (x: T, y: T) => number
+    cmp: (x: T, y: T) => number,
 ): T[] {
     let merged = new Array<T>()
     let i = 0
@@ -267,7 +293,7 @@ export function validateRegex(regex: string, flags = ""): RegExp {
 }
 
 export function platformCtrl(
-    e: React.MouseEvent | React.KeyboardEvent | MouseEvent | KeyboardEvent
+    e: React.MouseEvent | React.KeyboardEvent | MouseEvent | KeyboardEvent,
 ) {
     return window.utils.platform === "darwin" ? e.metaKey : e.ctrlKey
 }
