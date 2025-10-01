@@ -46,7 +46,7 @@ export async function decodeFetchResponse(response: Response, isHTML = false) {
     let content = new TextDecoder(charset).decode(buffer)
     if (charset === undefined) {
         if (isHTML) {
-            const dom = domParser.parseFromString(content, "text/html")
+            const dom = new DOMParser().parseFromString(content, "text/html")
             charset = dom
                 .querySelector("meta[charset]")
                 ?.getAttribute("charset")
@@ -92,33 +92,27 @@ export async function parseRSS(url: string) {
     }
 }
 
-export const domParser = new DOMParser()
-
 export async function fetchFavicon(urlString: string): Promise<string | null> {
     const url = URL.parse(urlString)
     if (!url) {
         return null
     }
-    try {
-        let result = await fetch(url.origin, { credentials: "omit" })
-        if (result.ok) {
-            const html = await result.text()
-            const dom = domParser.parseFromString(html, "text/html")
-            const potentialFavicons = getPotentialFavicons(
-                dom,
-                new URL(url.origin),
-            )
-            if (potentialFavicons) {
-                return potentialFavicons[0].href
-            }
+    let result = await fetch(url.origin, { credentials: "omit" })
+    if (result.ok) {
+        const html = await result.text()
+        const dom = new DOMParser().parseFromString(html, "text/html")
+        const potentialFavicons = getPotentialFavicons(
+            dom,
+            new URL(url.origin),
+        )
+        if (potentialFavicons) {
+            return potentialFavicons[0].href
         }
-        if (await validateFavicon(`${url.hostname}/favicon.ico`)) {
-            return url.href
-        }
-        return null
-    } catch {
-        return null
     }
+    if (await validateFavicon(`${url.hostname}/favicon.ico`)) {
+        return url.href
+    }
+    return null
 }
 
 /**
@@ -153,24 +147,20 @@ function getPotentialFavicons(dom: Document, baseUrl: URL): URL[] {
     return out.map(item => item.target)
 }
 
-export async function validateFavicon(url: string) {
-    let flag = false
-    try {
-        const result = await fetch(url, { credentials: "omit" })
-        if (
-            result.status == 200 &&
-            result.headers.has("Content-Type") &&
-            result.headers.get("Content-Type").startsWith("image")
-        ) {
-            flag = true
-        }
-    } finally {
-        return flag
+export async function validateFavicon(url: string): Promise<Boolean> {
+    const result = await fetch(url, { credentials: "omit" })
+    if (
+        result.status == 200 &&
+        result.headers.has("Content-Type") &&
+        result.headers.get("Content-Type").startsWith("image")
+    ) {
+        return true
     }
+    return false
 }
 
 export function htmlDecode(input: string) {
-    var doc = domParser.parseFromString(input, "text/html")
+    var doc = new DOMParser().parseFromString(input, "text/html")
     return doc.documentElement.textContent
 }
 
@@ -306,4 +296,8 @@ export function initTouchBarWithTexts() {
         markAll: intl.get("nav.markAllRead"),
         notifications: intl.get("nav.notifications"),
     })
+}
+
+export const exportedForTesting = {
+  getPotentialFavicons
 }

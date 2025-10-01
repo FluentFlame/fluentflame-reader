@@ -61,7 +61,14 @@ npm run electron
 electron-builder create-self-signed-cert
 # Package the app for Windows
 npm run package-win
+```
 
+### Run Tests
+
+```bash
+# Install dependencies
+npm install
+npm run test
 ```
 
 ### Developed with
@@ -72,6 +79,7 @@ npm run package-win
 - [Fluent UI](https://github.com/microsoft/fluentui)
 - [Lovefield](https://github.com/google/lovefield)
 - [Mercury Parser](https://github.com/postlight/mercury-parser)
+- [Mocha](https://mochajs.org/)
 
 ### License
 
