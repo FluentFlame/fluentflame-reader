@@ -3,7 +3,6 @@ import lf from "lovefield"
 import intl from "react-intl-universal"
 import type { MyParserItem } from "../utils"
 import {
-    domParser,
     htmlDecode,
     ActionStatus,
     AppThunk,
@@ -83,7 +82,7 @@ export class RSSItem {
             if (images.length > 0) item.thumb = images[0].$.url
         }
         if (!item.thumb) {
-            let dom = domParser.parseFromString(item.content, "text/html")
+            let dom = new DOMParser().parseFromString(item.content, "text/html")
             let baseEl = dom.createElement("base")
             baseEl.setAttribute(
                 "href",

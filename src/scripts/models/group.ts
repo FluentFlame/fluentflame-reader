@@ -8,7 +8,7 @@ import {
     SourceState,
 } from "./source"
 import { SourceGroup } from "../../schema-types"
-import { ActionStatus, AppThunk, domParser } from "../utils"
+import { ActionStatus, AppThunk } from "../utils"
 import { saveSettings } from "./app"
 import {
     fetchItemsIntermediate,
@@ -237,7 +237,7 @@ export function importOPML(): AppThunk {
         window.utils.showOpenDialog(filters).then(data => {
             if (data) {
                 dispatch(saveSettings())
-                let doc = domParser
+                let doc = new DOMParser()
                     .parseFromString(data, "text/xml")
                     .getElementsByTagName("body")
                 if (doc.length == 0) {
@@ -329,7 +329,7 @@ export function exportOPML(): AppThunk {
             .then(write => {
                 if (write) {
                     let state = getState()
-                    let xml = domParser.parseFromString(
+                    let xml = new DOMParser().parseFromString(
                         '<?xml version="1.0" encoding="UTF-8"?><opml version="1.0"><head><title>Fluent Reader Export</title></head><body></body></opml>',
                         "text/xml"
                     )

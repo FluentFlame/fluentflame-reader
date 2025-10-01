@@ -5,7 +5,6 @@ import { ServiceHooks } from "../service"
 import { ServiceConfigs, SyncService } from "../../../schema-types"
 import { createSourceGroup } from "../group"
 import { RSSSource } from "../source"
-import { domParser } from "../../utils"
 import { RSSItem } from "../item"
 import { SourceRule } from "../rule"
 
@@ -184,7 +183,7 @@ export const nextcloudServiceHooks: ServiceHooks = {
                 const unreadItem = i.unread
                 const starredItem = i.starred
                 const source = fidMap.get(String(i.feedId))
-                const dom = domParser.parseFromString(i.body, "text/html")
+                const dom = new DOMParser().parseFromString(i.body, "text/html")
                 const item = {
                     source: source.sid,
                     title: i.title,

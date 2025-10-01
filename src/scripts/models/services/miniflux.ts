@@ -5,7 +5,7 @@ import { ServiceHooks } from "../service"
 import { ServiceConfigs, SyncService } from "../../../schema-types"
 import { createSourceGroup } from "../group"
 import { RSSSource } from "../source"
-import { domParser, htmlDecode } from "../../utils"
+import { htmlDecode } from "../../utils"
 import { RSSItem } from "../item"
 import { SourceRule } from "../rule"
 
@@ -200,7 +200,7 @@ export const minifluxServiceHooks: ServiceHooks = {
             } as RSSItem
 
             // Try to get the thumbnail of the item
-            let dom = domParser.parseFromString(item.content, "text/html")
+            let dom = new DOMParser().parseFromString(item.content, "text/html")
             let baseEl = dom.createElement("base")
             baseEl.setAttribute(
                 "href",

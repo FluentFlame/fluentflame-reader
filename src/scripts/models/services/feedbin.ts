@@ -5,7 +5,6 @@ import { ServiceHooks } from "../service"
 import { ServiceConfigs, SyncService } from "../../../schema-types"
 import { createSourceGroup } from "../group"
 import { RSSSource } from "../source"
-import { domParser } from "../../utils"
 import { RSSItem } from "../item"
 import { SourceRule } from "../rule"
 
@@ -170,7 +169,7 @@ export const feedbinServiceHooks: ServiceHooks = {
             items.forEach(i => {
                 if (i.content === null) return
                 const source = fidMap.get(String(i.feed_id))
-                const dom = domParser.parseFromString(i.content, "text/html")
+                const dom = new DOMParser().parseFromString(i.content, "text/html")
                 const item = {
                     source: source.sid,
                     title: i.title,

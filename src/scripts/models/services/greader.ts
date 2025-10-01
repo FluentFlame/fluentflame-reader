@@ -6,7 +6,7 @@ import { ServiceConfigs, SyncService } from "../../../schema-types"
 import { createSourceGroup } from "../group"
 import { RSSSource } from "../source"
 import { RSSItem } from "../item"
-import { domParser, htmlDecode } from "../../utils"
+import { htmlDecode } from "../../utils"
 import { SourceRule } from "../rule"
 
 const ALL_TAG = "user/-/state/com.google/reading-list"
@@ -241,7 +241,7 @@ export const gReaderServiceHooks: ServiceHooks = {
             items.map(i => {
                 const source = fidMap.get(i.origin.streamId)
                 if (source === undefined) return
-                const dom = domParser.parseFromString(
+                const dom = new DOMParser().parseFromString(
                     i.summary.content,
                     "text/html"
                 )
