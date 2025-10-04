@@ -74,4 +74,37 @@ export class SourceRule {
             this.apply(rule, item)
         }
     }
+
+    static applyAllWithGlobalRules(rules: SourceRule[], item: RSSItem) {
+        // Apply global rules first
+        const globalRules = GlobalRules.getGlobalRules()
+        this.applyAll(globalRules, item)
+        
+        // Then apply source-specific rules
+        this.applyAll(rules || [], item)
+    }
+}
+
+export class GlobalRules {
+    static getGlobalRules(): SourceRule[] {
+        const rulesData = window.settings.getGlobalRules()
+        return rulesData.map(ruleData => 
+            new SourceRule(
+                ruleData.regex,
+                ruleData.actionKeys,
+                ruleData.filterType,
+                ruleData.match
+            )
+        )
+    }
+
+    static setGlobalRules(rules: SourceRule[]) {
+        const rulesData = rules.map(rule => ({
+            regex: rule.filter.search,
+            actionKeys: RuleActions.toKeys(rule.actions),
+            filterType: rule.filter.type,
+            match: rule.match
+        }))
+        window.settings.setGlobalRules(rulesData)
+    }
 }
