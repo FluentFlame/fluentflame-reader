@@ -106,10 +106,10 @@
     align-items: center;
 }
 .side-logo-wrapper > img {
-    width: 120px;
-    height: 120px;
+    width: 140px;
+    height: 140px;
     user-select: none;
-    -webkit-user-drag: none;
+    opacity: 0.14;
 }
 .side-logo-wrapper > img.dark {
     display: none;
