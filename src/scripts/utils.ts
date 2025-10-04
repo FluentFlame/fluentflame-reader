@@ -105,12 +105,13 @@ export async function fetchFavicon(urlString: string): Promise<string | null> {
             dom,
             new URL(url.origin),
         )
-        if (potentialFavicons) {
+        if (potentialFavicons.length !== 0) {
             return potentialFavicons[0].href
         }
     }
-    if (await validateFavicon(`${url.hostname}/favicon.ico`)) {
-        return url.href
+    const faviconGuess = `${url.origin}/favicon.ico`
+    if (await validateFavicon(faviconGuess)) {
+        return faviconGuess
     }
     return null
 }
