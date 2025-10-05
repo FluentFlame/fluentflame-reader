@@ -58,8 +58,8 @@ buildNpmPackage {
 
     mkdir -p $out/share/${pname}
     cp -Pr --no-preserve=ownership \
-      bin/*/*/*-unpacked/{locales,resources{,.pak}} \
-      $out/share/${pname}/
+        bin/*/*/*/{locales,resources{,.pak}} \
+        $out/share/${pname}/
 
     for icon in build/icons/*.png; do
       install -Dm644 $icon $out/share/icons/hicolor/$(basename ''${icon%.png})/apps/${pname}.png

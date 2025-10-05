@@ -6,3 +6,6 @@ dist/*.LICENSE.txt
 bin/*
 .DS_Store
 *.provisionprofile
+
+# Nix
+result
