@@ -10,12 +10,12 @@ let
   pname = "fluentflame-reader";
   myElectron = electron;
   desktopItem = makeDesktopItem {
-      name = pname;
-      exec = pname;
-      desktopName = "Fluentflame Reader";
-      categories = [ "Utility" ];
-      icon = pname;
-    };
+    name = pname;
+    exec = pname;
+    desktopName = "Fluentflame Reader";
+    categories = [ "Utility" ];
+    icon = pname;
+  };
 in
 
 buildNpmPackage {
