@@ -12,7 +12,7 @@ import {
     IContextualMenuItem,
     ContextualMenuItemType,
     DirectionalHint,
-} from "office-ui-fabric-react/lib/ContextualMenu"
+} from "@fluentui/react";
 import { closeContextMenu, ContextMenuType } from "../scripts/models/app"
 import {
     markAllRead,

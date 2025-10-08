@@ -1,11 +1,17 @@
 import * as React from "react"
 import intl from "react-intl-universal"
 import { Icon } from "@fluentui/react/lib/Icon"
-import { Nav, INavLink, INavLinkGroup } from "office-ui-fabric-react/lib/Nav"
 import { SourceGroup } from "../schema-types"
 import { SourceState, RSSSource } from "../scripts/models/source"
 import { ALL } from "../scripts/models/feed"
-import { AnimationClassNames, Stack, FocusZone } from "@fluentui/react"
+import {
+    AnimationClassNames,
+    Stack,
+    FocusZone,
+    Nav,
+    INavLink,
+    INavLinkGroup
+} from "@fluentui/react"
 
 export type MenuProps = {
     status: boolean

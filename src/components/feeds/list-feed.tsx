@@ -1,14 +1,14 @@
 import * as React from "react"
 import intl from "react-intl-universal"
 import { FeedProps } from "./feed"
+import { RSSItem } from "../../scripts/models/item"
 import {
+    AnimationClassNames,
     PrimaryButton,
     FocusZone,
     FocusZoneDirection,
     List,
-} from "office-ui-fabric-react"
-import { RSSItem } from "../../scripts/models/item"
-import { AnimationClassNames } from "@fluentui/react"
+} from "@fluentui/react"
 import { ViewType } from "../../schema-types"
 import ListCard from "../cards/list-card"
 import MagazineCard from "../cards/magazine-card"
