@@ -43,7 +43,7 @@ type AppTabState = {
 }
 
 class AppTab extends React.Component<AppTabProps, AppTabState> {
-    constructor(props) {
+    constructor(props: AppTabProps) {
         super(props)
         this.state = {
             pacStatus: window.settings.getProxyStatus(),
@@ -149,26 +149,6 @@ class AppTab extends React.Component<AppTabProps, AppTabState> {
         { key: "zh-TW", text: "中文（繁體）" },
     ]
 
-    toggleStatus = () => {
-        window.settings.toggleProxyStatus()
-        this.setState({
-            pacStatus: window.settings.getProxyStatus(),
-            pacUrl: window.settings.getProxy(),
-        })
-    }
-
-    handleInputChange = event => {
-        const name: string = event.target.name
-        // @ts-ignore
-        this.setState({ [name]: event.target.value.trim() })
-    }
-
-    setUrl = (event: React.FormEvent) => {
-        event.preventDefault()
-        if (urlTest(this.state.pacUrl))
-            window.settings.setProxy(this.state.pacUrl)
-    }
-
     onThemeChange = (_, option: IChoiceGroupOption) => {
         setThemeSettings(option.key as ThemeSettings)
         this.setState({ themeSettings: option.key as ThemeSettings })
@@ -220,49 +200,7 @@ class AppTab extends React.Component<AppTabProps, AppTabState> {
                     />
                 </Stack.Item>
             </Stack>
-
-            <Stack horizontal verticalAlign="baseline">
-                <Stack.Item grow>
-                    <Label>{intl.get("app.enableProxy")}</Label>
-                </Stack.Item>
-                <Stack.Item>
-                    <Toggle
-                        checked={this.state.pacStatus}
-                        onChange={this.toggleStatus}
-                    />
-                </Stack.Item>
-            </Stack>
-            {this.state.pacStatus && (
-                <form onSubmit={this.setUrl}>
-                    <Stack horizontal>
-                        <Stack.Item grow>
-                            <TextField
-                                required
-                                onGetErrorMessage={v =>
-                                    urlTest(v.trim())
-                                        ? ""
-                                        : intl.get("app.badUrl")
-                                }
-                                placeholder={intl.get("app.pac")}
-                                name="pacUrl"
-                                onChange={this.handleInputChange}
-                                value={this.state.pacUrl}
-                            />
-                        </Stack.Item>
-                        <Stack.Item>
-                            <DefaultButton
-                                disabled={!urlTest(this.state.pacUrl)}
-                                type="sumbit"
-                                text={intl.get("app.setPac")}
-                            />
-                        </Stack.Item>
-                    </Stack>
-                    <span className="settings-hint up">
-                        {intl.get("app.pacHint")}
-                    </span>
-                </form>
-            )}
-
+            <PacSettings />
             <Label>{intl.get("app.cleanup")}</Label>
             <Stack horizontal>
                 <Stack.Item grow>
@@ -323,6 +261,80 @@ class AppTab extends React.Component<AppTabProps, AppTabState> {
                 </Stack.Item>
             </Stack>
         </div>
+    )
+}
+
+/**
+ * PacSettings React component
+ */
+function PacSettings() {
+    const [pacStatus, setPacStatus] = React.useState(
+        window.settings.getProxyStatus(),
+    )
+    const [pacUrl, setPacUrl] = React.useState(window.settings.getProxy())
+
+    const toggleStatus = () => {
+        window.settings.toggleProxyStatus()
+        setPacStatus(window.settings.getProxyStatus())
+        setPacUrl(window.settings.getProxy())
+    }
+
+    const handlePacUrlChange = (
+        event: React.FormEvent<HTMLTextAreaElement>,
+    ) => {
+        setPacUrl((event.target as HTMLTextAreaElement).value.trim())
+    }
+
+    const setUrl = (event: React.FormEvent) => {
+        event.preventDefault()
+        if (urlTest(pacUrl)) {
+            window.settings.setProxy(pacUrl)
+        }
+    }
+
+    let form = null
+    if (pacStatus) {
+        form = (
+            <form onSubmit={setUrl}>
+                <Stack horizontal>
+                    <Stack.Item grow>
+                        <TextField
+                            required
+                            onGetErrorMessage={v =>
+                                urlTest(v.trim()) ? "" : intl.get("app.badUrl")
+                            }
+                            placeholder={intl.get("app.pac")}
+                            name="pacUrl"
+                            onChange={handlePacUrlChange}
+                            value={pacUrl}
+                        />
+                    </Stack.Item>
+                    <Stack.Item>
+                        <DefaultButton
+                            disabled={!urlTest(pacUrl)}
+                            type="sumbit"
+                            text={intl.get("app.setPac")}
+                        />
+                    </Stack.Item>
+                </Stack>
+                <span className="settings-hint up">
+                    {intl.get("app.pacHint")}
+                </span>
+            </form>
+        )
+    }
+    return (
+        <>
+            <Stack horizontal verticalAlign="baseline">
+                <Stack.Item grow>
+                    <Label>{intl.get("app.enableProxy")}</Label>
+                </Stack.Item>
+                <Stack.Item>
+                    <Toggle checked={pacStatus} onChange={toggleStatus} />
+                </Stack.Item>
+            </Stack>
+            {form}
+        </>
     )
 }
 
