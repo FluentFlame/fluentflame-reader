@@ -1,7 +1,7 @@
 import * as db from "./db"
 import { IPartialTheme, loadTheme } from "@fluentui/react"
 import locales from "./i18n/_locales"
-import { ThemeSettings } from "../schema-types"
+import { AnimationMotionPref, ThemeSettings } from "../schema-types"
 import intl from "react-intl-universal"
 import { SourceTextDirection } from "./models/source"
 
@@ -79,6 +79,13 @@ export function applyThemeSettings() {
 window.settings.addThemeUpdateListener(shouldDark => {
     loadTheme(shouldDark ? darkTheme : lightTheme)
 })
+
+export function getAnimationMotionPref(): AnimationMotionPref {
+    return window.settings.getAnimationMotionPref()
+}
+export function setAnimationMotionPref(pref: AnimationMotionPref) {
+    window.settings.setAnimationMotionPref(pref)
+}
 
 export function getCurrentLocale() {
     let locale = window.settings.getCurrentLocale()

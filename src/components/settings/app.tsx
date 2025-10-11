@@ -6,10 +6,12 @@ import {
     calculateItemSize,
     getSearchEngineName,
 } from "../../scripts/utils"
-import { ThemeSettings, SearchEngines } from "../../schema-types"
+import { AnimationMotionPref, ThemeSettings, SearchEngines } from "../../schema-types"
 import {
     getThemeSettings,
     setThemeSettings,
+    getAnimationMotionPref,
+    setAnimationMotionPref,
     exportAll,
 } from "../../scripts/settings"
 import {
@@ -176,7 +178,7 @@ class AppTab extends React.Component<AppTabProps, AppTabState> {
                 onChange={this.onThemeChange}
                 selectedKey={this.state.themeSettings}
             />
-
+            <AnimationPreferences />
             <Label>{intl.get("app.fetchInterval")}</Label>
             <Stack horizontal>
                 <Stack.Item>
@@ -334,6 +336,38 @@ function PacSettings() {
                 </Stack.Item>
             </Stack>
             {form}
+        </>
+    )
+}
+
+function AnimationPreferences() {
+    const [animationProp, setAnimationProp] = React.useState(
+        getAnimationMotionPref()
+    )
+    const preferenceOptions: IDropdownOption[] = [
+        { key: AnimationMotionPref.System, text: "Follow System" },
+        { key: AnimationMotionPref.On, text: "Animations On" },
+        { key: AnimationMotionPref.Reduced, text: "Reduced Animations" },
+        { key: AnimationMotionPref.Off, text: "Animations Off" },
+    ]
+    const prefChange = (_: any, item: IDropdownOption) => {
+        setAnimationMotionPref(item.key as AnimationMotionPref)
+        setAnimationProp(item.key as AnimationMotionPref)
+    }
+
+    return (
+        <>
+            <Label>{"Enable Animations"}</Label>
+            <Stack horizontal>
+                <Stack.Item>
+                    <Dropdown
+                        options={preferenceOptions}
+                        selectedKey={animationProp}
+                        onChange={prefChange}
+                        style={{ width: 200 }}
+                    />
+                </Stack.Item>
+            </Stack>
         </>
     )
 }

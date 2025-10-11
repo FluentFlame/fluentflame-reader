@@ -5,6 +5,7 @@ import {
     SearchEngines,
     ServiceConfigs,
     ViewConfigs,
+    AnimationMotionPref
 } from "../schema-types"
 import { ipcRenderer } from "electron"
 
@@ -56,6 +57,13 @@ const settingsBridge = {
         ipcRenderer.on("theme-updated", (_, shouldDark) => {
             callback(shouldDark)
         })
+    },
+    
+    getAnimationMotionPref: (): AnimationMotionPref => {
+        return ipcRenderer.sendSync("get-animation-motion-pref")
+    },
+    setAnimationMotionPref: (pref: AnimationMotionPref) => {
+        ipcRenderer.invoke("set-animation-motion-pref", pref)
     },
 
     setLocaleSettings: (option: string) => {

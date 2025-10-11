@@ -1,5 +1,6 @@
 import Store from "electron-store"
 import {
+    AnimationMotionPref,
     SchemaTypes,
     SourceGroup,
     ViewType,
@@ -97,6 +98,16 @@ export function setThemeListener(manager: WindowManager) {
         }
     })
 }
+
+const ANIMATION_MOTION_PREF_KEY = "animationMotionPref"
+ipcMain.on("get-animation-motion-pref", event => {
+    event.returnValue = store.get(ANIMATION_MOTION_PREF_KEY, AnimationMotionPref.System)
+})
+ipcMain.handle("set-animation-motion-pref", (_, pref: AnimationMotionPref) => {
+    console.debug("Trying to set:", pref)
+    store.set(ANIMATION_MOTION_PREF_KEY, pref)
+    console.debug("Animation Pref Set:", pref)
+})
 
 const LOCALE_STORE_KEY = "locale"
 ipcMain.handle("set-locale", (_, option: string) => {

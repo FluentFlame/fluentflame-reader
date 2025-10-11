@@ -38,6 +38,13 @@ export const enum ThemeSettings {
     Dark = "dark",
 }
 
+export enum AnimationMotionPref {
+    System = "system",
+    On = "on",
+    Reduced = "reduced",
+    Off = "off",
+}
+
 export const enum SearchEngines {
     Google,
     Bing,
@@ -84,6 +91,7 @@ export interface TouchBarTexts {
 }
 
 export type SchemaTypes = {
+    animationMotionPref: AnimationMotionPref
     version: string
     theme: ThemeSettings
     pac: string
