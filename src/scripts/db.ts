@@ -19,11 +19,31 @@ export interface SourceEntry {
     hidden: boolean
 }
 
+export interface ItemEntry {
+    _id: number
+    source: number
+    title: string
+    link: string
+    date: Date
+    fetchedDate: Date
+    thumb?: string
+    content: string
+    snippet: string
+    creator?: string
+    hasRead: boolean
+    starred: boolean
+    hidden: boolean
+    notify: boolean
+    serviceRef?: string
+}
+
 export const fluentDB = new Dexie("MainDB") as Dexie & {
     sources: EntityTable<SourceEntry, "sid">
+    items: EntityTable<ItemEntry, "_id">
 }
-fluentDB.version(1).stores({
+fluentDB.version(2).stores({
     sources: `++sid, &url`,
+    items: `++_id, source, date, serviceRef`,
 })
 
 const idbSchema = lf.schema.create("itemsDB", 1)

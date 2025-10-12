@@ -119,6 +119,8 @@ export class RSSFeed {
     }
 
     static async loadFeed(feed: RSSFeed, skip = 0): Promise<RSSItem[]> {
+        // TODO: Add predicate filters.
+        /*
         const predicates = FeedFilter.toPredicates(feed.filter)
         predicates.push(db.items.source.in(feed.sids))
         return (await db.itemsDB
@@ -129,6 +131,8 @@ export class RSSFeed {
             .skip(skip)
             .limit(LOAD_QUANTITY)
             .exec()) as RSSItem[]
+        */
+       return (await db.fluentDB.items.orderBy("date").reverse().offset(skip).limit(LOAD_QUANTITY).toArray())
     }
 }
 
