@@ -238,10 +238,10 @@ body.darwin .btn-group .seperator {
 
     .btn {
         width: 48px;
-        height: 32px;
+        height: var(--navHeight);
         text-decoration: none;
         text-align: center;
-        line-height: 32px;
+        line-height: var(--navHeight);
         color: var(--black);
         font-size: 14px;
         vertical-align: top;

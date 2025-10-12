@@ -1,3 +1,7 @@
+:root {
+    --settingsTopMargin: 64px;
+}
+
 .qr-container {
     height: 150px;
     padding: 7px;
@@ -105,9 +109,8 @@ body.darwin .menu .btn-group {
     overflow: hidden;
 }
 .settings-container .settings {
-    margin: 64px auto 0;
+    margin: var(--settingsTopMargin) auto 0;
     max-width: 820px;
-    height: calc(100% - 64px);
     background-color: var(--white);
     box-shadow: 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.132),
         0 1.2px 3.6px 0 rgba(0, 0, 0, 0.108);
@@ -115,6 +118,8 @@ body.darwin .menu .btn-group {
 }
 .settings-inner-container {
     display: flex;
+    /* Prevent off-the-screen rendering. */
+    height: calc(100vh - var(--settingsTopMargin) - var(--navHeight));
 }
 .settings-nav {
     min-width: 150px;
@@ -139,18 +144,25 @@ body.darwin .menu .btn-group {
 .settings .loading .ms-Spinner:focus {
     outline: none;
 }
-.tab-body .ms-StackItem {
-    margin-right: 6px;
-    margin-bottom: 12px;
-}
-.tab-body .ms-StackItem:last-child {
-    margin-right: 0;
-}
-.tab-body .ms-ChoiceFieldGroup {
-    margin-bottom: 20px;
-}
-.tab-body .ms-CommandBar {
-    padding: 0;
+.tab-body {
+    margin-right: 16px;
+
+    & .ms-StackItem {
+        margin-right: 6px;
+        margin-bottom: 12px;
+    }
+
+    & .ms-StackItem:last-child {
+        margin-right: 0;
+    }
+
+    & .ms-ChoiceFieldGroup {
+        margin-bottom: 20px;
+    }
+
+    & .ms-CommandBar {
+        padding: 0;
+    }
 }
 img.favicon {
     width: 16px;
