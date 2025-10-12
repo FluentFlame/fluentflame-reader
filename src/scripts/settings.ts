@@ -1,8 +1,9 @@
-import * as db from "./db"
+import intl from "react-intl-universal"
 import { IPartialTheme, loadTheme } from "@fluentui/react"
+
+import * as db from "./db"
 import locales from "./i18n/_locales"
 import { AnimationMotionPref, ThemeSettings } from "../schema-types"
-import intl from "react-intl-universal"
 import { SourceTextDirection } from "./models/source"
 
 let lightTheme: IPartialTheme = {
@@ -80,11 +81,71 @@ window.settings.addThemeUpdateListener(shouldDark => {
     loadTheme(shouldDark ? darkTheme : lightTheme)
 })
 
+
 export function getAnimationMotionPref(): AnimationMotionPref {
     return window.settings.getAnimationMotionPref()
 }
 export function setAnimationMotionPref(pref: AnimationMotionPref) {
     window.settings.setAnimationMotionPref(pref)
+    applyAnimationMotionPref()
+}
+export function applyAnimationMotionPref() {
+    const pref = getAnimationMotionPref()
+    let realisedPref = pref
+    if (pref === AnimationMotionPref.System) {
+        const animationSettings =
+            window.utils.systemPreferencesGetAnimationSettings()
+        if (animationSettings.prefersReducedMotion) {
+            realisedPref = AnimationMotionPref.Reduced
+        } else {
+            realisedPref = AnimationMotionPref.On
+        }
+    }
+
+    resetInjectedTransitionCSS()
+    switch (realisedPref) {
+        case AnimationMotionPref.Off:
+            injectNoTransitionCSS();
+            break;
+        case AnimationMotionPref.Reduced:
+            injectReducedTransitionCSS();
+            break;
+        case AnimationMotionPref.On:
+        default:
+            break;
+    }
+}
+
+function injectReducedTransitionCSS() {
+    const styleElem = document.createElement("style")
+    // This might be a bit too broad, but we can change this later.
+    styleElem.textContent = `
+    * {
+        /* Injected to disable animations for accessibility */
+        transition: none !important;
+    }
+    `
+    styleElem.id = "animation-motion-pref"
+    document.head.append(styleElem)
+}
+function injectNoTransitionCSS() {
+    const styleElem = document.createElement("style")
+    styleElem.textContent = `
+    * {
+        /* Injected to disable animations for accessibility */
+        transition: none !important;
+        animation-name: none !important;
+    }
+    `
+    styleElem.id = "animation-motion-pref"
+    document.head.append(styleElem)
+}
+function resetInjectedTransitionCSS() {
+    const injectedCSS = document.querySelector("#animation-motion-pref")
+    if (!injectedCSS) {
+        return
+    }
+    injectedCSS.remove()
 }
 
 export function getCurrentLocale() {
@@ -98,7 +159,7 @@ export async function exportAll() {
     const filters = [{ name: intl.get("app.frData"), extensions: ["frdata"] }]
     const write = await window.utils.showSaveDialog(
         filters,
-        "*/Fluent_Reader_Backup.frdata"
+        "*/Fluent_Reader_Backup.frdata",
     )
     if (write) {
         let output = window.settings.getAll()
@@ -120,7 +181,7 @@ export async function importAll() {
         intl.get("confirm"),
         intl.get("cancel"),
         true,
-        "warning"
+        "warning",
     )
     if (!confirmed) return true
     let configs = JSON.parse(data)

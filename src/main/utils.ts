@@ -1,4 +1,4 @@
-import { ipcMain, shell, dialog, app, session, clipboard } from "electron"
+import { ipcMain, shell, dialog, app, session, clipboard, systemPreferences } from "electron"
 import { WindowManager } from "./window"
 import fs = require("fs")
 import { ImageCallbackTypes, TouchBarTexts } from "../schema-types"
@@ -307,5 +307,9 @@ export function setUtilsListeners(manager: WindowManager) {
         return fontList.getFonts({
             disableQuoting: true,
         })
+    })
+
+    ipcMain.on("system-preferences-get-animation-settings", (event) => {
+        event.returnValue = systemPreferences.getAnimationSettings()
     })
 }

@@ -3,12 +3,16 @@ import * as ReactDOM from "react-dom"
 import { Provider } from "react-redux"
 import { initializeIcons } from "@fluentui/react/lib/Icons"
 import Root from "./components/root"
-import { applyThemeSettings } from "./scripts/settings"
+import {
+    applyAnimationMotionPref,
+    applyThemeSettings,
+} from "./scripts/settings"
 import { initApp, openTextMenu } from "./scripts/models/app"
 import { rootStore } from "./scripts/reducer"
 
 window.settings.setProxy()
 
+applyAnimationMotionPref()
 applyThemeSettings()
 initializeIcons("icons/")
 
@@ -27,5 +31,5 @@ ReactDOM.render(
     <Provider store={rootStore}>
         <Root />
     </Provider>,
-    document.getElementById("app")
+    document.getElementById("app"),
 )

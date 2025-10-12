@@ -2,6 +2,19 @@ function get(name) {
     if (name = (new RegExp('[?&]' + encodeURIComponent(name) + '=([^&]*)')).exec(location.search))
         return decodeURIComponent(name[1]);
 }
+
+/**
+ * Enable/Disable animations based on user preferences.
+ */
+function applyAnimationPreferences() {
+    const animationMotionPref = get("an");
+    if (animationMotionPref === "reduced" || animationMotionPref === "off") {
+        const injectedCSSElem = document.createElement("style");
+        injectedCSSElem.textContent = "#main.show { animation-name: none !important; }";
+        document.head.append(injectedCSSElem);
+    }
+}
+
 let dir = get("d")
 if (dir === "1") {
     document.body.classList.add("rtl")
@@ -22,6 +35,9 @@ async function getArticle(url) {
 document.documentElement.style.fontSize = get("s") + "px"
 let font = get("f")
 if (font) document.body.style.fontFamily = `"${font}"`
+
+applyAnimationPreferences()
+
 let url = get("u")
 getArticle(url).then(article => {
     let domParser = new DOMParser()

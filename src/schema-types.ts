@@ -18,6 +18,13 @@ export class SourceGroup {
     }
 }
 
+// From https://www.electronjs.org/docs/latest/api/system-preferences#systempreferencesgetanimationsettings
+export interface AnimationSettingsResponse {
+    shouldRenderRichAnimation: boolean
+    scrollAnimationsEnabledBySystem: boolean
+    prefersReducedMotion: boolean
+}
+
 export const enum ViewType {
     Cards,
     List,

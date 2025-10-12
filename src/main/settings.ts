@@ -104,9 +104,7 @@ ipcMain.on("get-animation-motion-pref", event => {
     event.returnValue = store.get(ANIMATION_MOTION_PREF_KEY, AnimationMotionPref.System)
 })
 ipcMain.handle("set-animation-motion-pref", (_, pref: AnimationMotionPref) => {
-    console.debug("Trying to set:", pref)
     store.set(ANIMATION_MOTION_PREF_KEY, pref)
-    console.debug("Animation Pref Set:", pref)
 })
 
 const LOCALE_STORE_KEY = "locale"

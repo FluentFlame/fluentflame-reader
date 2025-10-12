@@ -1,5 +1,6 @@
 import { ipcRenderer } from "electron"
 import {
+    AnimationSettingsResponse,
     ImageCallbackTypes,
     TouchBarTexts,
     WindowStateListenerType,
@@ -174,6 +175,10 @@ const utilsBridge = {
     initFontList: (): Promise<Array<string>> => {
         return ipcRenderer.invoke("init-font-list")
     },
+
+    systemPreferencesGetAnimationSettings: (): AnimationSettingsResponse => {
+        return ipcRenderer.sendSync("system-preferences-get-animation-settings")
+    }
 }
 
 declare global {

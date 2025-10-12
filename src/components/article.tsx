@@ -19,6 +19,7 @@ import {
 } from "../scripts/models/source"
 import { shareSubmenu } from "./context-menu"
 import { platformCtrl, decodeFetchResponse } from "../scripts/utils"
+import { getAnimationMotionPref } from "../scripts/settings"
 
 const FONT_SIZE_OPTIONS = [12, 13, 14, 15, 16, 17, 18, 19, 20]
 
@@ -346,7 +347,14 @@ class Article extends React.Component<ArticleProps, ArticleState> {
             }
         }
     }
-
+    
+    /**
+     * Render the article webview by encoding information in the URL.
+     *
+     * In general, this is a very clever but overlycomplicated set up.
+     * I contest that we even need a web-view when we are looking at the RSS/Atom
+     * body.
+     */
     articleView = () => {
         const a = encodeURIComponent(
             this.state.loadFull
@@ -367,11 +375,12 @@ class Article extends React.Component<ArticleProps, ArticleState> {
                 </>
             )
         )
+        const animPref = getAnimationMotionPref()
         return `article/article.html?a=${a}&h=${h}&f=${encodeURIComponent(
             this.state.fontFamily
         )}&s=${this.state.fontSize}&d=${this.props.source.textDir}&u=${
             this.props.item.link
-        }&m=${this.state.loadFull ? 1 : 0}`
+        }&m=${this.state.loadFull ? 1 : 0}&an=${animPref}`
     }
 
     render = () => (
