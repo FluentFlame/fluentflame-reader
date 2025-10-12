@@ -1,13 +1,7 @@
-import * as db from "../db"
-import lf from "lovefield"
+import { fluentDB } from "../db"
 import intl from "react-intl-universal"
 import type { MyParserItem } from "../utils"
-import {
-    htmlDecode,
-    ActionStatus,
-    AppThunk,
-    platformCtrl,
-} from "../utils"
+import { htmlDecode, ActionStatus, AppThunk, platformCtrl } from "../utils"
 import { RSSSource, updateSource, updateUnreadCounts } from "./source"
 import { FeedActionTypes, INIT_FEED, LOAD_MORE, dismissItems } from "./feed"
 import {
@@ -75,14 +69,17 @@ export class RSSItem {
             item.thumb = parsed.image.$.url
         } else if (parsed.image && typeof parsed.image === "string") {
             item.thumb = parsed.image
-        } 
-        else if (parsed.mediaThumbnails) {
-            const images = parsed.mediaThumbnails.filter(t => t.$?.url);
-            if(images.length > 0) item.thumb = images[0].$.url;
-        }
-        else if (parsed.mediaContent) {
+        } else if (parsed.mediaThumbnails) {
+            const images = parsed.mediaThumbnails.filter(t => t.$?.url)
+            if (images.length > 0) item.thumb = images[0].$.url
+        } else if (parsed.mediaContent) {
             let images = parsed.mediaContent.filter(
-                c => c.$ && (c.$.medium === "image" || typeof c.$.type === "string" && c.$.type.startsWith("image/")) && c.$.url
+                c =>
+                    c.$ &&
+                    (c.$.medium === "image" ||
+                        (typeof c.$.type === "string" &&
+                            c.$.type.startsWith("image/"))) &&
+                    c.$.url,
             )
             if (images.length > 0) item.thumb = images[0].$.url
         }
@@ -91,7 +88,7 @@ export class RSSItem {
             let baseEl = dom.createElement("base")
             baseEl.setAttribute(
                 "href",
-                item.link.split("/").slice(0, 3).join("/")
+                item.link.split("/").slice(0, 3).join("/"),
             )
             dom.head.append(baseEl)
             let img = dom.querySelector("img")
@@ -173,7 +170,7 @@ export function fetchItemsRequest(fetchCount = 0): ItemActionTypes {
 
 export function fetchItemsSuccess(
     items: RSSItem[],
-    itemState: ItemState
+    itemState: ItemState,
 ): ItemActionTypes {
     return {
         type: FETCH_ITEMS,
@@ -201,17 +198,18 @@ export function fetchItemsIntermediate(): ItemActionTypes {
 
 export async function insertItems(items: RSSItem[]): Promise<RSSItem[]> {
     items.sort((a, b) => a.date.getTime() - b.date.getTime())
-    const rows = items.map(item => db.items.createRow(item))
-    return (await db.itemsDB
-        .insert()
-        .into(db.items)
-        .values(rows)
-        .exec()) as RSSItem[]
+    const keys = await fluentDB.items.bulkAdd(items, { allKeys: true })
+    let itemIdx = 0
+    for (const key of keys) {
+        items[itemIdx]._id = key
+        itemIdx++
+    }
+    return items
 }
 
 export function fetchItems(
     background = false,
-    sids: number[] = null
+    sids: number[] = null,
 ): AppThunk<Promise<void>> {
     return async (dispatch, getState) => {
         let promises = new Array<Promise<RSSItem[]>>()
@@ -220,7 +218,7 @@ export function fetchItems(
             if (
                 sids === null ||
                 sids.filter(
-                    sid => initState.sources[sid].serviceRef !== undefined
+                    sid => initState.sources[sid].serviceRef !== undefined,
                 ).length > 0
             )
                 await dispatch(syncWithService(background))
@@ -244,8 +242,8 @@ export function fetchItems(
                 let promise = RSSSource.fetchItems(source)
                 promise.then(() =>
                     dispatch(
-                        updateSource({ ...source, lastFetched: new Date() })
-                    )
+                        updateSource({ ...source, lastFetched: new Date() }),
+                    ),
                 )
                 promise.finally(() => dispatch(fetchItemsIntermediate()))
                 promises.push(promise)
@@ -261,13 +259,15 @@ export function fetchItems(
                         dispatch(fetchItemsFailure(sources[i], r.reason))
                     }
                 })
+                console.log("fetching items!")
                 insertItems(items)
                     .then(inserted => {
+                        console.log("inserted:", inserted)
                         dispatch(
                             fetchItemsSuccess(
                                 inserted.reverse(),
-                                getState().items
-                            )
+                                getState().items,
+                            ),
                         )
                         resolve()
                         if (background) {
@@ -288,7 +288,7 @@ export function fetchItems(
                         dispatch(fetchItemsSuccess([], getState().items))
                         window.utils.showErrorBox(
                             "A database error has occurred.",
-                            String(err)
+                            String(err),
                         )
                         console.log(err)
                         reject(err)
@@ -312,11 +312,7 @@ export function markRead(item: RSSItem): AppThunk {
     return (dispatch, getState) => {
         item = getState().items[item._id]
         if (!item.hasRead) {
-            db.itemsDB
-                .update(db.items)
-                .where(db.items._id.eq(item._id))
-                .set(db.items.hasRead, true)
-                .exec()
+            fluentDB.items.update(item._id, { hasRead: true })
             dispatch(markReadDone(item))
             if (item.serviceRef) {
                 dispatch(dispatch(getServiceHooks()).markRead?.(item))
@@ -328,7 +324,7 @@ export function markRead(item: RSSItem): AppThunk {
 export function markAllRead(
     sids: number[] = null,
     date: Date = null,
-    before = true
+    before = true,
 ): AppThunk<Promise<void>> {
     return async (dispatch, getState) => {
         let state = getState()
@@ -339,24 +335,36 @@ export function markAllRead(
         const action = dispatch(getServiceHooks()).markAllRead?.(
             sids,
             date,
-            before
+            before,
         )
-        if (action) await dispatch(action)
-        const predicates: lf.Predicate[] = [
-            db.items.source.in(sids),
-            db.items.hasRead.eq(false),
-        ]
-        if (date) {
-            predicates.push(
-                before ? db.items.date.lte(date) : db.items.date.gte(date)
-            )
+        if (action) {
+            await dispatch(action)
         }
-        const query = lf.op.and.apply(null, predicates)
-        await db.itemsDB
-            .update(db.items)
-            .set(db.items.hasRead, true)
-            .where(query)
-            .exec()
+        // NOTE: Uncertain if this requires an 'await'.
+        fluentDB.transaction("rw", fluentDB.items, async () => {
+            const items = await fluentDB.items
+                .where("sids")
+                .anyOf(sids)
+                .and(itemRow => {
+                    if (itemRow.hasRead) {
+                        return false
+                    }
+                    if (date) {
+                        if (before && itemRow.date > date) {
+                            return false
+                        }
+                        if (itemRow.date < date) {
+                            return false
+                        }
+                    }
+                    return true
+                })
+                .toArray()
+            for (const item of items) {
+                item.hasRead = true
+            }
+            await fluentDB.items.bulkPut(items)
+        })
         if (date) {
             dispatch({
                 type: MARK_ALL_READ,
@@ -374,15 +382,24 @@ export function markAllRead(
     }
 }
 
+/**
+ * Update a single item in the database with a given mapFunction.
+ */
+async function updateItemInDB(
+    item: RSSItem,
+    mapF: (item: RSSItem) => RSSItem,
+): Promise<void> {
+    await fluentDB.items.update(item._id, mapF(item))
+}
+
 export function markUnread(item: RSSItem): AppThunk {
     return (dispatch, getState) => {
         item = getState().items[item._id]
         if (item.hasRead) {
-            db.itemsDB
-                .update(db.items)
-                .where(db.items._id.eq(item._id))
-                .set(db.items.hasRead, false)
-                .exec()
+            updateItemInDB(item, i => {
+                i.hasRead = false
+                return i
+            })
             dispatch(markUnreadDone(item))
             if (item.serviceRef) {
                 dispatch(dispatch(getServiceHooks()).markUnread?.(item))
@@ -398,11 +415,10 @@ const toggleStarredDone = (item: RSSItem): ItemActionTypes => ({
 
 export function toggleStarred(item: RSSItem): AppThunk {
     return dispatch => {
-        db.itemsDB
-            .update(db.items)
-            .where(db.items._id.eq(item._id))
-            .set(db.items.starred, !item.starred)
-            .exec()
+        updateItemInDB(item, i => {
+            i.starred = !i.starred
+            return i
+        })
         dispatch(toggleStarredDone(item))
         if (item.serviceRef) {
             const hooks = dispatch(getServiceHooks())
@@ -419,11 +435,10 @@ const toggleHiddenDone = (item: RSSItem): ItemActionTypes => ({
 
 export function toggleHidden(item: RSSItem): AppThunk {
     return dispatch => {
-        db.itemsDB
-            .update(db.items)
-            .where(db.items._id.eq(item._id))
-            .set(db.items.hidden, !item.hidden)
-            .exec()
+        updateItemInDB(item, i => {
+            i.hidden = !i.hidden
+            return i
+        })
         dispatch(toggleHiddenDone(item))
     }
 }
@@ -481,7 +496,7 @@ export function itemReducer(
         | ItemActionTypes
         | FeedActionTypes
         | ServiceActionTypes
-        | SettingsActionTypes
+        | SettingsActionTypes,
 ): ItemState {
     switch (action.type) {
         case FETCH_ITEMS:
@@ -504,7 +519,7 @@ export function itemReducer(
                 ...state,
                 [action.item._id]: applyItemReduction(
                     state[action.item._id],
-                    action.type
+                    action.type,
                 ),
             }
         }
