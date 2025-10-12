@@ -214,6 +214,8 @@
         "exportToLite": "Export to Fluent Reader Lite"
     },
     "app": {
+        "animationsOff": "Animations off",
+        "animationsOn": "Animations on",
         "cleanup": "Clean up",
         "cache": "Clear cache",
         "cacheSize": "Cached {size} of data",
@@ -226,6 +228,7 @@
         "confirmImport": "Do you really want to import data from the backup file? All current data will be wiped.",
         "data": "Application Data",
         "backup": "Backup",
+        "reducedAnimations": "Reduce animations",
         "restore": "Restore",
         "frData": "Fluent Reader Data",
         "language": "Display language",

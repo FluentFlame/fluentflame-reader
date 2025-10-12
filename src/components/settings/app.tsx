@@ -6,7 +6,11 @@ import {
     calculateItemSize,
     getSearchEngineName,
 } from "../../scripts/utils"
-import { AnimationMotionPref, ThemeSettings, SearchEngines } from "../../schema-types"
+import {
+    AnimationMotionPref,
+    ThemeSettings,
+    SearchEngines,
+} from "../../schema-types"
 import {
     getThemeSettings,
     setThemeSettings,
@@ -340,15 +344,30 @@ function PacSettings() {
     )
 }
 
+/**
+ * React component for animation preference dropdown.
+ */
 function AnimationPreferences() {
     const [animationProp, setAnimationProp] = React.useState(
-        getAnimationMotionPref()
+        getAnimationMotionPref(),
     )
     const preferenceOptions: IDropdownOption[] = [
-        { key: AnimationMotionPref.System, text: "Follow System" },
-        { key: AnimationMotionPref.On, text: "Animations On" },
-        { key: AnimationMotionPref.Reduced, text: "Reduced Animations" },
-        { key: AnimationMotionPref.Off, text: "Animations Off" },
+        {
+            key: AnimationMotionPref.System,
+            text: intl.get("followSystem").d("Follow system"),
+        },
+        {
+            key: AnimationMotionPref.On,
+            text: intl.get("app.animationsOn").d("Animations on"),
+        },
+        {
+            key: AnimationMotionPref.Reduced,
+            text: intl.get("app.reducedAnimations").d("Reduce animations"),
+        },
+        {
+            key: AnimationMotionPref.Off,
+            text: intl.get("app.animationsOff").d("Animations off"),
+        },
     ]
     const prefChange = (_: any, item: IDropdownOption) => {
         setAnimationMotionPref(item.key as AnimationMotionPref)

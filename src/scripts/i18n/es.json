@@ -217,6 +217,8 @@
         "exportToLite": "Exportar a Fluent Reader Lite"
     },
     "app": {
+        "animationsOff": "Desactivar animaciones",
+        "animationsOn": "Activar animacions",
         "cleanup": "Limpiar",
         "cache": "Limpiar caché",
         "cacheSize": "{size} caché de datos",
@@ -229,6 +231,7 @@
         "confirmImport": "¿Realmente desea importar datos desde el archivo de resguardo? Todos los actuales datos serán eliminados.",
         "data": "Datos de la aplicación",
         "backup": "Resguardo",
+        "reducedAnimations": "Reducir animaciones",
         "restore": "Restaurar",
         "frData": "Lector de datos",
         "language": "Mostrar idioma",

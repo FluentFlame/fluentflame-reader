@@ -1,6 +1,6 @@
 ## Internationalization
 
-Currently, Fluent Reader supports the following languages.
+Currently, Fluentflame Reader supports the following languages.
 
 | Locale | Language | Credit |
 | --- | --- | --- |
