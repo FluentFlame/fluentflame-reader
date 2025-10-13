@@ -1,11 +1,10 @@
 import intl from "react-intl-universal"
-import * as db from "../../db"
-import lf from "lovefield"
 import { ServiceHooks } from "../service"
 import { ServiceConfigs, SyncService } from "../../../schema-types"
 import { createSourceGroup } from "../group"
 import { RSSSource } from "../source"
 import { htmlDecode } from "../../utils"
+import { getItemEntries } from "./service-utils"
 import { RSSItem } from "../item"
 import { SourceRule } from "../rule"
 
@@ -294,18 +293,7 @@ export const minifluxServiceHooks: ServiceHooks = {
         const configs = state.service as MinifluxConfigs
 
         if (date) {
-            const predicates: lf.Predicate[] = [
-                db.items.source.in(sids),
-                db.items.hasRead.eq(false),
-                db.items.serviceRef.isNotNull(),
-                before ? db.items.date.lte(date) : db.items.date.gte(date),
-            ]
-            const query = lf.op.and.apply(null, predicates)
-            const rows = await db.itemsDB
-                .select(db.items.serviceRef)
-                .from(db.items)
-                .where(query)
-                .exec()
+            const rows = await getItemEntries(sids, date, before);
             const refs = rows.map(row => row["serviceRef"])
             const body = `{
                 "entry_ids": [${refs}],
