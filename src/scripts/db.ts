@@ -87,7 +87,58 @@ async function migrateLovefieldSourcesDB(dbName: string, version: number) {
     }
     await fluentDB.transaction("rw", "sources", txFunc)
     console.log(
-        `Successfully Migrated. Attempting to deleting old DB ${dbName}.`,
+        `Successfully migrated Sources. Attempting to deleting old DB ${dbName}.`,
+    )
+    // Can't await on this, as it will delete only after the last connection is closed.
+    wrapRequest(indexedDB.deleteDatabase(dbName))
+}
+
+/**
+ * Migrate old Lovefield Items Database into the new MainDB Dexie DB.
+ */
+async function migrateLovefieldItemsDB(dbName: string, version: number) {
+    const databases = await indexedDB.databases()
+    if (!databases.map(d => d.name).some(d => d === dbName)) {
+        return
+    }
+    const db = (await wrapRequest(indexedDB.open(dbName, version))).result
+    const transaction = db.transaction("items")
+    const store = transaction.objectStore("items")
+    const entryQueryResult = (await wrapRequest(store.getAll())).result
+    const txFunc = async () => {
+        for (const row of entryQueryResult) {
+            const item: ItemEntry = row.value
+            // Skip entries that already exist.
+            const query = await fluentDB.sources
+                .where("link")
+                .equals(item.link)
+                .toArray()
+            if (query.length > 0) {
+                continue
+            }
+            const newEntry: ItemEntry = {
+                iid: item.iid,
+                source: item.source,
+                title: item.title,
+                link: item.link,
+                date: new Date(item.date),
+                fetchedDate: new Date(item.fetchedDate),
+                thumb: item.thumb,
+                content: item.content,
+                snippet: item.snippet,
+                creator: item.creator,
+                hasRead: item.hasRead,
+                starred: item.starred,
+                hidden: item.hidden,
+                notify: item.notify,
+                serviceRef: item.serviceRef,
+            }
+            await fluentDB.items.add(newEntry)
+        }
+    }
+    await fluentDB.transaction("rw", fluentDB.items, txFunc)
+    console.log(
+        `Successfully migrated Items. Attempting to deleting old DB ${dbName}.`,
     )
     // Can't await on this, as it will delete only after the last connection is closed.
     wrapRequest(indexedDB.deleteDatabase(dbName))
@@ -106,6 +157,5 @@ function wrapRequest<T>(req: T & IDBRequest): Promise<T> {
 
 export async function init() {
     await migrateLovefieldSourcesDB("sourcesDB", 3)
-    itemsDB = await idbSchema.connect()
-    items = itemsDB.getSchema().table("items")
+    await migrateLovefieldItemsDB("itemsDB", 1)
 }
