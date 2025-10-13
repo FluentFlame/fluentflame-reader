@@ -1,6 +1,5 @@
 import intl from "react-intl-universal"
 import * as db from "../db"
-import lf from "lovefield"
 import {
     fetchFavicon,
     ActionStatus,
