@@ -101,8 +101,16 @@ async function migrateLovefieldItemsDB(dbName: string, version: number) {
         return
     }
     const db = (await wrapRequest(indexedDB.open(dbName, version))).result
-    const transaction = db.transaction("items")
-    const store = transaction.objectStore("items")
+    let store: IDBObjectStore
+    try {
+        const transaction = db.transaction("items")
+        store = transaction.objectStore("items")
+    } catch (e) {
+        console.error("Error getting db transaction for items migration, still deleting", e)
+        // Can't await on this, as it will delete only after the last connection is closed.
+        wrapRequest(indexedDB.deleteDatabase(dbName))
+        throw e;
+    }
     const entryQueryResult = (await wrapRequest(store.getAll())).result
     const txFunc = async () => {
         for (const row of entryQueryResult) {
@@ -156,5 +164,9 @@ function wrapRequest<T>(req: T & IDBRequest): Promise<T> {
 
 export async function init() {
     await migrateLovefieldSourcesDB("sourcesDB", 3)
-    await migrateLovefieldItemsDB("itemsDB", 1)
+    try {
+        await migrateLovefieldItemsDB("itemsDB", 1)
+    } catch (e) {
+        console.error("Error migrating items DB", e)
+    }
 }
