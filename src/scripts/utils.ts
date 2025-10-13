@@ -300,6 +300,18 @@ export function initTouchBarWithTexts() {
     })
 }
 
+/**
+ * Compare an item date to a limitDate. Returns true if it violates the limit
+ * Usually that means it's older than the limit.
+ * before can be used to invert the calculation.
+ */
+export function dateCompare(itemDate: Date, limitDate: Date, before=false) {
+    if ((before && itemDate > limitDate) || (itemDate < limitDate)) {
+        return false
+    }
+    return true
+}
+
 export const exportedForTesting = {
   getPotentialFavicons
 }

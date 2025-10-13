@@ -1,7 +1,6 @@
 import intl from "react-intl-universal"
-import * as db from "../../db"
-import lf from "lovefield"
 import { ServiceHooks } from "../service"
+import { getItemEntries } from "./service-utils"
 import { ServiceConfigs, SyncService } from "../../../schema-types"
 import { createSourceGroup } from "../group"
 import { RSSSource } from "../source"
@@ -239,22 +238,7 @@ export const nextcloudServiceHooks: ServiceHooks = {
     markAllRead: (sids, date, before) => async (_, getState) => {
         const state = getState()
         const configs = state.service as NextcloudConfigs
-        const predicates: lf.Predicate[] = [
-            db.items.source.in(sids),
-            db.items.hasRead.eq(false),
-            db.items.serviceRef.isNotNull(),
-        ]
-        if (date) {
-            predicates.push(
-                before ? db.items.date.lte(date) : db.items.date.gte(date)
-            )
-        }
-        const query = lf.op.and.apply(null, predicates)
-        const rows = await db.itemsDB
-            .select(db.items.serviceRef)
-            .from(db.items)
-            .where(query)
-            .exec()
+        const rows = await getItemEntries(sids, date, before)
         const refs = rows.map(row => parseInt(row["serviceRef"]))
         markItems(configs, "unread", "POST", refs)
     },

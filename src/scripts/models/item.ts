@@ -1,7 +1,7 @@
 import { fluentDB } from "../db"
 import intl from "react-intl-universal"
 import type { MyParserItem } from "../utils"
-import { htmlDecode, ActionStatus, AppThunk, platformCtrl } from "../utils"
+import { htmlDecode, ActionStatus, AppThunk, dateCompare, platformCtrl } from "../utils"
 import { RSSSource, updateSource, updateUnreadCounts } from "./source"
 import { FeedActionTypes, INIT_FEED, LOAD_MORE, dismissItems } from "./feed"
 import {
@@ -347,13 +347,8 @@ export function markAllRead(
                     if (itemRow.hasRead) {
                         return false
                     }
-                    if (date) {
-                        if (before && itemRow.date > date) {
-                            return false
-                        }
-                        if (itemRow.date < date) {
-                            return false
-                        }
+                    if (date && !dateCompare(itemRow.date, date, before)) {
+                        return false
                     }
                     return true
                 })
