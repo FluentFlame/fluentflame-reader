@@ -48,8 +48,8 @@ class CardsFeed extends React.Component<FeedProps> {
     onRenderItem = (item: RSSItem, index: number) =>
         item ? (
             <DefaultCard
-                feedId={this.props.feed._id}
-                key={item._id}
+                feedId={this.props.feed.iid}
+                key={item.iid}
                 item={item}
                 source={this.props.sourceMap[item.source]}
                 filter={this.props.filter}

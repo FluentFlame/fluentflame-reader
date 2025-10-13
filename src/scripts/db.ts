@@ -20,7 +20,7 @@ export interface SourceEntry {
 }
 
 export interface ItemEntry {
-    _id: number
+    iid: number
     source: number
     title: string
     link: string
@@ -39,38 +39,12 @@ export interface ItemEntry {
 
 export const fluentDB = new Dexie("MainDB") as Dexie & {
     sources: EntityTable<SourceEntry, "sid">
-    items: EntityTable<ItemEntry, "_id">
+    items: EntityTable<ItemEntry, "iid">
 }
-fluentDB.version(2).stores({
+fluentDB.version(3).stores({
     sources: `++sid, &url`,
-    items: `++_id, source, date, serviceRef`,
+    items: `++iid, source, date, serviceRef`,
 })
-
-const idbSchema = lf.schema.create("itemsDB", 1)
-idbSchema
-    .createTable("items")
-    .addColumn("_id", lf.Type.INTEGER)
-    .addPrimaryKey(["_id"], true)
-    .addColumn("source", lf.Type.INTEGER)
-    .addColumn("title", lf.Type.STRING)
-    .addColumn("link", lf.Type.STRING)
-    .addColumn("date", lf.Type.DATE_TIME)
-    .addColumn("fetchedDate", lf.Type.DATE_TIME)
-    .addColumn("thumb", lf.Type.STRING)
-    .addColumn("content", lf.Type.STRING)
-    .addColumn("snippet", lf.Type.STRING)
-    .addColumn("creator", lf.Type.STRING)
-    .addColumn("hasRead", lf.Type.BOOLEAN)
-    .addColumn("starred", lf.Type.BOOLEAN)
-    .addColumn("hidden", lf.Type.BOOLEAN)
-    .addColumn("notify", lf.Type.BOOLEAN)
-    .addColumn("serviceRef", lf.Type.STRING)
-    .addNullable(["thumb", "creator", "serviceRef"])
-    .addIndex("idxDate", ["date"], false, lf.Order.DESC)
-    .addIndex("idxService", ["serviceRef"], false)
-
-export let itemsDB: lf.Database
-export let items: lf.schema.Table
 
 /**
  * Migrate old Lovefield Sources Database into the new MainDB Dexie DB.

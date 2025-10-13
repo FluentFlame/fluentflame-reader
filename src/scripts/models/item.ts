@@ -18,7 +18,7 @@ import {
 } from "./service"
 
 export class RSSItem {
-    _id: number
+    iid: number
     source: number
     title: string
     link: string
@@ -105,7 +105,7 @@ export class RSSItem {
 }
 
 export type ItemState = {
-    [_id: number]: RSSItem
+    [iid: number]: RSSItem
 }
 
 export const FETCH_ITEMS = "FETCH_ITEMS"
@@ -201,7 +201,7 @@ export async function insertItems(items: RSSItem[]): Promise<RSSItem[]> {
     const keys = await fluentDB.items.bulkAdd(items, { allKeys: true })
     let itemIdx = 0
     for (const key of keys) {
-        items[itemIdx]._id = key
+        items[itemIdx].iid = key
         itemIdx++
     }
     return items
@@ -308,9 +308,9 @@ const markUnreadDone = (item: RSSItem): ItemActionTypes => ({
 
 export function markRead(item: RSSItem): AppThunk {
     return (dispatch, getState) => {
-        item = getState().items[item._id]
+        item = getState().items[item.iid]
         if (!item.hasRead) {
-            fluentDB.items.update(item._id, { hasRead: true })
+            fluentDB.items.update(item.iid, { hasRead: true })
             dispatch(markReadDone(item))
             if (item.serviceRef) {
                 dispatch(dispatch(getServiceHooks()).markRead?.(item))
@@ -382,12 +382,12 @@ async function updateItemInDB(
     item: RSSItem,
     updateObj: Partial<RSSItem>,
 ): Promise<void> {
-    await fluentDB.items.update(item._id, updateObj)
+    await fluentDB.items.update(item.iid, updateObj)
 }
 
 export function markUnread(item: RSSItem): AppThunk {
     return (dispatch, getState) => {
-        item = getState().items[item._id]
+        item = getState().items[item.iid]
         if (item.hasRead) {
             updateItemInDB(item, { hasRead: false })
             dispatch(markUnreadDone(item))
@@ -488,7 +488,7 @@ export function itemReducer(
                 case ActionStatus.Success: {
                     let newMap = {}
                     for (let i of action.items) {
-                        newMap[i._id] = i
+                        newMap[i.iid] = i
                     }
                     return { ...newMap, ...state }
                 }
@@ -501,8 +501,8 @@ export function itemReducer(
         case TOGGLE_HIDDEN: {
             return {
                 ...state,
-                [action.item._id]: applyItemReduction(
-                    state[action.item._id],
+                [action.item.iid]: applyItemReduction(
+                    state[action.item.iid],
                     action.type,
                 ),
             }
@@ -518,7 +518,7 @@ export function itemReducer(
                             ? item.date.getTime() <= action.time
                             : item.date.getTime() >= action.time)
                     ) {
-                        nextState[item._id] = {
+                        nextState[item.iid] = {
                             ...item,
                             hasRead: true,
                         }
@@ -533,7 +533,7 @@ export function itemReducer(
                 case ActionStatus.Success: {
                     let nextState = { ...state }
                     for (let i of action.items) {
-                        nextState[i._id] = i
+                        nextState[i.iid] = i
                     }
                     return nextState
                 }
@@ -548,7 +548,7 @@ export function itemReducer(
                     const nextItem = { ...item }
                     nextItem.hasRead = !action.unreadIds.has(item.serviceRef)
                     nextItem.starred = action.starredIds.has(item.serviceRef)
-                    nextState[item._id] = nextItem
+                    nextState[item.iid] = nextItem
                 }
             }
             return nextState
@@ -556,7 +556,7 @@ export function itemReducer(
         case FREE_MEMORY: {
             const nextState: ItemState = {}
             for (let item of Object.values(state)) {
-                if (action.iids.has(item._id)) nextState[item._id] = item
+                if (action.iids.has(item.iid)) nextState[item.iid] = item
             }
             return nextState
         }

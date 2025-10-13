@@ -131,7 +131,7 @@ export function showItem(feedId: string, item: RSSItem): AppThunk {
     return (dispatch, getState) => {
         const state = getState()
         if (
-            state.items.hasOwnProperty(item._id) &&
+            state.items.hasOwnProperty(item.iid) &&
             state.sources.hasOwnProperty(item.source)
         ) {
             dispatch({
@@ -323,7 +323,7 @@ export function pageReducer(
         case SHOW_ITEM:
             return {
                 ...state,
-                itemId: action.item._id,
+                itemId: action.item.iid,
                 itemFromFeed: Boolean(action.feedId),
             }
         case INIT_FEED:
@@ -332,8 +332,8 @@ export function pageReducer(
                     return {
                         ...state,
                         itemId:
-                            action.feed._id === state.feedId &&
-                            action.items.filter(i => i._id === state.itemId)
+                            action.feed.iid === state.feedId &&
+                            action.items.filter(i => i.iid === state.itemId)
                                 .length === 0
                                 ? null
                                 : state.itemId,
