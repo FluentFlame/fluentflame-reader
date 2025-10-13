@@ -22,7 +22,7 @@ buildNpmPackage {
   inherit pname;
   version = "1.1.4";
   src = ../.;
-  npmDepsHash = "sha256-u8jo/Wh0/qtbfqAJgnEGNVo3ZWWjfVpkdyYjO/sCdcY=";
+  npmDepsHash = "sha256-N3KgEvMvyNpb/jF5zxUHJwl2FcCQbAj1/LI+MacIxLs=";
   makeCacheWritable = true;
 
   env = {

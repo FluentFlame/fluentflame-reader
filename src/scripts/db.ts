@@ -2,7 +2,6 @@ import intl from "react-intl-universal"
 import { RSSSource } from "./models/source"
 import { SourceRule } from "./models/rule"
 import { RSSItem } from "./models/item"
-import lf from "lovefield"
 import { Dexie, type EntityTable } from "dexie"
 
 export interface SourceEntry {
