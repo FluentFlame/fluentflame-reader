@@ -72,18 +72,12 @@ export class RSSSource {
         item: MyParserItem,
     ): Promise<RSSItem> {
         let i = new RSSItem(item, source)
-        const items = (await db.itemsDB
-            .select()
-            .from(db.items)
-            .where(
-                lf.op.and(
-                    db.items.source.eq(i.source),
-                    db.items.title.eq(i.title),
-                    db.items.date.eq(i.date),
-                ),
-            )
+        const items = await db.fluentDB.items
+            .where("date")
+            .equals(i.date)
+            .and(item => item.source === i.source && item.title === i.title)
             .limit(1)
-            .exec()) as RSSItem[]
+            .toArray()
         if (items.length === 0) {
             RSSItem.parseContent(i, item)
             if (source.rules) SourceRule.applyAll(source.rules, i)
@@ -197,43 +191,44 @@ export function initSourcesFailure(err): SourceActionTypes {
     }
 }
 
-async function setSourceUnreadCounts(
-    sources: SourceState,
-): Promise<SourceState> {
-    const rows = await db.itemsDB
-        .select(db.items.source, lf.fn.count(db.items._id))
-        .from(db.items)
-        .where(db.items.hasRead.eq(false))
-        .groupBy(db.items.source)
-        .exec()
-    for (let row of rows) {
-        if (sources[row["source"]] == null) {
-            // This can happen if the itemDB and sourcesDB don't
+async function setSourceUnreadCounts(sourceState: SourceState): Promise<void> {
+    const rows = await db.fluentDB.items.filter(i => !i.hasRead).toArray()
+    const counts = {}
+    for (const row of rows) {
+        if (sourceState[row.source] == null) {
+            // This can happen if the itemsDB and sourcesDB don't
             // match.
             console.error(
-                `could not set 'unreadCount' for` +
-                    ` source '${row["source"]}'` +
-                    ` as it does not exist in the sources state`,
+                `could not correctly count row for unreadCounts` +
+                ` as it does not exist in the sources state`,
+                row
             )
             continue
         }
-        sources[row["source"]].unreadCount = row["COUNT(_id)"]
+        if (counts[row.source] == null) {
+            counts[row.source] = 1
+            continue
+        }
+        counts[row.source]++
     }
-    return sources
+    for (const prop in counts) {
+        sourceState[prop].unreadCount = counts[prop]
+    }
 }
 
 export function updateUnreadCounts(): AppThunk<Promise<void>> {
     return async (dispatch, getState) => {
-        const sources: SourceState = {}
+        const sourceState: SourceState = {}
         for (let source of Object.values(getState().sources)) {
-            sources[source.sid] = {
+            sourceState[source.sid] = {
                 ...source,
                 unreadCount: 0,
             }
         }
+        await setSourceUnreadCounts(sourceState)
         dispatch({
             type: UPDATE_UNREAD_COUNTS,
-            sources: await setSourceUnreadCounts(sources),
+            sources: sourceState,
         })
     }
 }
@@ -368,11 +363,7 @@ export function deleteSource(
     return async (dispatch, getState) => {
         if (!batch) dispatch(saveSettings())
         try {
-            await db.itemsDB
-                .delete()
-                .from(db.items)
-                .where(db.items.source.eq(source.sid))
-                .exec()
+            await db.fluentDB.items.where("source").equals(source.sid).delete()
             await db.fluentDB.sources.where("sid").equals(source.sid).delete()
             dispatch(deleteSourceDone(source))
             window.settings.saveGroups(getState().groups)
