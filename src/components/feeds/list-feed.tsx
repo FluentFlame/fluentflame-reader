@@ -18,8 +18,8 @@ import { Card } from "../cards/card"
 class ListFeed extends React.Component<FeedProps> {
     onRenderItem = (item: RSSItem) => {
         const props = {
-            feedId: this.props.feed._id,
-            key: item._id,
+            feedId: this.props.feed.iid,
+            key: item.iid,
             item: item,
             source: this.props.sourceMap[item.source],
             filter: this.props.filter,
@@ -31,7 +31,7 @@ class ListFeed extends React.Component<FeedProps> {
         } as Card.Props
         if (
             this.props.viewType === ViewType.List &&
-            this.props.currentItem === item._id
+            this.props.currentItem === item.iid
         ) {
             props.selected = true
         }

@@ -351,13 +351,13 @@ export function pushNotification(item: RSSItem): AppThunk {
                     window.utils.openExternal(item.link)
                 } else if (!state.app.settings.display) {
                     window.utils.focus()
-                    dispatch(showItemFromId(item._id))
+                    dispatch(showItemFromId(item.iid))
                 }
             }
         }
         dispatch({
             type: PUSH_NOTIFICATION,
-            iid: item._id,
+            iid: item.iid,
             title: item.title,
             source: sourceName,
         })
