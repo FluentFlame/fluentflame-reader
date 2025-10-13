@@ -1,5 +1,4 @@
 import * as db from "../db"
-import lf from "lovefield"
 import { SyncService, ServiceConfigs } from "../../schema-types"
 import { AppThunk, ActionStatus } from "../utils"
 import { RSSItem, insertItems, fetchItemsSuccess } from "./item"
@@ -143,11 +142,12 @@ function updateSources(
                     doc.serviceRef = s.serviceRef
                     doc.unreadCount = 0
                     await dispatch(updateSource(doc))
-                    await db.itemsDB
+                    await db
+                        .fluentDB
+                        .items
+                        .where("source")
+                        .equals(doc.sid)
                         .delete()
-                        .from(db.items)
-                        .where(db.items.source.eq(doc.sid))
-                        .exec()
                     return doc
                 } else {
                     return docs[0]
@@ -184,57 +184,59 @@ function syncItems(hook: ServiceHooks["syncItems"]): AppThunk<Promise<void>> {
         const [unreadRefs, starredRefs] = await dispatch(hook())
         const unreadCopy = new Set(unreadRefs)
         const starredCopy = new Set(starredRefs)
-        const rows = await db.itemsDB
-            .select(db.items.serviceRef, db.items.hasRead, db.items.starred)
-            .from(db.items)
-            .where(
-                lf.op.and(
-                    db.items.serviceRef.isNotNull(),
-                    lf.op.or(
-                        db.items.hasRead.eq(false),
-                        db.items.starred.eq(true)
-                    )
-                )
-            )
-            .exec()
-        const updates = new Array<lf.query.Update>()
+        const rows = await db
+            .fluentDB
+            .items
+            .where("serviceRef")
+            .notEqual(null)
+            .and((item) => !item.hasRead || item.starred)
+            .toArray();
+        const updates = new Array<Promise<any>>()
         for (let row of rows) {
             const serviceRef = row["serviceRef"]
-            if (row["hasRead"] === false && !unreadRefs.delete(serviceRef)) {
-                updates.push(
-                    db.itemsDB
-                        .update(db.items)
-                        .set(db.items.hasRead, true)
-                        .where(db.items.serviceRef.eq(serviceRef))
-                )
+            if (row.hasRead === false && !unreadRefs.delete(serviceRef)) {
+                const update = db
+                    .fluentDB
+                    .items
+                    .where("serviceRef")
+                    .equals(serviceRef)
+                    .modify({ hasRead: true });
+                updates.push(update)
             }
-            if (row["starred"] === true && !starredRefs.delete(serviceRef)) {
-                updates.push(
-                    db.itemsDB
-                        .update(db.items)
-                        .set(db.items.starred, false)
-                        .where(db.items.serviceRef.eq(serviceRef))
-                )
+            if (row.starred === true && !starredRefs.delete(serviceRef)) {
+                const update = db
+                    .fluentDB
+                    .items
+                    .where("serviceRef")
+                    .equals(serviceRef)
+                    .modify({ starred: false });
+                updates.push(update)
             }
         }
         for (let unread of unreadRefs) {
-            updates.push(
-                db.itemsDB
-                    .update(db.items)
-                    .set(db.items.hasRead, false)
-                    .where(db.items.serviceRef.eq(unread))
-            )
+            const update = db
+                .fluentDB
+                .items
+                .where("serviceRef")
+                .equals(unread)
+                .modify({ hasRead: false });
+            updates.push(update)
         }
         for (let starred of starredRefs) {
-            updates.push(
-                db.itemsDB
-                    .update(db.items)
-                    .set(db.items.starred, true)
-                    .where(db.items.serviceRef.eq(starred))
-            )
+            const update = db
+                .fluentDB
+                .items
+                .where("serviceRef")
+                .equals(starred)
+                .modify({ starred: true });
+            updates.push(update)
         }
         if (updates.length > 0) {
-            await db.itemsDB.createTransaction().exec(updates)
+            await db.fluentDB.transaction("rw", db.fluentDB.items, async () => {
+                for (const update of updates) {
+                    await update;
+                }
+            })
             await dispatch(updateUnreadCounts())
             dispatch(syncLocalItems(unreadCopy, starredCopy))
         }

@@ -23,11 +23,12 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
         dispatch(saveSettings())
         let date = new Date()
         date.setTime(date.getTime() - days * 86400000)
-        await db.itemsDB
+        await db
+            .fluentDB
+            .items
+            .where("date")
+            .below(date)
             .delete()
-            .from(db.items)
-            .where(db.items.date.lt(date))
-            .exec()
         await dispatch(updateUnreadCounts())
         dispatch(saveSettings())
     },

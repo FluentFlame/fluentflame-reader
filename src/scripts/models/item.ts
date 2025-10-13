@@ -259,10 +259,8 @@ export function fetchItems(
                         dispatch(fetchItemsFailure(sources[i], r.reason))
                     }
                 })
-                console.log("fetching items!")
                 insertItems(items)
                     .then(inserted => {
-                        console.log("inserted:", inserted)
                         dispatch(
                             fetchItemsSuccess(
                                 inserted.reverse(),
@@ -383,23 +381,20 @@ export function markAllRead(
 }
 
 /**
- * Update a single item in the database with a given mapFunction.
+ * Update a single item in the database with a given update partial object.
  */
 async function updateItemInDB(
     item: RSSItem,
-    mapF: (item: RSSItem) => RSSItem,
+    updateObj: Partial<RSSItem>,
 ): Promise<void> {
-    await fluentDB.items.update(item._id, mapF(item))
+    await fluentDB.items.update(item._id, updateObj)
 }
 
 export function markUnread(item: RSSItem): AppThunk {
     return (dispatch, getState) => {
         item = getState().items[item._id]
         if (item.hasRead) {
-            updateItemInDB(item, i => {
-                i.hasRead = false
-                return i
-            })
+            updateItemInDB(item, { hasRead: false })
             dispatch(markUnreadDone(item))
             if (item.serviceRef) {
                 dispatch(dispatch(getServiceHooks()).markUnread?.(item))
@@ -415,10 +410,7 @@ const toggleStarredDone = (item: RSSItem): ItemActionTypes => ({
 
 export function toggleStarred(item: RSSItem): AppThunk {
     return dispatch => {
-        updateItemInDB(item, i => {
-            i.starred = !i.starred
-            return i
-        })
+        updateItemInDB(item, { starred: !item.starred })
         dispatch(toggleStarredDone(item))
         if (item.serviceRef) {
             const hooks = dispatch(getServiceHooks())
@@ -435,10 +427,7 @@ const toggleHiddenDone = (item: RSSItem): ItemActionTypes => ({
 
 export function toggleHidden(item: RSSItem): AppThunk {
     return dispatch => {
-        updateItemInDB(item, i => {
-            i.hidden = !i.hidden
-            return i
-        })
+        updateItemInDB(item, { hidden: !item.hidden })
         dispatch(toggleHiddenDone(item))
     }
 }

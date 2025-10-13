@@ -1,5 +1,4 @@
 import * as db from "../db"
-import lf from "lovefield"
 import {
     SourceActionTypes,
     INIT_SOURCES,
@@ -47,30 +46,33 @@ export class FeedFilter {
         this.search = search
     }
 
-    static toPredicates(filter: FeedFilter) {
-        let type = filter.type
-        const predicates = new Array<lf.Predicate>()
-        if (!(type & FilterType.ShowRead))
-            predicates.push(db.items.hasRead.eq(false))
-        if (!(type & FilterType.ShowNotStarred))
-            predicates.push(db.items.starred.eq(true))
-        if (!(type & FilterType.ShowHidden))
-            predicates.push(db.items.hidden.eq(false))
-        if (filter.search !== "") {
-            const flags = type & FilterType.CaseInsensitive ? "i" : ""
-            const regex = RegExp(filter.search, flags)
-            if (type & FilterType.FullSearch) {
-                predicates.push(
-                    lf.op.or(
-                        db.items.title.match(regex),
-                        db.items.snippet.match(regex)
-                    )
-                )
-            } else {
-                predicates.push(db.items.title.match(regex))
+    static toPredicates(filter: FeedFilter): (item: RSSItem) => boolean {
+        const type = filter.type
+        const showRead = (type & FilterType.ShowRead) !== 0;
+        const showNotStarred = (type & FilterType.ShowNotStarred) !== 0;
+        const showHidden = (type & FilterType.ShowHidden) !== 0;
+        return (item) => {
+            if (
+                // Don't show read items unless ShowRead is enabled.
+                (!showRead && item.hasRead) ||
+                // Show only starred items unless ShowNotStarred is enabled.
+                (!showNotStarred && !item.starred) ||
+                // Don't show hidden items unless ShowHidden is enabled.
+                (!showHidden && item.hidden)
+            ) {
+                return false
             }
+            if (filter.search !== "") {
+                const flags = type & FilterType.CaseInsensitive ? "i" : ""
+                const regex = RegExp(filter.search, flags)
+                if (type & FilterType.FullSearch) {
+                    return (item.title.match(regex) != null) || (item.snippet.match(regex) != null);
+                } else {
+                    return item.title.match(regex) != null;
+                }
+            }
+            return true
         }
-        return predicates
     }
 
     static testItem(filter: FeedFilter, item: RSSItem) {
@@ -119,20 +121,17 @@ export class RSSFeed {
     }
 
     static async loadFeed(feed: RSSFeed, skip = 0): Promise<RSSItem[]> {
-        // TODO: Add predicate filters.
-        /*
-        const predicates = FeedFilter.toPredicates(feed.filter)
-        predicates.push(db.items.source.in(feed.sids))
-        return (await db.itemsDB
-            .select()
-            .from(db.items)
-            .where(lf.op.and.apply(null, predicates))
-            .orderBy(db.items.date, lf.Order.DESC)
-            .skip(skip)
+        const predicate = FeedFilter.toPredicates(feed.filter);
+        // Deeply inefficient paging. See
+        // https://dexie.org/docs/Collection/Collection.offset()#a-better-paging-approach
+        // for a rewrite.
+        return await db.fluentDB.items
+            .orderBy("date")
+            .reverse()
+            .offset(skip)
+            .filter(item => feed.sids.includes(item.source) && predicate(item))
             .limit(LOAD_QUANTITY)
-            .exec()) as RSSItem[]
-        */
-       return (await db.fluentDB.items.orderBy("date").reverse().offset(skip).limit(LOAD_QUANTITY).toArray())
+            .toArray()
     }
 }
 
