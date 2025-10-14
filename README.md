@@ -77,7 +77,7 @@ npm run test
 - [React](https://github.com/facebook/react)
 - [Redux](https://github.com/reduxjs/redux)
 - [Fluent UI](https://github.com/microsoft/fluentui)
-- [Lovefield](https://github.com/google/lovefield)
+- [Dexie](https://dexie.org/)
 - [Mercury Parser](https://github.com/postlight/mercury-parser)
 - [Mocha](https://mochajs.org/)
 
