@@ -51,7 +51,7 @@ export class ServiceTab extends React.Component<
     onServiceOptionChange = (_, option: IDropdownOption) => {
         if (option.key === -1) {
             window.utils.openExternal(
-                "https://github.com/yang991178/fluent-reader/issues/23"
+                "https://github.com/FluentFlame/fluentflame-reader/issues/23"
             )
         } else {
             this.setState({ type: option.key as number })
@@ -128,7 +128,7 @@ export class ServiceTab extends React.Component<
                         <Link
                             onClick={() =>
                                 window.utils.openExternal(
-                                    "https://github.com/yang991178/fluent-reader/wiki/Support#services"
+                                    "https://github.com/FluentFlame/fluentflame-reader/wiki/Support#services"
                                 )
                             }
                             style={{ marginLeft: 6 }}>

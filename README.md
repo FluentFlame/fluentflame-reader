@@ -4,9 +4,9 @@
 <h3 align="center">Fluentflame Reader</h3>
 <p align="center">A modern desktop RSS reader given new life</p>
 <p align="center">
-  <img src="https://img.shields.io/github/v/release/yang991178/fluent-reader?label=version" />
-  <img src="https://img.shields.io/github/downloads/yang991178/fluent-reader/total" />
-  <img src="https://github.com/yang991178/fluent-reader/workflows/CI%2FCD%20Release/badge.svg" />
+  <img src="https://img.shields.io/github/v/release/FluentFlame/fluentflame-reader?label=version" />
+  <img src="https://img.shields.io/github/downloads/FluentFlame/fluentflame-reader/total" />
+  <img src="https://github.com/FluentFlame/fluentflame-reader/workflows/CI%2FCD%20Release/badge.svg" />
 </p>
 <hr />
 
@@ -31,7 +31,7 @@ If you are using Linux or an older version of Windows, you can [get Fluentflame 
 - Read the full content with the built-in article view or load webpages by default.
 - Search for articles with regular expressions or filter by read status.
 - Organize your subscriptions with folder-like groupings.
-- Single-key [keyboard shortcuts](https://github.com/yang991178/fluent-reader/wiki/Support#keyboard-shortcuts).
+- Single-key [keyboard shortcuts](https://github.com/FluentFlame/fluentflame-reader/wiki/Support#keyboard-shortcuts).
 - Hide, mark as read, or star articles automatically as they arrive with regular expression rules.
 - Fetch articles in the background and send push notifications.
 

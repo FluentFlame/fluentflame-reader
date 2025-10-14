@@ -38,7 +38,7 @@ const endpointOptions: IDropdownOption[] = [
 
 const openSupport = () =>
     window.utils.openExternal(
-        "https://github.com/yang991178/fluent-reader/wiki/Support#inoreader"
+        "https://github.com/FluentFlame/fluentflame-reader/wiki/Support#inoreader"
     )
 
 class InoreaderConfigsTab extends React.Component<

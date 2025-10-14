@@ -26,7 +26,7 @@ class AboutTab extends React.Component {
                         <Link
                             onClick={() =>
                                 window.utils.openExternal(
-                                    "https://github.com/yang991178/fluent-reader/wiki/Support#keyboard-shortcuts"
+                                    "https://github.com/FluentFlame/fluentflame-reader/wiki/Support#keyboard-shortcuts"
                                 )
                             }>
                             {intl.get("settings.shortcuts")}
