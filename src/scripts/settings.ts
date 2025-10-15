@@ -96,7 +96,10 @@ export function applyAnimationMotionPref() {
         const animationSettings =
             window.utils.systemPreferencesGetAnimationSettings()
         if (animationSettings.prefersReducedMotion) {
-            realisedPref = AnimationMotionPref.Reduced
+            // Based on existing Apple Guidelines, this best matches "Off".
+            // See:
+            // https://developer.apple.com/design/human-interface-guidelines/accessibility#Cognitive
+            realisedPref = AnimationMotionPref.Off
         } else {
             realisedPref = AnimationMotionPref.On
         }
