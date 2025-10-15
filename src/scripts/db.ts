@@ -106,19 +106,21 @@ async function migrateLovefieldItemsDB(dbName: string, version: number) {
         const transaction = db.transaction("items")
         store = transaction.objectStore("items")
     } catch (e) {
-        console.error("Error getting db transaction for items migration, still deleting", e)
+        console.error(
+            "Error getting db transaction for items migration, still deleting",
+            e,
+        )
         // Can't await on this, as it will delete only after the last connection is closed.
         wrapRequest(indexedDB.deleteDatabase(dbName))
-        throw e;
+        throw e
     }
     const entryQueryResult = (await wrapRequest(store.getAll())).result
     const txFunc = async () => {
         for (const row of entryQueryResult) {
             const item: ItemEntry = row.value
             // Skip entries that already exist.
-            const query = await fluentDB.sources
-                .where("link")
-                .equals(item.link)
+            const query = await fluentDB.items
+                .filter(i => i.link === item.link)
                 .toArray()
             if (query.length > 0) {
                 continue
