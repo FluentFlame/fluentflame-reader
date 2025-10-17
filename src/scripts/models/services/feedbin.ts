@@ -1,6 +1,5 @@
 import intl from "react-intl-universal"
-import * as db from "../../db"
-import lf from "lovefield"
+import { getItemEntries } from "./service-utils"
 import { ServiceHooks } from "../service"
 import { ServiceConfigs, SyncService } from "../../../schema-types"
 import { createSourceGroup } from "../group"
@@ -224,22 +223,7 @@ export const feedbinServiceHooks: ServiceHooks = {
     markAllRead: (sids, date, before) => async (_, getState) => {
         const state = getState()
         const configs = state.service as FeedbinConfigs
-        const predicates: lf.Predicate[] = [
-            db.items.source.in(sids),
-            db.items.hasRead.eq(false),
-            db.items.serviceRef.isNotNull(),
-        ]
-        if (date) {
-            predicates.push(
-                before ? db.items.date.lte(date) : db.items.date.gte(date)
-            )
-        }
-        const query = lf.op.and.apply(null, predicates)
-        const rows = await db.itemsDB
-            .select(db.items.serviceRef)
-            .from(db.items)
-            .where(query)
-            .exec()
+        const rows = await getItemEntries(sids, date, before)
         const refs = rows.map(row => parseInt(row["serviceRef"]))
         markItems(configs, "unread", "DELETE", refs)
     },

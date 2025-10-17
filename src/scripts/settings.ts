@@ -166,9 +166,9 @@ export async function exportAll() {
     )
     if (write) {
         let output = window.settings.getAll()
-        output["lovefield"] = {
+        output["database"] = {
             sources: await db.fluentDB.sources.toArray(),
-            items: await db.itemsDB.select().from(db.items).exec(),
+            items: await db.fluentDB.items.toArray(),
         }
         write(JSON.stringify(output), intl.get("settings.writeError"))
     }
@@ -189,20 +189,19 @@ export async function importAll() {
     if (!confirmed) return true
     let configs = JSON.parse(data)
     await db.fluentDB.sources.clear()
-    await db.itemsDB.delete().from(db.items).exec()
-    configs.lovefield.sources.forEach(s => {
+    await db.fluentDB.items.clear()
+    configs.database.sources.forEach(s => {
         s.lastFetched = new Date(s.lastFetched)
         if (!s.textDir) s.textDir = SourceTextDirection.LTR
         if (!s.hidden) s.hidden = false
         return db.fluentDB.sources.add(s)
     })
-    const iRows = configs.lovefield.items.map(i => {
+    configs.database.items.forEach(i => {
         i.date = new Date(i.date)
         i.fetchedDate = new Date(i.fetchedDate)
-        return db.items.createRow(i)
     })
-    await db.itemsDB.insert().into(db.items).values(iRows).exec()
-    delete configs.lovefield
+    await db.fluentDB.items.bulkAdd(configs.database.items);
+    delete configs.database
     window.settings.setAll(configs)
     return false
 }

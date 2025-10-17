@@ -1,13 +1,7 @@
-import * as db from "../db"
-import lf from "lovefield"
+import { fluentDB } from "../db"
 import intl from "react-intl-universal"
 import type { MyParserItem } from "../utils"
-import {
-    htmlDecode,
-    ActionStatus,
-    AppThunk,
-    platformCtrl,
-} from "../utils"
+import { htmlDecode, ActionStatus, AppThunk, dateCompare, platformCtrl } from "../utils"
 import { RSSSource, updateSource, updateUnreadCounts } from "./source"
 import { FeedActionTypes, INIT_FEED, LOAD_MORE, dismissItems } from "./feed"
 import {
@@ -24,7 +18,7 @@ import {
 } from "./service"
 
 export class RSSItem {
-    _id: number
+    iid: number
     source: number
     title: string
     link: string
@@ -77,7 +71,7 @@ export class RSSItem {
             item.thumb = parsed.image
         } else if (parsed.mediaContent) {
             let images = parsed.mediaContent.filter(
-                c => c.$ && c.$.medium === "image" && c.$.url
+                c => c.$ && c.$.medium === "image" && c.$.url,
             )
             if (images.length > 0) item.thumb = images[0].$.url
         }
@@ -86,7 +80,7 @@ export class RSSItem {
             let baseEl = dom.createElement("base")
             baseEl.setAttribute(
                 "href",
-                item.link.split("/").slice(0, 3).join("/")
+                item.link.split("/").slice(0, 3).join("/"),
             )
             dom.head.append(baseEl)
             let img = dom.querySelector("img")
@@ -103,7 +97,7 @@ export class RSSItem {
 }
 
 export type ItemState = {
-    [_id: number]: RSSItem
+    [iid: number]: RSSItem
 }
 
 export const FETCH_ITEMS = "FETCH_ITEMS"
@@ -168,7 +162,7 @@ export function fetchItemsRequest(fetchCount = 0): ItemActionTypes {
 
 export function fetchItemsSuccess(
     items: RSSItem[],
-    itemState: ItemState
+    itemState: ItemState,
 ): ItemActionTypes {
     return {
         type: FETCH_ITEMS,
@@ -196,17 +190,18 @@ export function fetchItemsIntermediate(): ItemActionTypes {
 
 export async function insertItems(items: RSSItem[]): Promise<RSSItem[]> {
     items.sort((a, b) => a.date.getTime() - b.date.getTime())
-    const rows = items.map(item => db.items.createRow(item))
-    return (await db.itemsDB
-        .insert()
-        .into(db.items)
-        .values(rows)
-        .exec()) as RSSItem[]
+    const keys = await fluentDB.items.bulkAdd(items, { allKeys: true })
+    let itemIdx = 0
+    for (const key of keys) {
+        items[itemIdx].iid = key
+        itemIdx++
+    }
+    return items
 }
 
 export function fetchItems(
     background = false,
-    sids: number[] = null
+    sids: number[] = null,
 ): AppThunk<Promise<void>> {
     return async (dispatch, getState) => {
         let promises = new Array<Promise<RSSItem[]>>()
@@ -215,7 +210,7 @@ export function fetchItems(
             if (
                 sids === null ||
                 sids.filter(
-                    sid => initState.sources[sid].serviceRef !== undefined
+                    sid => initState.sources[sid].serviceRef !== undefined,
                 ).length > 0
             )
                 await dispatch(syncWithService(background))
@@ -239,8 +234,8 @@ export function fetchItems(
                 let promise = RSSSource.fetchItems(source)
                 promise.then(() =>
                     dispatch(
-                        updateSource({ ...source, lastFetched: new Date() })
-                    )
+                        updateSource({ ...source, lastFetched: new Date() }),
+                    ),
                 )
                 promise.finally(() => dispatch(fetchItemsIntermediate()))
                 promises.push(promise)
@@ -261,8 +256,8 @@ export function fetchItems(
                         dispatch(
                             fetchItemsSuccess(
                                 inserted.reverse(),
-                                getState().items
-                            )
+                                getState().items,
+                            ),
                         )
                         resolve()
                         if (background) {
@@ -283,7 +278,7 @@ export function fetchItems(
                         dispatch(fetchItemsSuccess([], getState().items))
                         window.utils.showErrorBox(
                             "A database error has occurred.",
-                            String(err)
+                            String(err),
                         )
                         console.log(err)
                         reject(err)
@@ -305,13 +300,9 @@ const markUnreadDone = (item: RSSItem): ItemActionTypes => ({
 
 export function markRead(item: RSSItem): AppThunk {
     return (dispatch, getState) => {
-        item = getState().items[item._id]
+        item = getState().items[item.iid]
         if (!item.hasRead) {
-            db.itemsDB
-                .update(db.items)
-                .where(db.items._id.eq(item._id))
-                .set(db.items.hasRead, true)
-                .exec()
+            fluentDB.items.update(item.iid, { hasRead: true })
             dispatch(markReadDone(item))
             if (item.serviceRef) {
                 dispatch(dispatch(getServiceHooks()).markRead?.(item))
@@ -323,7 +314,7 @@ export function markRead(item: RSSItem): AppThunk {
 export function markAllRead(
     sids: number[] = null,
     date: Date = null,
-    before = true
+    before = true,
 ): AppThunk<Promise<void>> {
     return async (dispatch, getState) => {
         let state = getState()
@@ -334,24 +325,31 @@ export function markAllRead(
         const action = dispatch(getServiceHooks()).markAllRead?.(
             sids,
             date,
-            before
+            before,
         )
-        if (action) await dispatch(action)
-        const predicates: lf.Predicate[] = [
-            db.items.source.in(sids),
-            db.items.hasRead.eq(false),
-        ]
-        if (date) {
-            predicates.push(
-                before ? db.items.date.lte(date) : db.items.date.gte(date)
-            )
+        if (action) {
+            await dispatch(action)
         }
-        const query = lf.op.and.apply(null, predicates)
-        await db.itemsDB
-            .update(db.items)
-            .set(db.items.hasRead, true)
-            .where(query)
-            .exec()
+        // NOTE: Uncertain if this requires an 'await'.
+        fluentDB.transaction("rw", fluentDB.items, async () => {
+            const items = await fluentDB.items
+                .where("sids")
+                .anyOf(sids)
+                .and(itemRow => {
+                    if (itemRow.hasRead) {
+                        return false
+                    }
+                    if (date && !dateCompare(itemRow.date, date, before)) {
+                        return false
+                    }
+                    return true
+                })
+                .toArray()
+            for (const item of items) {
+                item.hasRead = true
+            }
+            await fluentDB.items.bulkPut(items)
+        })
         if (date) {
             dispatch({
                 type: MARK_ALL_READ,
@@ -369,15 +367,21 @@ export function markAllRead(
     }
 }
 
+/**
+ * Update a single item in the database with a given update partial object.
+ */
+async function updateItemInDB(
+    item: RSSItem,
+    updateObj: Partial<RSSItem>,
+): Promise<void> {
+    await fluentDB.items.update(item.iid, updateObj);
+}
+
 export function markUnread(item: RSSItem): AppThunk {
     return (dispatch, getState) => {
-        item = getState().items[item._id]
+        item = getState().items[item.iid]
         if (item.hasRead) {
-            db.itemsDB
-                .update(db.items)
-                .where(db.items._id.eq(item._id))
-                .set(db.items.hasRead, false)
-                .exec()
+            updateItemInDB(item, { hasRead: false })
             dispatch(markUnreadDone(item))
             if (item.serviceRef) {
                 dispatch(dispatch(getServiceHooks()).markUnread?.(item))
@@ -393,11 +397,7 @@ const toggleStarredDone = (item: RSSItem): ItemActionTypes => ({
 
 export function toggleStarred(item: RSSItem): AppThunk {
     return dispatch => {
-        db.itemsDB
-            .update(db.items)
-            .where(db.items._id.eq(item._id))
-            .set(db.items.starred, !item.starred)
-            .exec()
+        updateItemInDB(item, { starred: !item.starred })
         dispatch(toggleStarredDone(item))
         if (item.serviceRef) {
             const hooks = dispatch(getServiceHooks())
@@ -414,11 +414,7 @@ const toggleHiddenDone = (item: RSSItem): ItemActionTypes => ({
 
 export function toggleHidden(item: RSSItem): AppThunk {
     return dispatch => {
-        db.itemsDB
-            .update(db.items)
-            .where(db.items._id.eq(item._id))
-            .set(db.items.hidden, !item.hidden)
-            .exec()
+        updateItemInDB(item, { hidden: !item.hidden })
         dispatch(toggleHiddenDone(item))
     }
 }
@@ -476,7 +472,7 @@ export function itemReducer(
         | ItemActionTypes
         | FeedActionTypes
         | ServiceActionTypes
-        | SettingsActionTypes
+        | SettingsActionTypes,
 ): ItemState {
     switch (action.type) {
         case FETCH_ITEMS:
@@ -484,7 +480,7 @@ export function itemReducer(
                 case ActionStatus.Success: {
                     let newMap = {}
                     for (let i of action.items) {
-                        newMap[i._id] = i
+                        newMap[i.iid] = i
                     }
                     return { ...newMap, ...state }
                 }
@@ -497,9 +493,9 @@ export function itemReducer(
         case TOGGLE_HIDDEN: {
             return {
                 ...state,
-                [action.item._id]: applyItemReduction(
-                    state[action.item._id],
-                    action.type
+                [action.item.iid]: applyItemReduction(
+                    state[action.item.iid],
+                    action.type,
                 ),
             }
         }
@@ -514,7 +510,7 @@ export function itemReducer(
                             ? item.date.getTime() <= action.time
                             : item.date.getTime() >= action.time)
                     ) {
-                        nextState[item._id] = {
+                        nextState[item.iid] = {
                             ...item,
                             hasRead: true,
                         }
@@ -529,7 +525,7 @@ export function itemReducer(
                 case ActionStatus.Success: {
                     let nextState = { ...state }
                     for (let i of action.items) {
-                        nextState[i._id] = i
+                        nextState[i.iid] = i
                     }
                     return nextState
                 }
@@ -544,7 +540,7 @@ export function itemReducer(
                     const nextItem = { ...item }
                     nextItem.hasRead = !action.unreadIds.has(item.serviceRef)
                     nextItem.starred = action.starredIds.has(item.serviceRef)
-                    nextState[item._id] = nextItem
+                    nextState[item.iid] = nextItem
                 }
             }
             return nextState
@@ -552,7 +548,7 @@ export function itemReducer(
         case FREE_MEMORY: {
             const nextState: ItemState = {}
             for (let item of Object.values(state)) {
-                if (action.iids.has(item._id)) nextState[item._id] = item
+                if (action.iids.has(item.iid)) nextState[item.iid] = item
             }
             return nextState
         }

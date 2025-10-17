@@ -1,5 +1,4 @@
 import * as db from "../db"
-import lf from "lovefield"
 import {
     SourceActionTypes,
     INIT_SOURCES,
@@ -47,30 +46,33 @@ export class FeedFilter {
         this.search = search
     }
 
-    static toPredicates(filter: FeedFilter) {
-        let type = filter.type
-        const predicates = new Array<lf.Predicate>()
-        if (!(type & FilterType.ShowRead))
-            predicates.push(db.items.hasRead.eq(false))
-        if (!(type & FilterType.ShowNotStarred))
-            predicates.push(db.items.starred.eq(true))
-        if (!(type & FilterType.ShowHidden))
-            predicates.push(db.items.hidden.eq(false))
-        if (filter.search !== "") {
-            const flags = type & FilterType.CaseInsensitive ? "i" : ""
-            const regex = RegExp(filter.search, flags)
-            if (type & FilterType.FullSearch) {
-                predicates.push(
-                    lf.op.or(
-                        db.items.title.match(regex),
-                        db.items.snippet.match(regex)
-                    )
-                )
-            } else {
-                predicates.push(db.items.title.match(regex))
+    static toPredicates(filter: FeedFilter): (item: RSSItem) => boolean {
+        const type = filter.type
+        const showRead = (type & FilterType.ShowRead) !== 0;
+        const showNotStarred = (type & FilterType.ShowNotStarred) !== 0;
+        const showHidden = (type & FilterType.ShowHidden) !== 0;
+        return (item) => {
+            if (
+                // Don't show read items unless ShowRead is enabled.
+                (!showRead && item.hasRead) ||
+                // Show only starred items unless ShowNotStarred is enabled.
+                (!showNotStarred && !item.starred) ||
+                // Don't show hidden items unless ShowHidden is enabled.
+                (!showHidden && item.hidden)
+            ) {
+                return false
             }
+            if (filter.search !== "") {
+                const flags = type & FilterType.CaseInsensitive ? "i" : ""
+                const regex = RegExp(filter.search, flags)
+                if (type & FilterType.FullSearch) {
+                    return (item.title.match(regex) != null) || (item.snippet.match(regex) != null);
+                } else {
+                    return item.title.match(regex) != null;
+                }
+            }
+            return true
         }
-        return predicates
     }
 
     static testItem(filter: FeedFilter, item: RSSItem) {
@@ -101,7 +103,7 @@ export const SOURCE = "SOURCE"
 const LOAD_QUANTITY = 50
 
 export class RSSFeed {
-    _id: string
+    iid: string
     loaded: boolean
     loading: boolean
     allLoaded: boolean
@@ -110,7 +112,7 @@ export class RSSFeed {
     filter: FeedFilter
 
     constructor(id: string = null, sids = [], filter = null) {
-        this._id = id
+        this.iid = id
         this.sids = sids
         this.iids = []
         this.loaded = false
@@ -119,21 +121,22 @@ export class RSSFeed {
     }
 
     static async loadFeed(feed: RSSFeed, skip = 0): Promise<RSSItem[]> {
-        const predicates = FeedFilter.toPredicates(feed.filter)
-        predicates.push(db.items.source.in(feed.sids))
-        return (await db.itemsDB
-            .select()
-            .from(db.items)
-            .where(lf.op.and.apply(null, predicates))
-            .orderBy(db.items.date, lf.Order.DESC)
-            .skip(skip)
+        const predicate = FeedFilter.toPredicates(feed.filter);
+        // Deeply inefficient paging. See
+        // https://dexie.org/docs/Collection/Collection.offset()#a-better-paging-approach
+        // for a rewrite.
+        return await db.fluentDB.items
+            .orderBy("date")
+            .reverse()
+            .offset(skip)
+            .filter(item => feed.sids.includes(item.source) && predicate(item))
             .limit(LOAD_QUANTITY)
-            .exec()) as RSSItem[]
+            .toArray()
     }
 }
 
 export type FeedState = {
-    [_id: string]: RSSFeed
+    [iid: string]: RSSFeed
 }
 
 export const INIT_FEEDS = "INIT_FEEDS"
@@ -384,9 +387,9 @@ export function feedReducer(
                                     (a, b) =>
                                         b.date.getTime() - a.date.getTime()
                                 )
-                                nextState[feed._id] = {
+                                nextState[feed.iid] = {
                                     ...feed,
-                                    iids: nextItems.map(i => i._id),
+                                    iids: nextItems.map(i => i.iid),
                                 }
                             }
                         }
@@ -409,11 +412,11 @@ export function feedReducer(
                 case ActionStatus.Success:
                     return {
                         ...state,
-                        [action.feed._id]: {
+                        [action.feed.iid]: {
                             ...action.feed,
                             loaded: true,
                             allLoaded: action.items.length < LOAD_QUANTITY,
-                            iids: action.items.map(i => i._id),
+                            iids: action.items.map(i => i.iid),
                         },
                     }
                 default:
@@ -424,7 +427,7 @@ export function feedReducer(
                 case ActionStatus.Request:
                     return {
                         ...state,
-                        [action.feed._id]: {
+                        [action.feed.iid]: {
                             ...action.feed,
                             loading: true,
                         },
@@ -432,20 +435,20 @@ export function feedReducer(
                 case ActionStatus.Success:
                     return {
                         ...state,
-                        [action.feed._id]: {
+                        [action.feed.iid]: {
                             ...action.feed,
                             loading: false,
                             allLoaded: action.items.length < LOAD_QUANTITY,
                             iids: [
                                 ...action.feed.iids,
-                                ...action.items.map(i => i._id),
+                                ...action.items.map(i => i.iid),
                             ],
                         },
                     }
                 case ActionStatus.Failure:
                     return {
                         ...state,
-                        [action.feed._id]: {
+                        [action.feed.iid]: {
                             ...action.feed,
                             loading: false,
                         },
@@ -462,9 +465,9 @@ export function feedReducer(
             if (filteredFeeds.length > 0) {
                 let nextState = { ...state }
                 for (let feed of filteredFeeds) {
-                    nextState[feed._id] = {
+                    nextState[feed.iid] = {
                         ...feed,
-                        iids: feed.iids.filter(id => id != nextItem._id),
+                        iids: feed.iids.filter(id => id != nextItem.iid),
                     }
                 }
                 return nextState

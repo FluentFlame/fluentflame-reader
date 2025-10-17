@@ -276,7 +276,7 @@ class Article extends React.Component<ArticleProps, ArticleState> {
                 this.setState({ loaded: false, error: false })
                 webview.addEventListener("did-stop-loading", this.webviewLoaded)
                 let card = document.querySelector(
-                    `#refocus div[data-iid="${this.props.item._id}"]`
+                    `#refocus div[data-iid="${this.props.item.iid}"]`
                 ) as HTMLElement
                 // @ts-ignore
                 if (card) card.scrollIntoViewIfNeeded()
@@ -284,7 +284,7 @@ class Article extends React.Component<ArticleProps, ArticleState> {
         }
     }
     componentDidUpdate = (prevProps: ArticleProps) => {
-        if (prevProps.item._id != this.props.item._id) {
+        if (prevProps.item.iid != this.props.item.iid) {
             this.setState({
                 loadWebpage:
                     this.props.source.openTarget === SourceOpenTarget.Webpage,
@@ -300,7 +300,7 @@ class Article extends React.Component<ArticleProps, ArticleState> {
 
     componentWillUnmount = () => {
         let refocus = document.querySelector(
-            `#refocus div[data-iid="${this.props.item._id}"]`
+            `#refocus div[data-iid="${this.props.item.iid}"]`
         ) as HTMLElement
         if (refocus) refocus.focus()
     }
@@ -481,7 +481,7 @@ class Article extends React.Component<ArticleProps, ArticleState> {
                     id="article"
                     className={this.state.error ? "error" : ""}
                     key={
-                        this.props.item._id +
+                        this.props.item.iid +
                         (this.state.loadWebpage ? "_" : "") +
                         (this.state.loadFull ? "__" : "")
                     }

@@ -2,7 +2,6 @@ import intl from "react-intl-universal"
 import { RSSSource } from "./models/source"
 import { SourceRule } from "./models/rule"
 import { RSSItem } from "./models/item"
-import lf from "lovefield"
 import { Dexie, type EntityTable } from "dexie"
 
 export interface SourceEntry {
@@ -19,38 +18,32 @@ export interface SourceEntry {
     hidden: boolean
 }
 
+export interface ItemEntry {
+    iid: number
+    source: number
+    title: string
+    link: string
+    date: Date
+    fetchedDate: Date
+    thumb?: string
+    content: string
+    snippet: string
+    creator?: string
+    hasRead: boolean
+    starred: boolean
+    hidden: boolean
+    notify: boolean
+    serviceRef?: string
+}
+
 export const fluentDB = new Dexie("MainDB") as Dexie & {
     sources: EntityTable<SourceEntry, "sid">
+    items: EntityTable<ItemEntry, "iid">
 }
-fluentDB.version(1).stores({
+fluentDB.version(3).stores({
     sources: `++sid, &url`,
+    items: `++iid, source, date, serviceRef`,
 })
-
-const idbSchema = lf.schema.create("itemsDB", 1)
-idbSchema
-    .createTable("items")
-    .addColumn("_id", lf.Type.INTEGER)
-    .addPrimaryKey(["_id"], true)
-    .addColumn("source", lf.Type.INTEGER)
-    .addColumn("title", lf.Type.STRING)
-    .addColumn("link", lf.Type.STRING)
-    .addColumn("date", lf.Type.DATE_TIME)
-    .addColumn("fetchedDate", lf.Type.DATE_TIME)
-    .addColumn("thumb", lf.Type.STRING)
-    .addColumn("content", lf.Type.STRING)
-    .addColumn("snippet", lf.Type.STRING)
-    .addColumn("creator", lf.Type.STRING)
-    .addColumn("hasRead", lf.Type.BOOLEAN)
-    .addColumn("starred", lf.Type.BOOLEAN)
-    .addColumn("hidden", lf.Type.BOOLEAN)
-    .addColumn("notify", lf.Type.BOOLEAN)
-    .addColumn("serviceRef", lf.Type.STRING)
-    .addNullable(["thumb", "creator", "serviceRef"])
-    .addIndex("idxDate", ["date"], false, lf.Order.DESC)
-    .addIndex("idxService", ["serviceRef"], false)
-
-export let itemsDB: lf.Database
-export let items: lf.schema.Table
 
 /**
  * Migrate old Lovefield Sources Database into the new MainDB Dexie DB.
@@ -93,7 +86,68 @@ async function migrateLovefieldSourcesDB(dbName: string, version: number) {
     }
     await fluentDB.transaction("rw", "sources", txFunc)
     console.log(
-        `Successfully Migrated. Attempting to deleting old DB ${dbName}.`,
+        `Successfully migrated Sources. Attempting to deleting old DB ${dbName}.`,
+    )
+    // Can't await on this, as it will delete only after the last connection is closed.
+    wrapRequest(indexedDB.deleteDatabase(dbName))
+}
+
+/**
+ * Migrate old Lovefield Items Database into the new MainDB Dexie DB.
+ */
+async function migrateLovefieldItemsDB(dbName: string, version: number) {
+    const databases = await indexedDB.databases()
+    if (!databases.map(d => d.name).some(d => d === dbName)) {
+        return
+    }
+    const db = (await wrapRequest(indexedDB.open(dbName, version))).result
+    let store: IDBObjectStore
+    try {
+        const transaction = db.transaction("items")
+        store = transaction.objectStore("items")
+    } catch (e) {
+        console.error(
+            "Error getting db transaction for items migration, still deleting",
+            e,
+        )
+        // Can't await on this, as it will delete only after the last connection is closed.
+        wrapRequest(indexedDB.deleteDatabase(dbName))
+        throw e
+    }
+    const entryQueryResult = (await wrapRequest(store.getAll())).result
+    const txFunc = async () => {
+        for (const row of entryQueryResult) {
+            const item: ItemEntry = row.value
+            // Skip entries that already exist.
+            const query = await fluentDB.items
+                .filter(i => i.link === item.link)
+                .toArray()
+            if (query.length > 0) {
+                continue
+            }
+            const newEntry: ItemEntry = {
+                iid: item.iid,
+                source: item.source,
+                title: item.title,
+                link: item.link,
+                date: new Date(item.date),
+                fetchedDate: new Date(item.fetchedDate),
+                thumb: item.thumb,
+                content: item.content,
+                snippet: item.snippet,
+                creator: item.creator,
+                hasRead: item.hasRead,
+                starred: item.starred,
+                hidden: item.hidden,
+                notify: item.notify,
+                serviceRef: item.serviceRef,
+            }
+            await fluentDB.items.add(newEntry)
+        }
+    }
+    await fluentDB.transaction("rw", fluentDB.items, txFunc)
+    console.log(
+        `Successfully migrated Items. Attempting to deleting old DB ${dbName}.`,
     )
     // Can't await on this, as it will delete only after the last connection is closed.
     wrapRequest(indexedDB.deleteDatabase(dbName))
@@ -112,6 +166,9 @@ function wrapRequest<T>(req: T & IDBRequest): Promise<T> {
 
 export async function init() {
     await migrateLovefieldSourcesDB("sourcesDB", 3)
-    itemsDB = await idbSchema.connect()
-    items = itemsDB.getSchema().table("items")
+    try {
+        await migrateLovefieldItemsDB("itemsDB", 1)
+    } catch (e) {
+        console.error("Error migrating items DB", e)
+    }
 }
