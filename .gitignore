@@ -1,9 +1,6 @@
 node_modules
-dist/*.js
-dist/*.js.map
-dist/*.html
-dist/*.LICENSE.txt
-bin/*
+dist
+bin
 .DS_Store
 *.provisionprofile
 
