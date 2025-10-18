@@ -28,6 +28,7 @@
     "@types/react-dom": "^16.9.8",
     "@types/react-redux": "^7.1.9",
     "chai": "^6.2.0",
+    "copy-webpack-plugin": "^13.0.1",
     "dexie": "^4.0.11",
     "electron": "^34.3.0",
     "electron-builder": "^26.0.12",

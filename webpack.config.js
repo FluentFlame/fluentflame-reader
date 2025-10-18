@@ -1,3 +1,4 @@
+const CopyPlugin = require("copy-webpack-plugin")
 const HtmlWebpackPlugin = require("html-webpack-plugin")
 const NodePolyfillPlugin = require("node-polyfill-webpack-plugin")
 
@@ -76,6 +77,11 @@ module.exports = [
             new NodePolyfillPlugin(),
             new HtmlWebpackPlugin({
                 template: "./src/index.html",
+            }),
+            new CopyPlugin({
+                patterns: [
+                    "resources/",
+                ],
             }),
         ],
     },
