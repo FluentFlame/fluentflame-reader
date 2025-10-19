@@ -106,13 +106,12 @@ async function migrateLovefieldItemsDB(dbName: string, version: number) {
         const transaction = db.transaction("items")
         store = transaction.objectStore("items")
     } catch (e) {
-        console.error(
-            "Error getting db transaction for items migration, still deleting",
+        console.warn(
+            "Error getting db transaction for 'items' migration, but still deleting.",
             e,
         )
         // Can't await on this, as it will delete only after the last connection is closed.
         wrapRequest(indexedDB.deleteDatabase(dbName))
-        throw e
     }
     const entryQueryResult = (await wrapRequest(store.getAll())).result
     const txFunc = async () => {
