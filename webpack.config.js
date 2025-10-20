@@ -80,7 +80,11 @@ module.exports = [
             }),
             new CopyPlugin({
                 patterns: [
-                    "resources/",
+                    {
+                        from: "resources/",
+                        // Do not alter anything from resources/
+                        info: { minimized: true },
+                    }
                 ],
             }),
         ],
