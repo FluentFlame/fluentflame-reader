@@ -14,7 +14,7 @@ We want to have a clear and safe space where anyone can contribute as much as th
 
 - Please check if there are already issues or PRs on the subject, so you can see where the community stands on the matter and get some basic context and feedback on what needs to be done. However, if what you want to contribute is completely new and has not been discussed before, then go ahead and submit a PR, which will be reviewed later. Before proceeding, if you want to contribute a new feature, it might be a good idea to create an issue to get context and opinions from the community. This is not mandatory, but it is recommended.
 
-- If someone has submitted a PR related to what you want to do, we recommend that you try to contact the person who made the original PR to avoid fragmentation and work together on a single PR. This only applies if the PR is recent. If it is a closed PR or has been inactive for several months with no sign of life, then this does not apply.
+- If someone has created a PR related to what you want to do, we recommend that you try to contact the person who made the original PR to avoid fragmentation and work together on a single PR. This only applies if the PR is recent. If it is a closed PR or has been inactive for several months with no sign of life, then this does not apply.
 
 - If there are issues related to the changes you want to implement (for example: you want to fix a bug and there is an issue about it), we would appreciate it if you could refer to the issue in question in the PR notes.
 
