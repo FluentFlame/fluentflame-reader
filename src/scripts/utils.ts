@@ -242,40 +242,6 @@ export function byteToMB(B: number) {
     return MB + "MB"
 }
 
-function byteLength(str: string) {
-    var s = str.length
-    for (var i = str.length - 1; i >= 0; i--) {
-        var code = str.charCodeAt(i)
-        if (code > 0x7f && code <= 0x7ff) s++
-        else if (code > 0x7ff && code <= 0xffff) s += 2
-        if (code >= 0xdc00 && code <= 0xdfff) i-- //trail surrogate
-    }
-    return s
-}
-
-export function calculateItemSize(): Promise<number> {
-    return new Promise((resolve, reject) => {
-        let result = 0
-        let openRequest = window.indexedDB.open("itemsDB")
-        openRequest.onsuccess = () => {
-            let db = openRequest.result
-            let objectStore = db.transaction("items").objectStore("items")
-            let cursorRequest = objectStore.openCursor()
-            cursorRequest.onsuccess = () => {
-                let cursor = cursorRequest.result
-                if (cursor) {
-                    result += byteLength(JSON.stringify(cursor.value))
-                    cursor.continue()
-                } else {
-                    resolve(result)
-                }
-            }
-            cursorRequest.onerror = () => reject()
-        }
-        openRequest.onerror = () => reject()
-    })
-}
-
 export function validateRegex(regex: string, flags = ""): RegExp {
     try {
         return new RegExp(regex, flags)

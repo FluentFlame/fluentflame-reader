@@ -1,7 +1,4 @@
-import intl from "react-intl-universal"
-import { RSSSource } from "./models/source"
 import { SourceRule } from "./models/rule"
-import { RSSItem } from "./models/item"
 import { Dexie, type EntityTable } from "dexie"
 
 export interface SourceEntry {
@@ -92,6 +89,34 @@ async function migrateLovefieldSourcesDB(dbName: string, version: number) {
     wrapRequest(indexedDB.deleteDatabase(dbName))
 }
 
+function byteLength(str: string) {
+    var s = str.length
+    for (var i = str.length - 1; i >= 0; i--) {
+        var code = str.charCodeAt(i)
+        if (code > 0x7f && code <= 0x7ff) s++
+        else if (code > 0x7ff && code <= 0xffff) s += 2
+        if (code >= 0xdc00 && code <= 0xdfff) i-- //trail surrogate
+    }
+    return s
+}
+
+export async function calculateItemSize(): Promise<number> {
+    await fluentDB.open()
+    let result = 0
+    const idb = fluentDB.backendDB()
+    const objectStore = idb
+        .transaction(["items"], "readonly")
+        .objectStore("items")
+    const cursorRequest = objectStore.openCursor()
+    let cursor = (await wrapRequest(cursorRequest)).result
+    while (cursor) {
+        result += byteLength(JSON.stringify(cursor.value))
+        cursor.continue()
+        cursor = (await wrapRequest(cursorRequest)).result
+    }
+    return result
+}
+
 /**
  * Migrate old Lovefield Items Database into the new MainDB Dexie DB.
  */
@@ -112,6 +137,7 @@ async function migrateLovefieldItemsDB(dbName: string, version: number) {
         )
         // Can't await on this, as it will delete only after the last connection is closed.
         wrapRequest(indexedDB.deleteDatabase(dbName))
+        return
     }
     const entryQueryResult = (await wrapRequest(store.getAll())).result
     const txFunc = async () => {

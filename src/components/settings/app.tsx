@@ -1,9 +1,9 @@
 import * as React from "react"
+import * as db from "../../scripts/db"
 import intl from "react-intl-universal"
 import {
     urlTest,
     byteToMB,
-    calculateItemSize,
     getSearchEngineName,
 } from "../../scripts/utils"
 import {
@@ -69,7 +69,7 @@ class AppTab extends React.Component<AppTabProps, AppTabState> {
         })
     }
     getItemSize = () => {
-        calculateItemSize().then(size => {
+        db.calculateItemSize().then((size: number) => {
             this.setState({ itemSize: byteToMB(size) })
         })
     }
