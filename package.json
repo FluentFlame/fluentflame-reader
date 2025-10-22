@@ -5,6 +5,7 @@
   "main": "./dist/electron.js",
   "scripts": {
     "build": "webpack --config ./webpack.config.js",
+    "clean": "rm -rf ./bin ./dist",
     "electron": "electron ./dist/electron.js",
     "start": "npm run build && npm run electron",
     "format": "prettier --write .",
