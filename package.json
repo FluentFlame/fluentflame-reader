@@ -17,7 +17,7 @@
     "test": "mocha tests/**/*.ts"
   },
   "keywords": [],
-  "author": "Haoyuan Liu",
+  "author": "Fluentflame contributors & Haoyuan Liu",
   "license": "BSD-3-Clause",
   "repository": "github:FluentFlame/fluentflame-reader",
   "devDependencies": {
