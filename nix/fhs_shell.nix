@@ -48,5 +48,4 @@
       udev
       alsa-lib
     ]);
-  runScript = "bash";
 }).env
