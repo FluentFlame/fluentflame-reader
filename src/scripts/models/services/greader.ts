@@ -294,7 +294,7 @@ export const gReaderServiceHooks: ServiceHooks = {
                 if (source.rules) {
                     const hasRead = item.hasRead
                     const starred = item.starred
-                    SourceRule.applyAll(source.rules, item)
+                    SourceRule.applyAllWithGlobalRules(source.rules, item)
                     if (item.hasRead !== hasRead)
                         editTag(
                             configs,
