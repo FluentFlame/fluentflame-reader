@@ -1,6 +1,5 @@
 body {
     scrollbar-color: #0004 transparent;
-    scrollbar-gutter: stable;
 }
 
 @media (prefers-color-scheme: dark) {
