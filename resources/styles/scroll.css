@@ -1,9 +1,9 @@
-body {
+html {
     scrollbar-color: #0004 transparent;
 }
 
 @media (prefers-color-scheme: dark) {
-    body {
+    html {
         scrollbar-color: #fff4 transparent;
     }
 }
