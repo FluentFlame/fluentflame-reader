@@ -27,6 +27,8 @@ type ServiceTabState = {
     type: SyncService
 }
 
+const FEATURE_REQUEST_URL = "https://github.com/FluentFlame/fluentflame-reader/issues/new?template=feature_request.md"
+
 export class ServiceTab extends React.Component<
     ServiceTabProps,
     ServiceTabState
@@ -50,9 +52,7 @@ export class ServiceTab extends React.Component<
 
     onServiceOptionChange = (_, option: IDropdownOption) => {
         if (option.key === -1) {
-            window.utils.openExternal(
-                "https://github.com/yang991178/fluent-reader/issues/23"
-            )
+            window.utils.openExternal(FEATURE_REQUEST_URL)
         } else {
             this.setState({ type: option.key as number })
         }
