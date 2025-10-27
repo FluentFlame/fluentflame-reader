@@ -1,5 +1,5 @@
 {
-  description = "FluentReader: An RSS Reader Written in React";
+  description = "Fluentflame Reader: A Sleek Desktop RSS Reader";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";

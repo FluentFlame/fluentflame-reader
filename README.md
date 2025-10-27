@@ -12,11 +12,10 @@
 
 ## Download
 
-For Windows 10 users, the recommended way of installation is through [Microsoft Store](https://www.microsoft.com/store/apps/9P71FC94LRH8?cid=github). 
-This enables auto-update and experimental ARM64 support. 
-macOS users can also get Fluentflame Reader from the [Mac App Store](https://apps.apple.com/app/id1520907427).
+Download from the [Releases Page](https://github.com/FluentFlame/fluentflame-reader/releases)
 
-If you are using Linux or an older version of Windows, you can [get Fluentflame Reader from GitHub releases](https://github.com/FluentFlame/fluentflame-reader/releases).
+If you use [Nix](https://nixos.org/download/#)/[Lix](https://lix.systems/install/) on Linux or MacOS, you can also refer our
+[Nix documentation](https://github.com/FluentFlame/fluentflame-reader/tree/master/nix#readme).
 
 ## Features
 

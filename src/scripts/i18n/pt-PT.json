@@ -208,8 +208,7 @@
         "importGroups": "Importar grupos",
         "failure": "Não foi possível conectar ao serviço",
         "failureHint": "Por favor verifique a configuração do serviço ou o estado da rede.",
-        "fetchUnlimited": "Ilimitado (não recomendado)",
-        "exportToLite": "Exportar para o Fluent Reader Lite"
+        "fetchUnlimited": "Ilimitado (não recomendado)"
     },
     "app": {
         "cleanup": "Limpar",
@@ -225,7 +224,7 @@
         "data": "Dados da aplicação",
         "backup": "Backup",
         "restore": "Restorar",
-        "frData": "Dados do Fluent Reader",
+        "frData": "Dados do Fluentflame Reader",
         "language": "Idioma",
         "theme": "Tema",
         "lightTheme": "Modo claro",

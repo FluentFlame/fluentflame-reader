@@ -325,12 +325,12 @@ export function exportOPML(): AppThunk {
             { name: intl.get("sources.opmlFile"), extensions: ["opml"] },
         ]
         window.utils
-            .showSaveDialog(filters, "*/Fluent_Reader_Export.opml")
+            .showSaveDialog(filters, "*/fluentflame_reader_export.opml")
             .then(write => {
                 if (write) {
                     let state = getState()
                     let xml = new DOMParser().parseFromString(
-                        '<?xml version="1.0" encoding="UTF-8"?><opml version="1.0"><head><title>Fluent Reader Export</title></head><body></body></opml>',
+                        '<?xml version="1.0" encoding="UTF-8"?><opml version="1.0"><head><title>Fluentflame Reader Export</title></head><body></body></opml>',
                         "text/xml"
                     )
                     let body = xml.getElementsByTagName("body")[0]

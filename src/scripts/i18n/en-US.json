@@ -210,8 +210,7 @@
         "importGroups": "Import groups",
         "failure": "Cannot connect to service",
         "failureHint": "Please check the service configuration or network status.",
-        "fetchUnlimited": "Unlimited (not recommended)",
-        "exportToLite": "Export to Fluent Reader Lite"
+        "fetchUnlimited": "Unlimited (not recommended)"
     },
     "app": {
         "animationsOff": "Animations off",
@@ -230,7 +229,7 @@
         "backup": "Backup",
         "reducedAnimations": "Reduce animations",
         "restore": "Restore",
-        "frData": "Fluent Reader Data",
+        "frData": "Fluentflame Reader Data",
         "language": "Display language",
         "theme": "Theme",
         "lightTheme": "Light mode",

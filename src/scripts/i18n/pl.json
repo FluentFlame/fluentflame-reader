@@ -209,8 +209,7 @@
         "importGroups": "Importuj grupy",
         "failure": "Nie można połączyć się z usługą",
         "failureHint": "Sprawdź konfigurację usługi i czy jest z nią połączenie.",
-        "fetchUnlimited": "Nielimitowana (niezalecana)",
-        "exportToLite": "Eksportuj do Fluent Reader Lite"
+        "fetchUnlimited": "Nielimitowana (niezalecana)"
     },
     "app": {
         "cleanup": "Wyczyść",
@@ -226,7 +225,7 @@
         "data": "Dane aplikacji",
         "backup": "Utwórz kopię zapasową",
         "restore": "Odtwórz dane z kopii zapasowej",
-        "frData": "Dane programu Fluent Reader",
+        "frData": "Dane programu Fluentflame Reader",
         "language": "Język interfejsu",
         "theme": "Motyw",
         "lightTheme": "Jasny",

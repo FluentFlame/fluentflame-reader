@@ -35,8 +35,8 @@ win:
         - nsis
         - zip
 appx:
-    applicationId: FluentFlameReader
-    identityName: TODO.FluentFlameReader
+    applicationId: FluentflameReader
+    identityName: TODO.FluentflameReader
     publisher: TODO
     backgroundColor: transparent
     languages:

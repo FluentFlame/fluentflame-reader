@@ -209,8 +209,7 @@
         "importGroups": "Importovat skupiny",
         "failure": "Nedaří se připojit ke službě",
         "failureHint": "Zkontrolujte konfiguraci služby nebo stav sítě.",
-        "fetchUnlimited": "Neomezený (nedoporučuje se)",
-        "exportToLite": "Exportovat do Fluent reader Lite"
+        "fetchUnlimited": "Neomezený (nedoporučuje se)"
     },
     "app": {
         "cleanup": "Vyčistit",
@@ -226,7 +225,7 @@
         "data": "Data aplikace",
         "backup": "Záloha",
         "restore": "Obnovit",
-        "frData": "Data aplikace Fluent Reader",
+        "frData": "Data aplikace Fluentflame Reader",
         "language": "Zobrazovaný jazyk",
         "theme": "Motiv",
         "lightTheme": "Světlý motiv",

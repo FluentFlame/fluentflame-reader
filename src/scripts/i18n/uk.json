@@ -202,8 +202,7 @@
         "importGroups": "Імпортувати групи",
         "failure": "Не вдається підключитися до служби",
         "failureHint": "Будь ласка, перевірте конфігурацію служби або стан мережі.",
-        "fetchUnlimited": "Необмежений (не рекомендується)",
-        "exportToLite": "Експорт у програму Fluent Reader Lite"
+        "fetchUnlimited": "Необмежений (не рекомендується)"
     },
     "app": {
         "cleanup": "Прибирати",
@@ -219,7 +218,7 @@
         "data": "Дані програми",
         "backup": "Резервне копіювання",
         "restore": "Відновити",
-        "frData": "Дані Fluent Reader",
+        "frData": "Дані Fluentflame Reader",
         "language": "Мова",
         "theme": "Тема",
         "lightTheme": "Світлий режим",

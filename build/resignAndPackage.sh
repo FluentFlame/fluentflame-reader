@@ -1,9 +1,12 @@
+# NOTE: this won't work anymore given the hard-fork of the original Fluent Reader.
+# This will need to be remade (or removed).
+
 # Name of your app.
-APP="Fluent Reader"
+APP="Fluentflame Reader"
 # Your Certificate name.
 CERT="Jieyu Yan (EM8VE646TZ)"
 # The path of your app to sign.
-APP_PATH="bin/darwin/universal/mas-universal/Fluent Reader.app"
+APP_PATH="bin/darwin/universal/mas-universal/Fluentflame Reader.app"
 # The path to the location you want to put the signed package.
 RESULT_PATH="bin/$APP-mac_store.pkg"
 # The name of certificates you requested.
@@ -21,7 +24,7 @@ FRAMEWORKS_PATH="$APP_PATH/Contents/Frameworks"
 # Build the MAS app
 CSC_IDENTITY_AUTO_DISCOVERY=false npx electron-builder -c electron-builder-mas.yml --mac mas:universal
 # Add ElectronTeamID to Info.plist
-sed -i '' -e 's/<\/dict>/<key>ElectronTeamID<\/key><string>EM8VE646TZ<\/string><\/dict>/g' "bin/darwin/universal/mas-universal/Fluent Reader.app/Contents/Info.plist"
+sed -i '' -e 's/<\/dict>/<key>ElectronTeamID<\/key><string>EM8VE646TZ<\/string><\/dict>/g' "bin/darwin/universal/mas-universal/Fluentflame Reader.app/Contents/Info.plist"
 
 printf "......................\nresignAndPackage start\n\n"
 codesign --deep --force --verify --verbose=4 --timestamp --options runtime --entitlements "$CHILD_PLIST" -s "$APP_KEY" "$APP_PATH/Contents/Resources/app.asar.unpacked/dist/fontlist"
