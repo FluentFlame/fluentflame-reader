@@ -207,8 +207,7 @@
         "importGroups": "导入分组",
         "failure": "连接到服务时出错",
         "failureHint": "请检查服务配置或网络连接",
-        "fetchUnlimited": "无限制（不建议）",
-        "exportToLite": "导出至 Fluent Reader Lite"
+        "fetchUnlimited": "无限制（不建议）"
     },
     "app": {
         "cleanup": "清理",
@@ -224,7 +223,7 @@
         "data": "应用数据",
         "backup": "备份",
         "restore": "还原",
-        "frData": "Fluent Reader数据",
+        "frData": "Fluentflame Reader数据",
         "language": "界面语言",
         "theme": "应用主题",
         "lightTheme": "浅色模式",

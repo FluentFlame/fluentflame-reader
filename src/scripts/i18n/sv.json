@@ -202,8 +202,7 @@
         "importGroups": "Importera grupper",
         "failure": "Kan inte ansluta till tjänsten",
         "failureHint": "Kontrollera tjänstkonfigurationen eller nätverksstatus.",
-        "fetchUnlimited": "Obegränsat (rekommenderas ej)",
-        "exportToLite": "Exportera till Fluent Reader Lite"
+        "fetchUnlimited": "Obegränsat (rekommenderas ej)"
     },
     "app": {
         "cleanup": "Rensa",
@@ -219,7 +218,7 @@
         "data": "Applikationsdata",
         "backup": "Säkerhetskopier",
         "restore": "Återställ",
-        "frData": "Fluent Reader Data",
+        "frData": "Fluentflame Reader Data",
         "language": "Skärmspråk",
         "theme": "Tema",
         "lightTheme": "Ljust läge",

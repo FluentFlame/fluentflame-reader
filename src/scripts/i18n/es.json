@@ -213,8 +213,7 @@
         "importGroups": "Importar grupos",
         "failure": "No se puede conectar al servicio",
         "failureHint": "Por favor, verifica la configuración del servicio o el estado de la red.",
-        "fetchUnlimited": "Ilimitado (no recomendado)",
-        "exportToLite": "Exportar a Fluent Reader Lite"
+        "fetchUnlimited": "Ilimitado (no recomendado)"
     },
     "app": {
         "animationsOff": "Desactivar animaciones",

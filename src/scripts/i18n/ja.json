@@ -202,8 +202,7 @@
         "importGroups": "グループをエクスポート",
         "failure": "サーバ接続中にエラーが発生しました。",
         "failureHint": "サーバ設定とネットワーク接続を確認ください",
-        "fetchUnlimited": "無制限（非推奨）",
-        "exportToLite": "Fluent Reader Liteにエクスポート"
+        "fetchUnlimited": "無制限（非推奨）"
     },
     "app": {
         "cleanup": "一括削除",
@@ -219,7 +218,7 @@
         "data": "アプリデータ",
         "backup": "バックアップ",
         "restore": "リストア",
-        "frData": "Fluent Readerデータ",
+        "frData": "Fluentflame Readerデータ",
         "language": "表示言語",
         "theme": "アプリテーマ",
         "lightTheme": "明るいテーマ",

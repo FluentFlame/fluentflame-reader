@@ -202,8 +202,7 @@
         "importGroups": "그룹 불러오기",
         "failure": "서비스에 연결할 수 없음",
         "failureHint": "서비스 설정이나 네트워크 상태를 확인해보세요.",
-        "fetchUnlimited": "제한 없음 (추천하지 않음)",
-        "exportToLite": "Fluent Reader Lite에 내보내기"
+        "fetchUnlimited": "제한 없음 (추천하지 않음)"
     },
     "app": {
         "cleanup": "일괄 삭제",
@@ -219,7 +218,7 @@
         "data": "앱 데이터",
         "backup": "백업",
         "restore": "복원",
-        "frData": "Fluent Reader 데이터",
+        "frData": "Fluentflame Reader 데이터",
         "language": "언어",
         "theme": "테마",
         "lightTheme": "라이트 모드",

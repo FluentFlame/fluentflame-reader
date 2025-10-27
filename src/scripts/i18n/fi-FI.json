@@ -17,7 +17,7 @@
         "deleteChoices": "Poista ... päivää vanhemmat artikkelit",
         "enableProxy": "Käytä välityspalvelinta",
         "fetchInterval": "Automaattinen päivitys",
-        "frData": "Fluent Reader Data",
+        "frData": "Fluentflame Reader Data",
         "itemSize": "Artikkelit käyttävät {size} paikallista tallennustilaa",
         "language": "Näyttökieli",
         "lightTheme": "Vaalea tila",
@@ -161,7 +161,6 @@
     },
     "service": {
         "endpoint": "Osoite",
-        "exportToLite": "Vie Fluent Reader Lite -ohjelmaan",
         "failure": "Palveluun ei voi muodostaa yhteyttä",
         "failureHint": "Tarkista palvelun asetukset tai verkkoyhteytesi.",
         "fetchLimit": "Synkronointiraja",
