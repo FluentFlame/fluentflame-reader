@@ -211,7 +211,8 @@ export const nextcloudServiceHooks: ServiceHooks = {
                     if (img && img.src) item.thumb = img.src
                 }
                 // Apply rules and sync back to the service
-                if (source.rules) SourceRule.applyAll(source.rules, item)
+                if (source.rules) SourceRule.applyAllWithGlobalRules(source.rules, item)
+                else SourceRule.applyAllWithGlobalRules([], item)
                 if (unreadItem && item.hasRead)
                     markItems(
                         configs,

@@ -158,7 +158,8 @@ export const feverServiceHooks: ServiceHooks = {
                         item.thumb = a.href
                 }
                 // Apply rules and sync back to the service
-                if (source.rules) SourceRule.applyAll(source.rules, item)
+                if (source.rules) SourceRule.applyAllWithGlobalRules(source.rules, item)
+                else SourceRule.applyAllWithGlobalRules([], item)
                 if (Boolean(i.is_read) !== item.hasRead)
                     markItem(configs, item, item.hasRead ? "read" : "unread")
                 if (Boolean(i.is_saved) !== Boolean(item.starred))

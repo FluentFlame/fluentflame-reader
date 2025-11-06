@@ -124,6 +124,13 @@ const settingsBridge = {
     setViewConfigs: (view: ViewType, configs: ViewConfigs) => {
         ipcRenderer.invoke("set-view-configs", view, configs)
     },
+    
+    getGlobalRules: (): any[] => {
+        return ipcRenderer.sendSync("get-global-rules")
+    },
+    setGlobalRules: (rules: any[]) => {
+        ipcRenderer.invoke("set-global-rules", rules)
+    },
 
     getAll: () => {
         return ipcRenderer.sendSync("get-all-settings") as Object

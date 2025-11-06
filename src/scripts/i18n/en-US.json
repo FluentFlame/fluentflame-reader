@@ -175,6 +175,9 @@
     "rules": {
         "intro": "Automatically mark articles or send notifications with regular expressions.",
         "help": "Learn more",
+        "mode": "Rule Mode",
+        "globalRules": "Global Rules (All Feeds)",
+        "sourceRules": "Source-Specific Rules",
         "source": "Source",
         "selectSource": "Select a source",
         "new": "New Rule",
