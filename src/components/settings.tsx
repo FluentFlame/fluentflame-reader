@@ -25,7 +25,7 @@ type SettingsProps = {
     close: () => void
 }
 
-const INITIAL_PANEL: string = "key-settings.app"
+const INITIAL_PANEL: string = "app"
 
 export default function Settings(props: SettingsProps): React.JSX.Element {
     const [currentPanel, setCurrentPanel] = React.useState(INITIAL_PANEL)
@@ -97,17 +97,17 @@ export default function Settings(props: SettingsProps): React.JSX.Element {
 
 function renderSettingsPanel(currentPanel: string): React.JSX.Element {
     switch (currentPanel) {
-        case "key-settings.app":
+        case "app":
             return <AppTabContainer />
-        case "key-settings.sources":
+        case "sources":
             return <SourcesTabContainer />
-        case "key-settings.grouping":
+        case "grouping":
             return <GroupsTabContainer />
-        case "key-settings.rules":
+        case "rules":
             return <RulesTabContainer />
-        case "key-settings.service":
+        case "service":
             return <ServiceTabContainer />
-        case "key-settings.about":
+        case "about":
             return <AboutTab />
     }
     return (
@@ -126,7 +126,7 @@ function makeNavLinkGroups(): INavLinkGroup[] {
                     url: ".",
                     isExpanded: true,
                     target: "_blank",
-                    key: "key-settings.app",
+                    key: "app",
                     icon: "Settings",
                 },
                 {
@@ -134,7 +134,7 @@ function makeNavLinkGroups(): INavLinkGroup[] {
                     url: ".",
                     isExpanded: true,
                     target: "_blank",
-                    key: "key-settings.sources",
+                    key: "sources",
                     icon: "Source",
                 },
                 {
@@ -142,7 +142,7 @@ function makeNavLinkGroups(): INavLinkGroup[] {
                     url: ".",
                     isExpanded: true,
                     target: "_blank",
-                    key: "key-settings.grouping",
+                    key: "grouping",
                     icon: "GroupList",
                 },
                 {
@@ -150,7 +150,7 @@ function makeNavLinkGroups(): INavLinkGroup[] {
                     url: ".",
                     isExpanded: true,
                     target: "_blank",
-                    key: "key-settings.rules",
+                    key: "rules",
                     icon: "FilterSettings",
                 },
                 {
@@ -158,7 +158,7 @@ function makeNavLinkGroups(): INavLinkGroup[] {
                     url: ".",
                     isExpanded: true,
                     target: "_blank",
-                    key: "key-settings.service",
+                    key: "service",
                     icon: "CloudImportExport",
                 },
                 {
@@ -166,7 +166,7 @@ function makeNavLinkGroups(): INavLinkGroup[] {
                     url: ".",
                     isExpanded: true,
                     target: "_blank",
-                    key: "key-settings.about",
+                    key: "about",
                     icon: "Info",
                 },
             ],
