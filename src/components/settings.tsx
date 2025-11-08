@@ -79,7 +79,7 @@ export default function Settings(props: SettingsProps): React.JSX.Element {
                     )}
                     <div className="settings-inner-container">
                         <Nav
-                            initialSelectedKey={INITIAL_PANEL}
+                            initialSelectedKey={currentPanel}
                             className="settings-nav"
                             groups={makeNavLinkGroups()}
                             onLinkClick={onLinkClick}
