@@ -25,82 +25,50 @@ type SettingsProps = {
     close: () => void
 }
 
-type SettingsState = {
-    currentPanel: string
-}
-
 const INITIAL_PANEL: string = "key-settings.app"
 
-class Settings extends React.Component<SettingsProps, SettingsState> {
-    constructor(props) {
-        super(props)
+export default function Settings(props: SettingsProps): React.JSX.Element {
+    const [currentPanel, setCurrentPanel] = React.useState(INITIAL_PANEL)
 
-        // This should probably be managed by Redux dispatchers,
-        // but for now, let's use standard React state.
-        this.state = {
-            currentPanel: INITIAL_PANEL,
+    const onKeyDown = (event: KeyboardEvent) => {
+        if (event.key === "Escape" && !props.exitting) {
+            props.close()
         }
     }
 
-    onKeyDown = (event: KeyboardEvent) => {
-        if (event.key === "Escape" && !this.props.exitting) this.props.close()
-    }
-
-    componentDidUpdate = (prevProps: SettingsProps) => {
-        if (this.props.display !== prevProps.display) {
-            if (this.props.display) {
-                if (window.utils.platform === "darwin")
-                    window.utils.destroyTouchBar()
-                document.body.addEventListener("keydown", this.onKeyDown)
-            } else {
-                if (window.utils.platform === "darwin") initTouchBarWithTexts()
-                document.body.removeEventListener("keydown", this.onKeyDown)
-            }
+    React.useEffect(() => {
+        if (props.display) {
+            if (window.utils.platform === "darwin")
+                window.utils.destroyTouchBar()
+            document.body.addEventListener("keydown", onKeyDown)
+        } else {
+            if (window.utils.platform === "darwin") initTouchBarWithTexts()
+            document.body.removeEventListener("keydown", onKeyDown)
         }
+    }, [props.display])
+
+    const onLinkClick = (
+        _ev: React.MouseEvent<HTMLElement>,
+        item: INavLink,
+    ) => {
+        setCurrentPanel(item.key)
     }
 
-    renderSettingsPanel = () => {
-        switch (this.state.currentPanel) {
-            case "key-settings.app":
-                return <AppTabContainer />
-            case "key-settings.sources":
-                return <SourcesTabContainer />
-            case "key-settings.grouping":
-                return <GroupsTabContainer />
-            case "key-settings.rules":
-                return <RulesTabContainer />
-            case "key-settings.service":
-                return <ServiceTabContainer />
-            case "key-settings.about":
-                return <AboutTab />
-        }
-        return (
-            <p>
-                An error has occurred displaying this tab. This should never
-                happen.
-            </p>
-        )
-    }
-
-    onLinkClick = (_ev: React.MouseEvent<HTMLElement>, item: INavLink) => {
-        this.setState({ currentPanel: item.key })
-    }
-
-    render = () =>
-        this.props.display && (
+    return (
+        props.display && (
             <div className="settings-container">
                 <div className={"settings " + AnimationClassNames.slideUpIn20}>
                     <div className="btn-group">
                         <a
                             className={
-                                "btn" + (this.props.exitting ? " disabled" : "")
+                                "btn" + (props.exitting ? " disabled" : "")
                             }
                             title={intl.get("settings.exit")}
-                            onClick={this.props.close}>
+                            onClick={props.close}>
                             <Icon iconName="Back" />
                         </a>
                     </div>
-                    {this.props.blocked && (
+                    {props.blocked && (
                         <FocusTrapZone
                             isClickableOutsideFocusTrap={true}
                             className="loading">
@@ -115,15 +83,38 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
                             initialSelectedKey={INITIAL_PANEL}
                             className="settings-nav"
                             groups={makeNavLinkGroups()}
-                            onLinkClick={this.onLinkClick}
+                            onLinkClick={onLinkClick}
                         />
                         <div className="settings-panel">
-                            {this.renderSettingsPanel()}
+                            {renderSettingsPanel(currentPanel)}
                         </div>
                     </div>
                 </div>
             </div>
         )
+    )
+}
+
+function renderSettingsPanel(currentPanel: string): React.JSX.Element {
+    switch (currentPanel) {
+        case "key-settings.app":
+            return <AppTabContainer />
+        case "key-settings.sources":
+            return <SourcesTabContainer />
+        case "key-settings.grouping":
+            return <GroupsTabContainer />
+        case "key-settings.rules":
+            return <RulesTabContainer />
+        case "key-settings.service":
+            return <ServiceTabContainer />
+        case "key-settings.about":
+            return <AboutTab />
+    }
+    return (
+        <p>
+            An error has occurred displaying this tab. This should never happen.
+        </p>
+    )
 }
 
 function makeNavLinkGroups(): INavLinkGroup[] {
@@ -182,5 +173,3 @@ function makeNavLinkGroups(): INavLinkGroup[] {
         },
     ]
 }
-
-export default Settings
