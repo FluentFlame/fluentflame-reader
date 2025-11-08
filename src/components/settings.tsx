@@ -5,7 +5,6 @@ import { AnimationClassNames } from "@fluentui/react/lib/Styling"
 import AboutTab from "./settings/about"
 import {
     Nav,
-    PivotItem,
     Spinner,
     FocusTrapZone,
     INavLinkGroup,
