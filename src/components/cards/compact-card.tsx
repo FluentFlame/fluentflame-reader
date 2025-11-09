@@ -12,27 +12,32 @@ const className = (props: Card.Props) => {
     return cn.join(" ");
 };
 
-const CompactCard: React.FunctionComponent<Card.Props> = (props) => (
-    <div
-        className={className(props)}
-        {...Card.bindEventsToProps(props)}
-        data-iid={props.item.iid}
-        data-is-focusable>
-        <CardInfo source={props.source} item={props.item} hideTime />
-        <div className="data">
-            <span className="title">
-                <Highlights
-                    text={props.item.title}
-                    filter={props.filter}
-                    title
-                />
-            </span>
-            <span className="snippet">
-                <Highlights text={props.item.snippet} filter={props.filter} />
-            </span>
+function CompactCard(props: Card.Props): React.JSX.Element {
+    return (
+        <div
+            className={className(props)}
+            {...Card.bindEventsToProps(props)}
+            data-iid={props.item.iid}
+            data-is-focusable>
+            <CardInfo source={props.source} item={props.item} hideTime />
+            <div className="data">
+                <span className="title">
+                    <Highlights
+                        text={props.item.title}
+                        filter={props.filter}
+                        title
+                    />
+                </span>
+                <span className="snippet">
+                    <Highlights
+                        text={props.item.snippet}
+                        filter={props.filter}
+                    />
+                </span>
+            </div>
+            <Time date={props.item.date} />
         </div>
-        <Time date={props.item.date} />
-    </div>
-);
+    );
+}
 
 export default CompactCard;

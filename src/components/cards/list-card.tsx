@@ -16,36 +16,39 @@ const className = (props: Card.Props) => {
     return cn.join(" ");
 };
 
-const ListCard: React.FunctionComponent<Card.Props> = (props) => (
-    <div
-        className={className(props)}
-        {...Card.bindEventsToProps(props)}
-        data-iid={props.item.iid}
-        data-is-focusable>
-        {props.item.thumb && props.viewConfigs & ViewConfigs.ShowCover ? (
-            <div className="head">
-                <CardThumbnail item={props.item} />
-            </div>
-        ) : null}
-        <div className="data">
-            <CardInfo source={props.source} item={props.item} />
-            <h3 className="title">
-                <Highlights
-                    text={props.item.title}
-                    filter={props.filter}
-                    title
-                />
-            </h3>
-            {Boolean(props.viewConfigs & ViewConfigs.ShowSnippet) && (
-                <p className="snippet">
+function ListCard(props: Card.Props): React.JSX.Element {
+    const hasThumbs = props.item.thumbnails?.length != 0;
+    return (
+        <div
+            className={className(props)}
+            {...Card.bindEventsToProps(props)}
+            data-iid={props.item.iid}
+            data-is-focusable>
+            {hasThumbs && props.viewConfigs & ViewConfigs.ShowCover ? (
+                <div className="head">
+                    <CardThumbnail item={props.item} />
+                </div>
+            ) : null}
+            <div className="data">
+                <CardInfo source={props.source} item={props.item} />
+                <h3 className="title">
                     <Highlights
-                        text={props.item.snippet}
+                        text={props.item.title}
                         filter={props.filter}
+                        title
                     />
-                </p>
-            )}
+                </h3>
+                {Boolean(props.viewConfigs & ViewConfigs.ShowSnippet) && (
+                    <p className="snippet">
+                        <Highlights
+                            text={props.item.snippet}
+                            filter={props.filter}
+                        />
+                    </p>
+                )}
+            </div>
         </div>
-    </div>
-);
+    );
+}
 
 export default ListCard;

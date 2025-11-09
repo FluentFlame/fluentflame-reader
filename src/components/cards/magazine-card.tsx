@@ -13,36 +13,39 @@ const className = (props: Card.Props) => {
     return cn.join(" ");
 };
 
-const MagazineCard: React.FunctionComponent<Card.Props> = (props) => (
-    <div
-        className={className(props)}
-        {...Card.bindEventsToProps(props)}
-        data-iid={props.item.iid}
-        data-is-focusable>
-        {props.item.thumb ? (
-            <div className="head">
-                <CardThumbnail item={props.item} />
+function MagazineCard(props: Card.Props): React.JSX.Element {
+    const hasThumbs = props.item.thumbnails?.length != 0;
+    return (
+        <div
+            className={className(props)}
+            {...Card.bindEventsToProps(props)}
+            data-iid={props.item.iid}
+            data-is-focusable>
+            {hasThumbs ? (
+                <div className="head">
+                    <CardThumbnail item={props.item} />
+                </div>
+            ) : null}
+            <div className="data">
+                <div>
+                    <h3 className="title">
+                        <Highlights
+                            text={props.item.title}
+                            filter={props.filter}
+                            title
+                        />
+                    </h3>
+                    <p className="snippet">
+                        <Highlights
+                            text={props.item.snippet}
+                            filter={props.filter}
+                        />
+                    </p>
+                </div>
+                <CardInfo source={props.source} item={props.item} showCreator />
             </div>
-        ) : null}
-        <div className="data">
-            <div>
-                <h3 className="title">
-                    <Highlights
-                        text={props.item.title}
-                        filter={props.filter}
-                        title
-                    />
-                </h3>
-                <p className="snippet">
-                    <Highlights
-                        text={props.item.snippet}
-                        filter={props.filter}
-                    />
-                </p>
-            </div>
-            <CardInfo source={props.source} item={props.item} showCreator />
         </div>
-    </div>
-);
+    );
+}
 
 export default MagazineCard;
