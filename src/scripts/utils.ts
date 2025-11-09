@@ -3,7 +3,7 @@ import { ThunkAction, ThunkDispatch } from "redux-thunk";
 import { AnyAction } from "redux";
 import { RootState } from "./reducer";
 import Parser from "rss-parser";
-import { SearchEngines, ThumbnailTypePref } from "../schema-types";
+import { SearchEngines } from "../schema-types";
 
 export enum ActionStatus {
     Request,
@@ -34,12 +34,6 @@ const rssParser = new Parser({
 });
 type extractGeneric<Type> = Type extends Parser<infer _, infer U> ? U : never;
 export type MyParserItem = extractGeneric<typeof rssParser> & Parser.Item;
-
-export interface ThumbnailAttributes {
-    medium: "image" | "video";
-    url: string;
-    type: ThumbnailTypePref;
-}
 
 const CHARSET_RE = /charset=([^()<>@,;:\"/[\]?.=\s]*)/i;
 const XML_ENCODING_RE = /^<\?xml.+encoding="(.+?)".*?\?>/i;

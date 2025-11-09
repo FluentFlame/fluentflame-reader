@@ -1,6 +1,7 @@
+import { ThumbnailTypePref } from "../schema-types";
 import { SourceRule } from "./models/rule";
-import { Dexie, type EntityTable } from "dexie";
-import type { ThumbnailAttributes } from "./utils";
+import { Dexie, type EntityTable, type Transaction } from "dexie";
+import type { ThumbnailAttributes } from "./thumb-utils";
 
 export interface SourceEntry {
     sid: number;
@@ -43,6 +44,34 @@ fluentDB.version(4).stores({
     sources: `++sid, &url`,
     items: `++iid, source, date, serviceRef`,
 });
+fluentDB
+    .version(5)
+    .stores({
+        sources: `++sid, &url`,
+        items: `++iid, source, date, serviceRef`,
+    })
+    .upgrade(migrateThumbs);
+
+export async function calculateItemSize(): Promise<number> {
+    await fluentDB.open();
+    let result = 0;
+    const idb = fluentDB.backendDB();
+    const objectStore = idb
+        .transaction(["items"], "readonly")
+        .objectStore("items");
+    const cursorRequest = objectStore.openCursor();
+    let cursor = (await wrapRequest(cursorRequest)).result;
+    while (cursor) {
+        result += byteLength(JSON.stringify(cursor.value));
+        cursor.continue();
+        cursor = (await wrapRequest(cursorRequest)).result;
+    }
+    return result;
+}
+
+// ------------------------------------------------------------------------------------------------
+// Migrations
+// ------------------------------------------------------------------------------------------------
 
 /**
  * Migrate old Lovefield Sources Database into the new MainDB Dexie DB.
@@ -89,34 +118,6 @@ async function migrateLovefieldSourcesDB(dbName: string, version: number) {
     );
     // Can't await on this, as it will delete only after the last connection is closed.
     wrapRequest(indexedDB.deleteDatabase(dbName));
-}
-
-function byteLength(str: string) {
-    var s = str.length;
-    for (var i = str.length - 1; i >= 0; i--) {
-        var code = str.charCodeAt(i);
-        if (code > 0x7f && code <= 0x7ff) s++;
-        else if (code > 0x7ff && code <= 0xffff) s += 2;
-        if (code >= 0xdc00 && code <= 0xdfff) i--; //trail surrogate
-    }
-    return s;
-}
-
-export async function calculateItemSize(): Promise<number> {
-    await fluentDB.open();
-    let result = 0;
-    const idb = fluentDB.backendDB();
-    const objectStore = idb
-        .transaction(["items"], "readonly")
-        .objectStore("items");
-    const cursorRequest = objectStore.openCursor();
-    let cursor = (await wrapRequest(cursorRequest)).result;
-    while (cursor) {
-        result += byteLength(JSON.stringify(cursor.value));
-        cursor.continue();
-        cursor = (await wrapRequest(cursorRequest)).result;
-    }
-    return result;
 }
 
 /**
@@ -180,6 +181,31 @@ async function migrateLovefieldItemsDB(dbName: string, version: number) {
     wrapRequest(indexedDB.deleteDatabase(dbName));
 }
 
+async function migrateThumbs(
+    trans: Transaction & { items: Dexie.Table<ItemEntry, "iid"> },
+) {
+    return trans.items.toCollection().modify((item) => {
+        if (item.thumb != null) {
+            if (item.thumbnails == null) {
+                item.thumbnails = [
+                    {
+                        medium: "image",
+                        url: item.thumb,
+                        type: ThumbnailTypePref.Other,
+                    },
+                ];
+            }
+        }
+        if (item.thumb !== undefined) {
+            delete item.thumb;
+        }
+    });
+}
+
+// ------------------------------------------------------------------------------------------------
+// Utils
+// ------------------------------------------------------------------------------------------------
+
 function wrapRequest<T>(req: T & IDBRequest): Promise<T> {
     return new Promise((resolve, reject) => {
         req.onsuccess = (_) => {
@@ -189,6 +215,17 @@ function wrapRequest<T>(req: T & IDBRequest): Promise<T> {
             reject(out);
         };
     });
+}
+
+function byteLength(str: string) {
+    var s = str.length;
+    for (var i = str.length - 1; i >= 0; i--) {
+        var code = str.charCodeAt(i);
+        if (code > 0x7f && code <= 0x7ff) s++;
+        else if (code > 0x7ff && code <= 0xffff) s += 2;
+        if (code >= 0xdc00 && code <= 0xdfff) i--; //trail surrogate
+    }
+    return s;
 }
 
 export async function init() {

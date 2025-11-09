@@ -1,6 +1,11 @@
 import { fluentDB } from "../db";
 import intl from "react-intl-universal";
-import type { MyParserItem, ThumbnailAttributes } from "../utils";
+import type { MyParserItem } from "../utils";
+import {
+    type ThumbnailAttributes,
+    fetchOpenGraphThumb,
+    urlToThumbnailAttributes,
+} from "../thumb-utils";
 import {
     htmlDecode,
     ActionStatus,
@@ -76,70 +81,6 @@ export class RSSItem {
         return result;
     }
 
-    private static async opengraphThumbnail(
-        head: string,
-    ): Promise<ThumbnailAttributes[]> {
-        const dom = new DOMParser().parseFromString(head, "text/html");
-        const elements = [
-            ...dom.head.querySelectorAll(
-                "meta[property*='og:image'],meta[property*='og:video']",
-            ),
-        ].map((e: HTMLMetaElement) => {
-            return { tag: e.getAttribute("property"), content: e.content };
-        });
-
-        const queries = [
-            "og:image",
-            "og:image:url",
-            "og:image:secure_url",
-            "og:video",
-            "og:video:url",
-            "og:video:secure_url",
-        ];
-        const result: ThumbnailAttributes[] = [];
-        for (const query of queries) {
-            const element =
-                elements.find((e) => e.tag === query)?.content ?? null;
-            if (element !== null)
-                result.push(
-                    await this.urlToThumbnailAttributes(
-                        element,
-                        query.startsWith("og:image") ? "image" : "video",
-                        ThumbnailTypePref.OpenGraph,
-                    ),
-                );
-        }
-        return result;
-    }
-
-    private static async urlToThumbnailAttributes(
-        url: string,
-        medium: "image" | "video" | "unknown",
-        type: ThumbnailTypePref,
-    ): Promise<ThumbnailAttributes> {
-        if (medium === "image" || medium === "video") {
-            return {
-                url,
-                medium,
-                type,
-            };
-        }
-        const response = await fetch(url, { method: "HEAD" });
-        if (!response.ok)
-            return {
-                url,
-                medium: "image", //assume image as a fallback
-                type,
-            };
-        const contentType = response.headers.get("content-type");
-        medium = contentType.startsWith("video/") ? "video" : "image";
-        return {
-            url,
-            medium,
-            type,
-        };
-    }
-
     static async parseContent(item: RSSItem, parsed: MyParserItem) {
         for (let field of ["thumb", "content", "fullContent"]) {
             const content = parsed[field];
@@ -154,15 +95,18 @@ export class RSSItem {
         }
         item.thumbnails = [];
         if (parsed.link) {
-            const head = await this.fetchHead(parsed.link);
-            if (/og:(?:image|video)/gi.test(head))
-                item.thumbnails.push(...(await this.opengraphThumbnail(head)));
+            const potentialThumbs = await fetchOpenGraphThumb(
+                new URL(parsed.link),
+            );
+            if (potentialThumbs && potentialThumbs.length > 0) {
+                item.thumbnails.push(...potentialThumbs);
+            }
         }
         if (parsed.mediaThumbnails) {
             const images = parsed.mediaThumbnails.filter((t) => t.$?.url);
             for (const image of images)
                 item.thumbnails.push(
-                    await this.urlToThumbnailAttributes(
+                    await urlToThumbnailAttributes(
                         image.$.url,
                         "unknown",
                         ThumbnailTypePref.MediaThumbnail,
@@ -171,7 +115,7 @@ export class RSSItem {
         }
         if (parsed.thumb) {
             item.thumbnails.push(
-                await this.urlToThumbnailAttributes(
+                await urlToThumbnailAttributes(
                     parsed.thumb,
                     "unknown",
                     ThumbnailTypePref.Thumb,
@@ -180,7 +124,7 @@ export class RSSItem {
         }
         if (parsed.image?.$?.url) {
             item.thumbnails.push(
-                await this.urlToThumbnailAttributes(
+                await urlToThumbnailAttributes(
                     parsed.image.$.url,
                     "image",
                     ThumbnailTypePref.Other,
@@ -189,7 +133,7 @@ export class RSSItem {
         }
         if (parsed.image && typeof parsed.image === "string") {
             item.thumbnails.push(
-                await this.urlToThumbnailAttributes(
+                await urlToThumbnailAttributes(
                     parsed.image,
                     "image",
                     ThumbnailTypePref.Other,
@@ -207,7 +151,7 @@ export class RSSItem {
             );
             for (const image of images)
                 item.thumbnails.push(
-                    await this.urlToThumbnailAttributes(
+                    await urlToThumbnailAttributes(
                         image.$.url,
                         image.$.medium,
                         ThumbnailTypePref.Other,
@@ -228,7 +172,7 @@ export class RSSItem {
             let img = dom.querySelector("img");
             if (img && img.src)
                 item.thumbnails.push(
-                    await this.urlToThumbnailAttributes(
+                    await urlToThumbnailAttributes(
                         img.src,
                         "image",
                         ThumbnailTypePref.Other,
