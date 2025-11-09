@@ -14,18 +14,16 @@ const mediaElement = (src: string, className: string) => {
 
 const CardThumbnail: React.FunctionComponent<CardThumbnailProps> = (props) => {
     const preferredThumbnailType = getThumbnailTypePref();
-    const preferredThumbnails = props.item.thumbnails?.filter(
+    const preferredThumbnail = props.item.thumbnails?.filter(
         (t) => t.type === preferredThumbnailType,
-    );
-    const selectedThumbnail =
-        preferredThumbnails && preferredThumbnails.length > 0
-            ? preferredThumbnails[0].url
-            : props.item.thumb;
+    )?.[0];
+    const selectedThumbnail = preferredThumbnail ?? props.item.thumbnails?.[0];
     return selectedThumbnail
         ? mediaElement(
-              new URL(selectedThumbnail, props.item.link).toString(),
+              new URL(selectedThumbnail.url, props.item.link).toString(),
               props.className,
           )
         : null;
 };
+
 export default CardThumbnail;
