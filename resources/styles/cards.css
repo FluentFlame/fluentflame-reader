@@ -221,6 +221,7 @@
     margin: 8px 0 8px 10px;
 }
 .list-card div.head img,
+.list-card div.head canvas,
 .list-card div.head video {
     width: 80px;
     height: 80px;
@@ -305,6 +306,7 @@
     margin-right: 25px;
 }
 .magazine-card div.head img,
+.magazine-card div.head canvas,
 .magazine-card div.head video {
     width: 200px;
     height: 160px;
