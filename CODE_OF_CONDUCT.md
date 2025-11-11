@@ -26,17 +26,17 @@ We agree to restrict the following behaviors in our community. Instances, threat
 
 1. **Harassment.** Violating explicitly expressed boundaries or engaging in unnecessary personal attention after any clear request to stop.
 2. **Trolling and political attacks** We will not tolerate any kind of trolling behavior in our community, nor will we accept any political attacks against our contributors.
-3. **Anti-LGBTQ+ Discrimination** Any type of discrimination against a person based on their sexual orientation or gender identity, such as transphobia, homophobia, queerphobia, etc., will not be tolerated. We take very seriously our commitment to providing a safe space for everyone.
+3. **Anti-LGBTQ+ Discrimination.** Any type of discrimination against a person based on their sexual orientation or gender identity, such as transphobia, homophobia, queerphobia, etc., will not be tolerated. We take very seriously our commitment to providing a safe space for everyone.
 4. **Sexualization.** Behaving in a way that would generally be considered inappropriately intimate in the context or purpose of the community.
-5. **Violating confidentiality**. Sharing or acting on someone's personal or private information without their permission.
-6. **Fascist bigotry and similar expressions**. We will not tolerate any promotion of fascist, racist, xenophobic, or highly harmful ideas in our community. Even if this means that some individuals will not wish to contribute to our project, this is our stance and we will not budge from it. Being committed to a safe space means not being weak on this issue.
+5. **Violating confidentiality.** Sharing or acting on someone's personal or private information without their permission.
+6. **Fascist bigotry and similar expressions.** We will not tolerate any promotion of fascist, racist, xenophobic, or highly harmful ideas in our community. Even if this means that some individuals will not wish to contribute to our project, this is our stance and we will not budge from it. Being committed to a safe space means not being weak on this issue.
 7. Behaving in other ways that **threaten the well-being** of our community.
 
 ### Other Restrictions
 
 1. **Misleading identity.** Impersonating someone else for any reason, or pretending to be someone else to evade enforcement actions.
 2. **Failing to credit sources.** Not properly crediting the sources of content you contribute.
-3. **Promotional materials**. Sharing marketing or other commercial content in a way that is outside the norms of the community.
+3. **Promotional materials.** Sharing marketing or other commercial content in a way that is outside the norms of the community.
 4. **Irresponsible communication.** Failing to responsibly present content which includes, links or describes any other restricted behaviors.
 
 ### Restricted behaviors related to the use of AI and similar tools. 
