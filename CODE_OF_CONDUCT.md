@@ -20,7 +20,6 @@ With these considerations in mind, we agree to behave mindfully toward each othe
 6. Committing to **repairing harm** when it occurs.
 7. Behaving in other ways that promote and sustain the **well-being of our community**.
 
-
 ## Restricted Behaviors
 
 We agree to restrict the following behaviors in our community. Instances, threats, and promotion of these behaviors are violations of this Code of Conduct.
@@ -37,7 +36,6 @@ We agree to restrict the following behaviors in our community. Instances, threat
 
 1. **Misleading identity.** Impersonating someone else for any reason, or pretending to be someone else to evade enforcement actions.
 2. **Failing to credit sources.** Not properly crediting the sources of content you contribute.
-3. **
 3. **Promotional materials**. Sharing marketing or other commercial content in a way that is outside the norms of the community.
 4. **Irresponsible communication.** Failing to responsibly present content which includes, links or describes any other restricted behaviors.
 
@@ -51,7 +49,7 @@ Tensions can occur between community members even when they are trying their bes
 
 When an incident does occur, it is important to report it promptly. To report a possible violation, **write an email to a maintainer, we will leave these means of contact in a visible place so that you can communicate with us safely.**
 
-Community Moderators take reports of violations seriously and will make every effort to respond in a timely manner. They will investigate all reports of code of conduct violations, reviewing messages, logs, and recordings, or interviewing witnesses and other participants. Community Moderators will keep investigation and enforcement actions as transparent as possible while prioritizing safety and confidentiality. In order to honor these values, enforcement actions are carried out in private with the involved parties, but communicating to the whole community may be part of a mutually agreed upon resolution.
+The maintainers of the project take reports of violations seriously and will make every effort to respond in a timely manner. They will investigate all reports of code of conduct violations, reviewing messages, logs, and recordings, or interviewing witnesses and other participants. We will keep investigation and enforcement actions as transparent as possible while prioritizing safety and confidentiality. In order to honor these values, enforcement actions are carried out in private with the involved parties, but communicating to the whole community may be part of a mutually agreed upon resolution.
 
 
 ## Addressing and Repairing Harm
@@ -115,4 +113,3 @@ version 2.1, available at
 Contributor Covenant is stewarded by the Organization for Ethical Source and licensed under CC BY-SA 4.0. To view a copy of this license, visit [https://creativecommons.org/licenses/by-sa/4.0/](https://creativecommons.org/licenses/by-sa/4.0/)
 
 For answers to common questions about Contributor Covenant, see the FAQ at [https://www.contributor-covenant.org/faq](https://www.contributor-covenant.org/faq). Translations are provided at [https://www.contributor-covenant.org/translations](https://www.contributor-covenant.org/translations). Additional enforcement and community guideline resources can be found at [https://www.contributor-covenant.org/resources](https://www.contributor-covenant.org/resources). The enforcement ladder was inspired by the work of [Mozilla’s code of conduct team](https://github.com/mozilla/inclusion).
-
