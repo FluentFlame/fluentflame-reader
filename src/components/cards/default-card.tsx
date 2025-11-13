@@ -13,7 +13,11 @@ const className = (props: Card.Props) => {
     return cn.join(" ");
 };
 
-const DefaultCard: React.FunctionComponent<Card.Props> = (props) => (
+const HEADER_IMG_WIDTH = 256
+const HEADER_IMG_HEIGHT = 144
+const RESCALE_FACTOR = 2  // Should be at least 1.
+
+const DefaultCard: React.FunctionComponent<Card.Props> = props => (
     <div
         className={className(props)}
         {...Card.bindEventsToProps(props)}
@@ -21,7 +25,12 @@ const DefaultCard: React.FunctionComponent<Card.Props> = (props) => (
         data-is-focusable>
         <CardThumbnail className="bg" item={props.item} />
         <div className="bg"></div>
-        <CardThumbnail className="head" item={props.item} />
+        <CardThumbnail
+            className="head"
+            item={props.item}
+            width={HEADER_IMG_WIDTH * RESCALE_FACTOR}
+            height={HEADER_IMG_HEIGHT * RESCALE_FACTOR}
+        />
         <CardInfo source={props.source} item={props.item} />
         <h3 className="title">
             <Highlights text={props.item.title} filter={props.filter} title />

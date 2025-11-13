@@ -6,13 +6,27 @@ import { getThumbnailTypePref } from "../../scripts/settings";
 type CardThumbnailProps = {
     item: RSSItem;
     className?: string;
+    width?: number;
+    height?: number;
 };
 
-const mediaElement = (src: string, className: string) => {
-    return <CachedImg src={src} className={className}></CachedImg>;
+const mediaElement = (
+    src: string,
+    className: string,
+    width: number | null,
+    height: number | null,
+) => {
+    return (
+        <CachedImg
+            src={src}
+            className={className}
+            width={width}
+            height={height}
+        ></CachedImg>
+    );
 };
 
-const CardThumbnail: React.FunctionComponent<CardThumbnailProps> = (props) => {
+function CardThumbnail(props: CardThumbnailProps): React.JSX.Element {
     const preferredThumbnailType = getThumbnailTypePref();
     const preferredThumbnail = props.item.thumbnails?.filter(
         (t) => t.type === preferredThumbnailType,
@@ -22,8 +36,10 @@ const CardThumbnail: React.FunctionComponent<CardThumbnailProps> = (props) => {
         ? mediaElement(
               new URL(selectedThumbnail.url, props.item.link).toString(),
               props.className,
+              props.width,
+              props.height,
           )
         : null;
-};
+}
 
 export default CardThumbnail;
