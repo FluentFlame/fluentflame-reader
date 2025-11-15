@@ -4,9 +4,9 @@
 <h3 align="center">Fluentflame Reader</h3>
 <p align="center">A modern desktop RSS reader given new life</p>
 <p align="center">
-  <img src="https://img.shields.io/github/v/release/yang991178/fluent-reader?label=version" />
-  <img src="https://img.shields.io/github/downloads/yang991178/fluent-reader/total" />
-  <img src="https://github.com/yang991178/fluent-reader/workflows/CI%2FCD%20Release/badge.svg" />
+  <img src="https://img.shields.io/github/v/release/FluentFlame/fluentflame-reader?label=version" />
+  <img src="https://img.shields.io/github/downloads/FluentFlame/fluentflame-reader/total" />
+  <img src="https://img.shields.io/github/check-runs/FluentFlame/fluentflame-reader/master?logo=Linux&logoColor=white&label=checks" />
 </p>
 <hr />
 
