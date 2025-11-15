@@ -1,0 +1,32 @@
+name: "Test Linux"
+
+on:
+    push:
+        branches: ["master"]
+    pull_request:
+
+jobs:
+    ubuntu_package_appimage:
+        runs-on: "ubuntu-latest"
+        steps:
+            - uses: "actions/checkout@v5"
+            - name: "Build AppImage"
+              uses: "actions/setup-node@v4"
+              with:
+                  node-version: "22.x"
+                  cache: "npm"
+            - run: "npm ci"
+            - run: "npm run build"
+            - run: "npm run test"
+            - run: "npm run package-linux"
+    check_nix:
+        runs-on: "ubuntu-latest"
+        steps:
+            - uses: "actions/checkout@v5"
+            - name: "Check Nix Packaging"
+              uses: "cachix/install-nix-action@v31"
+              with:
+                  nix_path: "nixpkgs=channel:nixos-unstable"
+                  cache: "nixos-unstable"
+            - run: "nix build ./nix"
+            - run: "nix flake check ./nix"

@@ -17,7 +17,7 @@ Steps to reproduce the behavior:
 3. Scroll down to '....'
 4. See error
 
-**Expected behavior**
+**Expected behaviour**
 A clear and concise description of what you expected to happen.
 
 **Screenshots**
@@ -25,7 +25,8 @@ If applicable, add screenshots to help explain your problem.
 
 **Platform (please complete the following information):**
  - OS: [e.g. Windows 10 2004]
- - Version [e.g. 0.6.1]
+ - Version: [e.g. 0.6.1, check "Settings > About"]
+ - (optional) Package type: [e.g. AppImage, .deb, .dmg, Nix, .exe, source]
 
 **Additional context**
 Add any other context about the problem here.
