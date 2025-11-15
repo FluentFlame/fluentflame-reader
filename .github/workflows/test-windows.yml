@@ -1,0 +1,20 @@
+name: "Test Windows"
+
+on:
+    push:
+        branches: ["master"]
+    pull_request:
+
+jobs:
+    windows_package_ci:
+        runs-on: "windows-latest"
+        steps:
+            - uses: "actions/checkout@v5"
+            - name: "Build Windows CI"
+              uses: "actions/setup-node@v4"
+              with:
+                  node-version: "22.x"
+            - run: "npm ci"
+            - run: "npm run build"
+            - run: "npm run test"
+            - run: "npm run package-win-ci"
