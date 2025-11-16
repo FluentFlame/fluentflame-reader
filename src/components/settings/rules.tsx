@@ -484,8 +484,7 @@ class RulesTab extends React.Component<RulesTabProps, RulesTabState> {
                         />
                         <MarqueeSelection
                             selection={this.rulesSelection}
-                            isDraggingConstrainedToRoot
-                        >
+                            isDraggingConstrainedToRoot>
                             <DetailsList
                                 compact
                                 columns={this.ruleColumns()}
@@ -546,8 +545,7 @@ class RulesTab extends React.Component<RulesTabProps, RulesTabState> {
                     <Stack
                         className="settings-rules-icons"
                         horizontal
-                        tokens={{ childrenGap: 12 }}
-                    >
+                        tokens={{ childrenGap: 12 }}>
                         <Icon iconName="Filter" />
                         <Icon iconName="FavoriteStar" />
                         <Icon iconName="Ringer" />
@@ -561,8 +559,7 @@ class RulesTab extends React.Component<RulesTabProps, RulesTabState> {
                                     "https://github.com/yang991178/fluent-reader/wiki/Support#rules",
                                 )
                             }
-                            style={{ marginLeft: 6 }}
-                        >
+                            style={{ marginLeft: 6 }}>
                             {intl.get("rules.help")}
                         </Link>
                     </span>

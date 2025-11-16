@@ -63,16 +63,14 @@ export default function Settings(props: SettingsProps): React.JSX.Element {
                                 "btn" + (props.exitting ? " disabled" : "")
                             }
                             title={intl.get("settings.exit")}
-                            onClick={props.close}
-                        >
+                            onClick={props.close}>
                             <Icon iconName="Back" />
                         </a>
                     </div>
                     {props.blocked && (
                         <FocusTrapZone
                             isClickableOutsideFocusTrap={true}
-                            className="loading"
-                        >
+                            className="loading">
                             <Spinner
                                 label={intl.get("settings.fetching")}
                                 tabIndex={0}

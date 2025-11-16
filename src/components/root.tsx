@@ -14,8 +14,7 @@ const Root = ({ locale, dispatch }) =>
         <div
             id="root"
             key={locale}
-            onMouseDown={() => dispatch(closeContextMenu())}
-        >
+            onMouseDown={() => dispatch(closeContextMenu())}>
             <NavContainer />
             <PageContainer />
             <LogMenu />

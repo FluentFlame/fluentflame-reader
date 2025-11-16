@@ -44,8 +44,7 @@ class DangerButton extends PrimaryButton {
                           action: this.props.text.toLowerCase(),
                       })
                     : this.props.text
-            }
-        >
+            }>
             {this.props.children}
         </PrimaryButton>
     );

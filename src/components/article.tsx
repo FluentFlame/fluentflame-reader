@@ -394,8 +394,7 @@ class Article extends React.Component<ArticleProps, ArticleState> {
                     className="actions"
                     grow
                     horizontal
-                    tokens={{ childrenGap: 12 }}
-                >
+                    tokens={{ childrenGap: 12 }}>
                     <Stack.Item grow>
                         <span className="source-name">
                             {this.state.loaded ? (
@@ -504,14 +503,12 @@ class Article extends React.Component<ArticleProps, ArticleState> {
                     className="error-prompt"
                     verticalAlign="center"
                     horizontalAlign="center"
-                    tokens={{ childrenGap: 12 }}
-                >
+                    tokens={{ childrenGap: 12 }}>
                     <Icon iconName="HeartBroken" style={{ fontSize: 32 }} />
                     <Stack
                         horizontal
                         horizontalAlign="center"
-                        tokens={{ childrenGap: 7 }}
-                    >
+                        tokens={{ childrenGap: 7 }}>
                         <small>{intl.get("article.error")}</small>
                         <small>
                             <Link onClick={this.webviewReload}>

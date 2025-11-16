@@ -136,8 +136,7 @@ export class Menu extends React.Component<MenuProps> {
                 className="link-stack"
                 horizontal
                 grow
-                onContextMenu={(event) => this.onContext(link, event)}
-            >
+                onContextMenu={(event) => this.onContext(link, event)}>
                 <div className="link-text">{link.name}</div>
                 {count && count !== "0" && (
                     <div className="unread-count">{count}</div>
@@ -161,27 +160,23 @@ export class Menu extends React.Component<MenuProps> {
                     className={
                         "menu-container" + (this.props.display ? " show" : "")
                     }
-                    onClick={this.props.toggleMenu}
-                >
+                    onClick={this.props.toggleMenu}>
                     <div
                         className={
                             "menu" + (this.props.itemOn ? " item-on" : "")
                         }
-                        onClick={(e) => e.stopPropagation()}
-                    >
+                        onClick={(e) => e.stopPropagation()}>
                         <div className="btn-group">
                             <a
                                 className="btn hide-wide"
                                 title={intl.get("menu.close")}
-                                onClick={this.props.toggleMenu}
-                            >
+                                onClick={this.props.toggleMenu}>
                                 <Icon iconName="Back" />
                             </a>
                             <a
                                 className="btn inline-block-wide"
                                 title={intl.get("menu.close")}
-                                onClick={this.props.toggleMenu}
-                            >
+                                onClick={this.props.toggleMenu}>
                                 <Icon
                                     iconName={
                                         window.utils.platform === "darwin"
@@ -194,8 +189,7 @@ export class Menu extends React.Component<MenuProps> {
                         <FocusZone
                             as="div"
                             disabled={!this.props.display}
-                            className="nav-wrapper"
-                        >
+                            className="nav-wrapper">
                             <Nav
                                 onRenderGroupHeader={this._onRenderGroupHeader}
                                 onRenderLink={this._onRenderLink}

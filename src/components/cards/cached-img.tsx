@@ -249,8 +249,7 @@ class CachedImg extends React.Component<ImgProps> {
         const canvas = (
             <canvas
                 className={this.props.className}
-                ref={this._canvasRef}
-            ></canvas>
+                ref={this._canvasRef}></canvas>
         );
         this.renderImage();
         return canvas;

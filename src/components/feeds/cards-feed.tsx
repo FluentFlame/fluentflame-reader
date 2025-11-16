@@ -88,8 +88,7 @@ class CardsFeed extends React.Component<FeedProps> {
                     id="refocus"
                     className="cards-feed-container"
                     shouldReceiveFocus={this.canFocusChild}
-                    data-is-scrollable
-                >
+                    data-is-scrollable>
                     <List
                         className={AnimationClassNames.slideUpIn10}
                         items={this.flexFixItems()}

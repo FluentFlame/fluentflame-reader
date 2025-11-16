@@ -143,8 +143,7 @@ class Nav extends React.Component<NavProps, NavState> {
                     <a
                         className="btn hide-wide"
                         title={intl.get("nav.menu")}
-                        onClick={this.props.menu}
-                    >
+                        onClick={this.props.menu}>
                         <Icon
                             iconName={
                                 window.utils.platform === "darwin"
@@ -161,8 +160,7 @@ class Nav extends React.Component<NavProps, NavState> {
                     <a
                         className={"btn" + this.fetching()}
                         onClick={this.fetch}
-                        title={intl.get("nav.refresh")}
-                    >
+                        title={intl.get("nav.refresh")}>
                         <Icon iconName="Refresh" />
                     </a>
                     <a
@@ -176,16 +174,14 @@ class Nav extends React.Component<NavProps, NavState> {
                                 "#mark-all-toggle"
                             )
                                 e.stopPropagation();
-                        }}
-                    >
+                        }}>
                         <Icon iconName="InboxCheck" />
                     </a>
                     <a
                         className="btn"
                         id="log-toggle"
                         title={intl.get("nav.notifications")}
-                        onClick={this.props.logs}
-                    >
+                        onClick={this.props.logs}>
                         {this.props.state.logMenu.notify ? (
                             <Icon iconName="RingerSolid" />
                         ) : (
@@ -203,15 +199,13 @@ class Nav extends React.Component<NavProps, NavState> {
                                 "#view-toggle"
                             )
                                 e.stopPropagation();
-                        }}
-                    >
+                        }}>
                         <Icon iconName="View" />
                     </a>
                     <a
                         className="btn"
                         title={intl.get("nav.settings")}
-                        onClick={this.props.settings}
-                    >
+                        onClick={this.props.settings}>
                         <Icon iconName="Settings" />
                     </a>
                     <span className="seperator"></span>
@@ -219,15 +213,13 @@ class Nav extends React.Component<NavProps, NavState> {
                         className="btn system"
                         title={intl.get("nav.minimize")}
                         onClick={this.minimize}
-                        style={{ fontSize: 12 }}
-                    >
+                        style={{ fontSize: 12 }}>
                         <Icon iconName="Remove" />
                     </a>
                     <a
                         className="btn system"
                         title={intl.get("nav.maximize")}
-                        onClick={this.maximize}
-                    >
+                        onClick={this.maximize}>
                         {this.state.maximized ? (
                             <Icon
                                 iconName="ChromeRestore"
@@ -243,8 +235,7 @@ class Nav extends React.Component<NavProps, NavState> {
                     <a
                         className="btn system close"
                         title={intl.get("close")}
-                        onClick={this.close}
-                    >
+                        onClick={this.close}>
                         <Icon iconName="Cancel" />
                     </a>
                 </div>

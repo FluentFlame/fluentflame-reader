@@ -35,8 +35,7 @@ function LogMenu() {
                 directionalHint={DirectionalHint.bottomCenter}
                 calloutWidth={320}
                 calloutMaxHeight={240}
-                onDismiss={() => dispatch(toggleLogMenu())}
-            >
+                onDismiss={() => dispatch(toggleLogMenu())}>
                 {logs.length == 0 ? (
                     <p style={{ textAlign: "center" }}>
                         {intl.get("log.empty")}
@@ -54,8 +53,7 @@ function LogMenu() {
                                                     dispatch(
                                                         showItemFromId(l.iid),
                                                     );
-                                                }}
-                                            >
+                                                }}>
                                                 {l.title}
                                             </Link>
                                         </b>

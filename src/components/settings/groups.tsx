@@ -318,8 +318,7 @@ class GroupsTab extends React.Component<GroupsTabProps, GroupsTabState> {
                     <Stack
                         horizontal
                         horizontalAlign="space-between"
-                        style={{ height: 40 }}
-                    >
+                        style={{ height: 40 }}>
                         <CommandBarButton
                             text={intl.get("groups.exitGroup")}
                             iconProps={{ iconName: "BackToWindow" }}
@@ -341,8 +340,7 @@ class GroupsTab extends React.Component<GroupsTabProps, GroupsTabState> {
 
                     <MarqueeSelection
                         selection={this.sourcesSelection}
-                        isDraggingConstrainedToRoot={true}
-                    >
+                        isDraggingConstrainedToRoot={true}>
                         <DetailsList
                             compact={true}
                             items={this.state.selectedGroup.sids.map(
@@ -372,8 +370,7 @@ class GroupsTab extends React.Component<GroupsTabProps, GroupsTabState> {
                                     text={intl.get("service.importGroups")}
                                     onClick={this.props.importGroups}
                                 />
-                            }
-                        >
+                            }>
                             {intl.get("service.groupsWarning")}
                         </MessageBar>
                     )}
