@@ -3,11 +3,11 @@ import { AnimationMotionPref } from "../../schema-types";
 import { getAnimationMotionPref } from "../../scripts/settings";
 
 type ImgProps = {
-    src: string
-    className?: string
-    width?: number
-    height?: number
-}
+    src: string;
+    className?: string;
+    width?: number;
+    height?: number;
+};
 
 type PlaceholderImageSource = "<PLACEHOLDER>";
 const placeholderImageSource: PlaceholderImageSource = "<PLACEHOLDER>";
@@ -20,23 +20,23 @@ class CachedImg extends React.Component<ImgProps> {
         | VideoFrame[]
         | null
         | PlaceholderImageSource
-    >()
-    private readonly _canvasRef = React.createRef<HTMLCanvasElement>()
-    private _needsRescaling: boolean = true
+    >();
+    private readonly _canvasRef = React.createRef<HTMLCanvasElement>();
+    private _needsRescaling: boolean = true;
     private _imgSource:
         | HTMLImageElement
         | HTMLVideoElement
         | VideoFrame[]
-        | null = null
-    private _animationTimeout: NodeJS.Timeout | null = null
-    private _requestVideoFrameCallback: number | null = null
-    private _maxCanvasWidth: number
-    private _maxCanvasHeight: number
+        | null = null;
+    private _animationTimeout: NodeJS.Timeout | null = null;
+    private _requestVideoFrameCallback: number | null = null;
+    private _maxCanvasWidth: number;
+    private _maxCanvasHeight: number;
 
     constructor(props: ImgProps) {
-        super(props)
-        this._maxCanvasWidth = props.width ?? 512
-        this._maxCanvasHeight = props.height ?? 512
+        super(props);
+        this._maxCanvasWidth = props.width ?? 512;
+        this._maxCanvasHeight = props.height ?? 512;
     }
 
     private async loadContentType(url: string): Promise<string> {
@@ -100,17 +100,17 @@ class CachedImg extends React.Component<ImgProps> {
                 const scaleFactor = Math.min(
                     width / this._maxCanvasWidth,
                     height / this._maxCanvasHeight,
-                )
-                canvas.width = width / scaleFactor
-                canvas.height = height / scaleFactor
+                );
+                canvas.width = width / scaleFactor;
+                canvas.height = height / scaleFactor;
             } else {
                 canvas.width = width;
                 canvas.height = height;
             }
             this._needsRescaling = false;
         }
-        const ctx = canvas.getContext("2d")
-        ctx.imageSmoothingEnabled = true
+        const ctx = canvas.getContext("2d");
+        ctx.imageSmoothingEnabled = true;
         ctx.drawImage(
             img,
             0,

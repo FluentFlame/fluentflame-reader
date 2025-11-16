@@ -13,11 +13,11 @@ const className = (props: Card.Props) => {
     return cn.join(" ");
 };
 
-const HEADER_IMG_WIDTH = 256
-const HEADER_IMG_HEIGHT = 144
-const RESCALE_FACTOR = 2  // Should be at least 1.
+const HEADER_IMG_WIDTH = 256;
+const HEADER_IMG_HEIGHT = 144;
+const RESCALE_FACTOR = 2; // Should be at least 1.
 
-const DefaultCard: React.FunctionComponent<Card.Props> = props => (
+const DefaultCard: React.FunctionComponent<Card.Props> = (props) => (
     <div
         className={className(props)}
         {...Card.bindEventsToProps(props)}
