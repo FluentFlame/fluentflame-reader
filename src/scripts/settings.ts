@@ -1,20 +1,20 @@
-import intl from "react-intl-universal"
-import { IPartialTheme, loadTheme } from "@fluentui/react"
+import intl from "react-intl-universal";
+import { IPartialTheme, loadTheme } from "@fluentui/react";
 
-import * as db from "./db"
-import locales from "./i18n/_locales"
+import * as db from "./db";
+import locales from "./i18n/_locales";
 import {
     AnimationMotionPref,
     ThemeSettings,
     ThumbnailTypePref,
-} from "../schema-types"
-import { SourceTextDirection } from "./models/source"
+} from "../schema-types";
+import { SourceTextDirection } from "./models/source";
 
 let lightTheme: IPartialTheme = {
     defaultFontStyle: {
         fontFamily: '"Segoe UI", "Source Han Sans Regular", sans-serif',
     },
-}
+};
 let darkTheme: IPartialTheme = {
     ...lightTheme,
     palette: {
@@ -43,149 +43,149 @@ let darkTheme: IPartialTheme = {
         themeDarker: "#8ac2ec",
         accent: "#3a96dd",
     },
-}
+};
 
 export function setThemeDefaultFont(locale: string) {
     switch (locale) {
         case "zh-CN":
             lightTheme.defaultFontStyle.fontFamily =
-                '"Segoe UI", "Source Han Sans SC Regular", "Microsoft YaHei", sans-serif'
-            break
+                '"Segoe UI", "Source Han Sans SC Regular", "Microsoft YaHei", sans-serif';
+            break;
         case "zh-TW":
             lightTheme.defaultFontStyle.fontFamily =
-                '"Segoe UI", "Source Han Sans TC Regular", "Microsoft JhengHei", sans-serif'
-            break
+                '"Segoe UI", "Source Han Sans TC Regular", "Microsoft JhengHei", sans-serif';
+            break;
         case "ja":
             lightTheme.defaultFontStyle.fontFamily =
-                '"Segoe UI", "Source Han Sans JP Regular", "Yu Gothic UI", sans-serif'
-            break
+                '"Segoe UI", "Source Han Sans JP Regular", "Yu Gothic UI", sans-serif';
+            break;
         case "ko":
             lightTheme.defaultFontStyle.fontFamily =
-                '"Segoe UI", "Source Han Sans KR Regular", "Malgun Gothic", sans-serif'
-            break
+                '"Segoe UI", "Source Han Sans KR Regular", "Malgun Gothic", sans-serif';
+            break;
         default:
             lightTheme.defaultFontStyle.fontFamily =
-                '"Segoe UI", "Source Han Sans Regular", sans-serif'
+                '"Segoe UI", "Source Han Sans Regular", sans-serif';
     }
     darkTheme.defaultFontStyle.fontFamily =
-        lightTheme.defaultFontStyle.fontFamily
-    applyThemeSettings()
+        lightTheme.defaultFontStyle.fontFamily;
+    applyThemeSettings();
 }
 export function setThemeSettings(theme: ThemeSettings) {
-    window.settings.setThemeSettings(theme)
-    applyThemeSettings()
+    window.settings.setThemeSettings(theme);
+    applyThemeSettings();
 }
 export function getThemeSettings(): ThemeSettings {
-    return window.settings.getThemeSettings()
+    return window.settings.getThemeSettings();
 }
 export function applyThemeSettings() {
-    loadTheme(window.settings.shouldUseDarkColors() ? darkTheme : lightTheme)
+    loadTheme(window.settings.shouldUseDarkColors() ? darkTheme : lightTheme);
 }
-window.settings.addThemeUpdateListener(shouldDark => {
-    loadTheme(shouldDark ? darkTheme : lightTheme)
-})
+window.settings.addThemeUpdateListener((shouldDark) => {
+    loadTheme(shouldDark ? darkTheme : lightTheme);
+});
 export function getThumbnailTypePref(): ThumbnailTypePref {
-    return window.settings.getThumbnailTypePref()
+    return window.settings.getThumbnailTypePref();
 }
 export function setThumbnailTypePref(pref: ThumbnailTypePref) {
-    window.settings.setThumbnailTypePref(pref)
+    window.settings.setThumbnailTypePref(pref);
 }
 export function getAnimationMotionPref(): AnimationMotionPref {
-    return window.settings.getAnimationMotionPref()
+    return window.settings.getAnimationMotionPref();
 }
 export function setAnimationMotionPref(pref: AnimationMotionPref) {
-    window.settings.setAnimationMotionPref(pref)
-    applyAnimationMotionPref()
+    window.settings.setAnimationMotionPref(pref);
+    applyAnimationMotionPref();
 }
 export function applyAnimationMotionPref() {
-    const pref = getAnimationMotionPref()
-    let realisedPref = pref
+    const pref = getAnimationMotionPref();
+    let realisedPref = pref;
     if (pref === AnimationMotionPref.System) {
         const animationSettings =
-            window.utils.systemPreferencesGetAnimationSettings()
+            window.utils.systemPreferencesGetAnimationSettings();
         if (animationSettings.prefersReducedMotion) {
             // Based on existing Apple Guidelines, this best matches "Off".
             // See:
             // https://developer.apple.com/design/human-interface-guidelines/accessibility#Cognitive
-            realisedPref = AnimationMotionPref.Off
+            realisedPref = AnimationMotionPref.Off;
         } else {
-            realisedPref = AnimationMotionPref.On
+            realisedPref = AnimationMotionPref.On;
         }
     }
 
-    resetInjectedTransitionCSS()
+    resetInjectedTransitionCSS();
     switch (realisedPref) {
         case AnimationMotionPref.Off:
-            injectNoTransitionCSS()
-            break
+            injectNoTransitionCSS();
+            break;
         case AnimationMotionPref.Reduced:
-            injectReducedTransitionCSS()
-            break
+            injectReducedTransitionCSS();
+            break;
         case AnimationMotionPref.On:
         default:
-            break
+            break;
     }
 }
 
 function injectReducedTransitionCSS() {
-    const styleElem = document.createElement("style")
+    const styleElem = document.createElement("style");
     // This might be a bit too broad, but we can change this later.
     styleElem.textContent = `
     * {
         /* Injected to disable animations for accessibility */
         transition: none !important;
     }
-    `
-    styleElem.id = "animation-motion-pref"
-    document.head.append(styleElem)
+    `;
+    styleElem.id = "animation-motion-pref";
+    document.head.append(styleElem);
 }
 function injectNoTransitionCSS() {
-    const styleElem = document.createElement("style")
+    const styleElem = document.createElement("style");
     styleElem.textContent = `
     * {
         /* Injected to disable animations for accessibility */
         transition: none !important;
         animation-name: none !important;
     }
-    `
-    styleElem.id = "animation-motion-pref"
-    document.head.append(styleElem)
+    `;
+    styleElem.id = "animation-motion-pref";
+    document.head.append(styleElem);
 }
 function resetInjectedTransitionCSS() {
-    const injectedCSS = document.querySelector("#animation-motion-pref")
+    const injectedCSS = document.querySelector("#animation-motion-pref");
     if (!injectedCSS) {
-        return
+        return;
     }
-    injectedCSS.remove()
+    injectedCSS.remove();
 }
 
 export function getCurrentLocale() {
-    let locale = window.settings.getCurrentLocale()
-    if (locale in locales) return locale
-    locale = locale.split("-")[0]
-    return locale in locales ? locale : "en-US"
+    let locale = window.settings.getCurrentLocale();
+    if (locale in locales) return locale;
+    locale = locale.split("-")[0];
+    return locale in locales ? locale : "en-US";
 }
 
 export async function exportAll() {
-    const filters = [{ name: intl.get("app.frData"), extensions: ["frdata"] }]
+    const filters = [{ name: intl.get("app.frData"), extensions: ["frdata"] }];
     const write = await window.utils.showSaveDialog(
         filters,
         "*/fluentflame_reader_backup.frdata",
-    )
+    );
     if (write) {
-        let output = window.settings.getAll()
+        let output = window.settings.getAll();
         output["database"] = {
             sources: await db.fluentDB.sources.toArray(),
             items: await db.fluentDB.items.toArray(),
-        }
-        write(JSON.stringify(output), intl.get("settings.writeError"))
+        };
+        write(JSON.stringify(output), intl.get("settings.writeError"));
     }
 }
 
 export async function importAll() {
-    const filters = [{ name: intl.get("app.frData"), extensions: ["frdata"] }]
-    let data = await window.utils.showOpenDialog(filters)
-    if (!data) return true
+    const filters = [{ name: intl.get("app.frData"), extensions: ["frdata"] }];
+    let data = await window.utils.showOpenDialog(filters);
+    if (!data) return true;
     let confirmed = await window.utils.showMessageBox(
         intl.get("app.restore"),
         intl.get("app.confirmImport"),
@@ -193,23 +193,23 @@ export async function importAll() {
         intl.get("cancel"),
         true,
         "warning",
-    )
-    if (!confirmed) return true
-    let configs = JSON.parse(data)
-    await db.fluentDB.sources.clear()
-    await db.fluentDB.items.clear()
-    configs.database.sources.forEach(s => {
-        s.lastFetched = new Date(s.lastFetched)
-        if (!s.textDir) s.textDir = SourceTextDirection.LTR
-        if (!s.hidden) s.hidden = false
-        return db.fluentDB.sources.add(s)
-    })
-    configs.database.items.forEach(i => {
-        i.date = new Date(i.date)
-        i.fetchedDate = new Date(i.fetchedDate)
-    })
-    await db.fluentDB.items.bulkAdd(configs.database.items)
-    delete configs.database
-    window.settings.setAll(configs)
-    return false
+    );
+    if (!confirmed) return true;
+    let configs = JSON.parse(data);
+    await db.fluentDB.sources.clear();
+    await db.fluentDB.items.clear();
+    configs.database.sources.forEach((s) => {
+        s.lastFetched = new Date(s.lastFetched);
+        if (!s.textDir) s.textDir = SourceTextDirection.LTR;
+        if (!s.hidden) s.hidden = false;
+        return db.fluentDB.sources.add(s);
+    });
+    configs.database.items.forEach((i) => {
+        i.date = new Date(i.date);
+        i.fetchedDate = new Date(i.fetchedDate);
+    });
+    await db.fluentDB.items.bulkAdd(configs.database.items);
+    delete configs.database;
+    window.settings.setAll(configs);
+    return false;
 }

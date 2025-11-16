@@ -1,31 +1,31 @@
-import * as React from "react"
-import intl from "react-intl-universal"
+import * as React from "react";
+import intl from "react-intl-universal";
 import {
     Callout,
     ActivityItem,
     Icon,
     DirectionalHint,
     Link,
-} from "@fluentui/react"
-import { AppLog, AppLogType, toggleLogMenu } from "../scripts/models/app"
-import Time from "./utils/time"
-import { useAppDispatch, useAppSelector } from "../scripts/reducer"
-import { showItemFromId } from "../scripts/models/page"
+} from "@fluentui/react";
+import { AppLog, AppLogType, toggleLogMenu } from "../scripts/models/app";
+import Time from "./utils/time";
+import { useAppDispatch, useAppSelector } from "../scripts/reducer";
+import { showItemFromId } from "../scripts/models/page";
 
 function getLogIcon(log: AppLog) {
     switch (log.type) {
         case AppLogType.Info:
-            return "Info"
+            return "Info";
         case AppLogType.Article:
-            return "KnowledgeArticle"
+            return "KnowledgeArticle";
         default:
-            return "Warning"
+            return "Warning";
     }
 }
 
 function LogMenu() {
-    const dispatch = useAppDispatch()
-    const { display, logs } = useAppSelector(state => state.app.logMenu)
+    const dispatch = useAppDispatch();
+    const { display, logs } = useAppSelector((state) => state.app.logMenu);
 
     return (
         display && (
@@ -35,7 +35,8 @@ function LogMenu() {
                 directionalHint={DirectionalHint.bottomCenter}
                 calloutWidth={320}
                 calloutMaxHeight={240}
-                onDismiss={() => dispatch(toggleLogMenu())}>
+                onDismiss={() => dispatch(toggleLogMenu())}
+            >
                 {logs.length == 0 ? (
                     <p style={{ textAlign: "center" }}>
                         {intl.get("log.empty")}
@@ -49,11 +50,12 @@ function LogMenu() {
                                         <b>
                                             <Link
                                                 onClick={() => {
-                                                    dispatch(toggleLogMenu())
+                                                    dispatch(toggleLogMenu());
                                                     dispatch(
-                                                        showItemFromId(l.iid)
-                                                    )
-                                                }}>
+                                                        showItemFromId(l.iid),
+                                                    );
+                                                }}
+                                            >
                                                 {l.title}
                                             </Link>
                                         </b>
@@ -72,7 +74,7 @@ function LogMenu() {
                 )}
             </Callout>
         )
-    )
+    );
 }
 
-export default LogMenu
+export default LogMenu;

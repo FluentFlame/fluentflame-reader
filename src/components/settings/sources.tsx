@@ -1,5 +1,5 @@
-import * as React from "react"
-import intl from "react-intl-universal"
+import * as React from "react";
+import intl from "react-intl-universal";
 import {
     Label,
     DefaultButton,
@@ -17,42 +17,42 @@ import {
     MessageBar,
     MessageBarType,
     Toggle,
-} from "@fluentui/react"
+} from "@fluentui/react";
 import {
     SourceState,
     RSSSource,
     SourceOpenTarget,
-} from "../../scripts/models/source"
-import { urlTest } from "../../scripts/utils"
-import DangerButton from "../utils/danger-button"
+} from "../../scripts/models/source";
+import { urlTest } from "../../scripts/utils";
+import DangerButton from "../utils/danger-button";
 
 type SourcesTabProps = {
-    sources: SourceState
-    serviceOn: boolean
-    sids: number[]
-    acknowledgeSIDs: () => void
-    addSource: (url: string) => void
-    updateSourceUrl: (source: RSSSource, url: string) => void
-    updateSourceName: (source: RSSSource, name: string) => void
-    updateSourceIcon: (source: RSSSource, iconUrl: string) => Promise<void>
+    sources: SourceState;
+    serviceOn: boolean;
+    sids: number[];
+    acknowledgeSIDs: () => void;
+    addSource: (url: string) => void;
+    updateSourceUrl: (source: RSSSource, url: string) => void;
+    updateSourceName: (source: RSSSource, name: string) => void;
+    updateSourceIcon: (source: RSSSource, iconUrl: string) => Promise<void>;
     updateSourceOpenTarget: (
         source: RSSSource,
         target: SourceOpenTarget,
-    ) => void
-    updateFetchFrequency: (source: RSSSource, frequency: number) => void
-    deleteSource: (source: RSSSource) => void
-    deleteSources: (sources: RSSSource[]) => void
-    importOPML: () => void
-    exportOPML: () => void
-    toggleSourceHidden: (source: RSSSource) => void
-}
+    ) => void;
+    updateFetchFrequency: (source: RSSSource, frequency: number) => void;
+    deleteSource: (source: RSSSource) => void;
+    deleteSources: (sources: RSSSource[]) => void;
+    importOPML: () => void;
+    exportOPML: () => void;
+    toggleSourceHidden: (source: RSSSource) => void;
+};
 
 type SourcesTabState = {
-    [formName: string]: string
+    [formName: string]: string;
 } & {
-    selectedSource: RSSSource
-    selectedSources: RSSSource[]
-}
+    selectedSource: RSSSource;
+    selectedSources: RSSSource[];
+};
 
 const enum EditDropdownKeys {
     Name = "n",
@@ -61,24 +61,24 @@ const enum EditDropdownKeys {
 }
 
 class SourcesTab extends React.Component<SourcesTabProps, SourcesTabState> {
-    selection: Selection
+    selection: Selection;
 
     constructor(props) {
-        super(props)
+        super(props);
         this.state = {
             newUrl: "",
             newSourceName: "",
             newSourceIcon: "",
             selectedSource: null,
             selectedSources: null,
-        }
+        };
         this.selection = new Selection({
-            getKey: s => (s as RSSSource).sid,
+            getKey: (s) => (s as RSSSource).sid,
             onSelectionChanged: () => {
-                let count = this.selection.getSelectedCount()
+                let count = this.selection.getSelectedCount();
                 let sources = count
                     ? (this.selection.getSelection() as RSSSource[])
-                    : null
+                    : null;
                 this.setState({
                     selectedSource: count === 1 ? sources[0] : null,
                     selectedSources: count > 1 ? sources : null,
@@ -86,19 +86,19 @@ class SourcesTab extends React.Component<SourcesTabProps, SourcesTabState> {
                     newSourceName: count === 1 ? sources[0].name : "",
                     newSourceIcon: count === 1 ? sources[0].iconurl || "" : "",
                     sourceEditOption: EditDropdownKeys.Name,
-                })
+                });
             },
-        })
+        });
     }
 
     componentDidMount = () => {
         if (this.props.sids.length > 0) {
             for (let sid of this.props.sids) {
-                this.selection.setKeySelected(String(sid), true, false)
+                this.selection.setKeySelected(String(sid), true, false);
             }
-            this.props.acknowledgeSIDs()
+            this.props.acknowledgeSIDs();
         }
-    }
+    };
 
     columns = (): IColumn[] => [
         {
@@ -127,17 +127,17 @@ class SourcesTab extends React.Component<SourcesTabProps, SourcesTabState> {
             minWidth: 280,
             data: "string",
         },
-    ]
+    ];
 
     sourceEditOptions = (): IDropdownOption[] => [
         { key: EditDropdownKeys.Name, text: intl.get("name") },
         { key: EditDropdownKeys.Icon, text: intl.get("icon") },
         { key: EditDropdownKeys.Url, text: "URL" },
-    ]
+    ];
 
     onSourceEditOptionChange = (_, option: IDropdownOption) => {
-        this.setState({ sourceEditOption: option.key as string })
-    }
+        this.setState({ sourceEditOption: option.key as string });
+    };
 
     fetchFrequencyOptions = (): IDropdownOption[] => [
         { key: "0", text: intl.get("sources.unlimited") },
@@ -149,18 +149,18 @@ class SourcesTab extends React.Component<SourcesTabProps, SourcesTabState> {
         { key: "360", text: intl.get("time.hour", { h: 6 }) },
         { key: "720", text: intl.get("time.hour", { h: 12 }) },
         { key: "1440", text: intl.get("time.day", { d: 1 }) },
-    ]
+    ];
 
     onFetchFrequencyChange = (_, option: IDropdownOption) => {
-        let frequency = parseInt(option.key as string)
-        this.props.updateFetchFrequency(this.state.selectedSource, frequency)
+        let frequency = parseInt(option.key as string);
+        this.props.updateFetchFrequency(this.state.selectedSource, frequency);
         this.setState({
             selectedSource: {
                 ...this.state.selectedSource,
                 fetchFrequency: frequency,
             } as RSSSource,
-        })
-    }
+        });
+    };
 
     sourceOpenTargetChoices = (): IChoiceGroupOption[] => [
         {
@@ -179,72 +179,72 @@ class SourcesTab extends React.Component<SourcesTabProps, SourcesTabState> {
             key: String(SourceOpenTarget.External),
             text: intl.get("openExternal"),
         },
-    ]
+    ];
 
     updateSourceUrl = () => {
-        let newUrl = this.state.newUrl.trim()
-        this.props.updateSourceUrl(this.state.selectedSource, newUrl)
+        let newUrl = this.state.newUrl.trim();
+        this.props.updateSourceUrl(this.state.selectedSource, newUrl);
         this.setState({
             selectedSource: {
                 ...this.state.selectedSource,
                 url: newUrl,
             } as RSSSource,
-        })
-    }
+        });
+    };
 
     updateSourceName = () => {
-        let newName = this.state.newSourceName.trim()
-        this.props.updateSourceName(this.state.selectedSource, newName)
+        let newName = this.state.newSourceName.trim();
+        this.props.updateSourceName(this.state.selectedSource, newName);
         this.setState({
             selectedSource: {
                 ...this.state.selectedSource,
                 name: newName,
             } as RSSSource,
-        })
-    }
+        });
+    };
 
     updateSourceIcon = () => {
-        let newIcon = this.state.newSourceIcon.trim()
-        this.props.updateSourceIcon(this.state.selectedSource, newIcon)
+        let newIcon = this.state.newSourceIcon.trim();
+        this.props.updateSourceIcon(this.state.selectedSource, newIcon);
         this.setState({
             selectedSource: {
                 ...this.state.selectedSource,
                 iconurl: newIcon,
             } as RSSSource,
-        })
-    }
+        });
+    };
 
-    handleInputChange = event => {
-        const name: string = event.target.name
-        this.setState({ [name]: event.target.value })
-    }
+    handleInputChange = (event) => {
+        const name: string = event.target.name;
+        this.setState({ [name]: event.target.value });
+    };
 
     addSource = (event: React.FormEvent) => {
-        event.preventDefault()
-        let trimmed = this.state.newUrl.trim()
-        if (urlTest(trimmed)) this.props.addSource(trimmed)
-    }
+        event.preventDefault();
+        let trimmed = this.state.newUrl.trim();
+        if (urlTest(trimmed)) this.props.addSource(trimmed);
+    };
 
     onOpenTargetChange = (_, option: IChoiceGroupOption) => {
-        let newTarget = parseInt(option.key) as SourceOpenTarget
-        this.props.updateSourceOpenTarget(this.state.selectedSource, newTarget)
+        let newTarget = parseInt(option.key) as SourceOpenTarget;
+        this.props.updateSourceOpenTarget(this.state.selectedSource, newTarget);
         this.setState({
             selectedSource: {
                 ...this.state.selectedSource,
                 openTarget: newTarget,
             } as RSSSource,
-        })
-    }
+        });
+    };
 
     onToggleHidden = () => {
-        this.props.toggleSourceHidden(this.state.selectedSource)
+        this.props.toggleSourceHidden(this.state.selectedSource);
         this.setState({
             selectedSource: {
                 ...this.state.selectedSource,
                 hidden: !this.state.selectedSource.hidden,
             } as RSSSource,
-        })
-    }
+        });
+    };
 
     render = () => (
         <div className="tab-body">
@@ -274,7 +274,7 @@ class SourcesTab extends React.Component<SourcesTabProps, SourcesTabState> {
                 <Stack horizontal>
                     <Stack.Item grow>
                         <TextField
-                            onGetErrorMessage={v =>
+                            onGetErrorMessage={(v) =>
                                 urlTest(v.trim())
                                     ? ""
                                     : intl.get("sources.badUrl")
@@ -301,7 +301,7 @@ class SourcesTab extends React.Component<SourcesTabProps, SourcesTabState> {
                 compact={Object.keys(this.props.sources).length >= 10}
                 items={Object.values(this.props.sources)}
                 columns={this.columns()}
-                getKey={s => s.sid}
+                getKey={(s) => s.sid}
                 setKey="selected"
                 selection={this.selection}
                 selectionMode={SelectionMode.multiple}
@@ -329,7 +329,7 @@ class SourcesTab extends React.Component<SourcesTabProps, SourcesTabState> {
                             <>
                                 <Stack.Item grow>
                                     <TextField
-                                        onGetErrorMessage={v =>
+                                        onGetErrorMessage={(v) =>
                                             v.trim().length == 0
                                                 ? intl.get("emptyName")
                                                 : ""
@@ -360,7 +360,7 @@ class SourcesTab extends React.Component<SourcesTabProps, SourcesTabState> {
                             <>
                                 <Stack.Item grow>
                                     <TextField
-                                        onGetErrorMessage={v =>
+                                        onGetErrorMessage={(v) =>
                                             urlTest(v.trim())
                                                 ? ""
                                                 : intl.get("sources.badUrl")
@@ -395,7 +395,7 @@ class SourcesTab extends React.Component<SourcesTabProps, SourcesTabState> {
                             <>
                                 <Stack.Item grow>
                                     <TextField
-                                        onGetErrorMessage={v =>
+                                        onGetErrorMessage={(v) =>
                                             urlTest(v.trim())
                                                 ? ""
                                                 : intl.get("sources.badUrl")
@@ -489,8 +489,8 @@ class SourcesTab extends React.Component<SourcesTabProps, SourcesTabState> {
                 </>
             )}
             {this.state.selectedSources &&
-                (this.state.selectedSources.filter(s => s.serviceRef).length ===
-                0 ? (
+                (this.state.selectedSources.filter((s) => s.serviceRef)
+                    .length === 0 ? (
                     <>
                         <Label>{intl.get("sources.selectedMulti")}</Label>
                         <Stack horizontal>
@@ -517,7 +517,7 @@ class SourcesTab extends React.Component<SourcesTabProps, SourcesTabState> {
                     </MessageBar>
                 ))}
         </div>
-    )
+    );
 }
 
-export default SourcesTab
+export default SourcesTab;

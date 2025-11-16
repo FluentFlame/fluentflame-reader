@@ -1,25 +1,25 @@
-import { ipcRenderer } from "electron"
+import { ipcRenderer } from "electron";
 import {
     AnimationSettingsResponse,
     ImageCallbackTypes,
     TouchBarTexts,
     WindowStateListenerType,
-} from "../schema-types"
-import { IObjectWithKey } from "@fluentui/react"
+} from "../schema-types";
+import { IObjectWithKey } from "@fluentui/react";
 
 const utilsBridge = {
     platform: process.platform,
 
     getVersion: (): string => {
-        return ipcRenderer.sendSync("get-version")
+        return ipcRenderer.sendSync("get-version");
     },
 
     openExternal: (url: string, background = false) => {
-        ipcRenderer.invoke("open-external", url, background)
+        ipcRenderer.invoke("open-external", url, background);
     },
 
     showErrorBox: (title: string, content: string, copy?: string) => {
-        ipcRenderer.invoke("show-error-box", title, content, copy)
+        ipcRenderer.invoke("show-error-box", title, content, copy);
     },
 
     showMessageBox: async (
@@ -28,7 +28,7 @@ const utilsBridge = {
         confirm: string,
         cancel: string,
         defaultCancel = false,
-        type = "none"
+        type = "none",
     ) => {
         return (await ipcRenderer.invoke(
             "show-message-box",
@@ -37,155 +37,160 @@ const utilsBridge = {
             confirm,
             cancel,
             defaultCancel,
-            type
-        )) as boolean
+            type,
+        )) as boolean;
     },
 
     showSaveDialog: async (filters: Electron.FileFilter[], path: string) => {
         let result = (await ipcRenderer.invoke(
             "show-save-dialog",
             filters,
-            path
-        )) as boolean
+            path,
+        )) as boolean;
         if (result) {
             return (result: string, errmsg: string) => {
-                ipcRenderer.invoke("write-save-result", result, errmsg)
-            }
+                ipcRenderer.invoke("write-save-result", result, errmsg);
+            };
         } else {
-            return null
+            return null;
         }
     },
 
     showOpenDialog: async (filters: Electron.FileFilter[]) => {
-        return (await ipcRenderer.invoke("show-open-dialog", filters)) as string
+        return (await ipcRenderer.invoke(
+            "show-open-dialog",
+            filters,
+        )) as string;
     },
 
     getCacheSize: async (): Promise<number> => {
-        return await ipcRenderer.invoke("get-cache")
+        return await ipcRenderer.invoke("get-cache");
     },
 
     clearCache: async () => {
-        await ipcRenderer.invoke("clear-cache")
+        await ipcRenderer.invoke("clear-cache");
     },
 
     addMainContextListener: (
-        callback: (pos: [number, number], text: string) => any
+        callback: (pos: [number, number], text: string) => any,
     ) => {
-        ipcRenderer.removeAllListeners("window-context-menu")
+        ipcRenderer.removeAllListeners("window-context-menu");
         ipcRenderer.on("window-context-menu", (_, pos, text) => {
-            callback(pos, text)
-        })
+            callback(pos, text);
+        });
     },
     addWebviewContextListener: (
-        callback: (pos: [number, number], text: string, url: string) => any
+        callback: (pos: [number, number], text: string, url: string) => any,
     ) => {
-        ipcRenderer.removeAllListeners("webview-context-menu")
+        ipcRenderer.removeAllListeners("webview-context-menu");
         ipcRenderer.on("webview-context-menu", (_, pos, text, url) => {
-            callback(pos, text, url)
-        })
+            callback(pos, text, url);
+        });
     },
     imageCallback: (type: ImageCallbackTypes) => {
-        ipcRenderer.invoke("image-callback", type)
+        ipcRenderer.invoke("image-callback", type);
     },
 
     addWebviewKeydownListener: (callback: (event: Electron.Input) => any) => {
-        ipcRenderer.removeAllListeners("webview-keydown")
+        ipcRenderer.removeAllListeners("webview-keydown");
         ipcRenderer.on("webview-keydown", (_, input) => {
-            callback(input)
-        })
+            callback(input);
+        });
     },
 
     addWebviewErrorListener: (callback: (reason: string) => any) => {
-        ipcRenderer.removeAllListeners("webview-error")
+        ipcRenderer.removeAllListeners("webview-error");
         ipcRenderer.on("webview-error", (_, reason) => {
-            callback(reason)
-        })
+            callback(reason);
+        });
     },
 
     writeClipboard: (text: string) => {
-        ipcRenderer.invoke("write-clipboard", text)
+        ipcRenderer.invoke("write-clipboard", text);
     },
 
     closeWindow: () => {
-        ipcRenderer.invoke("close-window")
+        ipcRenderer.invoke("close-window");
     },
     minimizeWindow: () => {
-        ipcRenderer.invoke("minimize-window")
+        ipcRenderer.invoke("minimize-window");
     },
     maximizeWindow: () => {
-        ipcRenderer.invoke("maximize-window")
+        ipcRenderer.invoke("maximize-window");
     },
     isMaximized: () => {
-        return ipcRenderer.sendSync("is-maximized") as boolean
+        return ipcRenderer.sendSync("is-maximized") as boolean;
     },
     isFullscreen: () => {
-        return ipcRenderer.sendSync("is-fullscreen") as boolean
+        return ipcRenderer.sendSync("is-fullscreen") as boolean;
     },
     isFocused: () => {
-        return ipcRenderer.sendSync("is-focused") as boolean
+        return ipcRenderer.sendSync("is-focused") as boolean;
     },
     focus: () => {
-        ipcRenderer.invoke("request-focus")
+        ipcRenderer.invoke("request-focus");
     },
     requestAttention: () => {
-        ipcRenderer.invoke("request-attention")
+        ipcRenderer.invoke("request-attention");
     },
     addWindowStateListener: (
-        callback: (type: WindowStateListenerType, state: boolean) => any
+        callback: (type: WindowStateListenerType, state: boolean) => any,
     ) => {
-        ipcRenderer.removeAllListeners("maximized")
+        ipcRenderer.removeAllListeners("maximized");
         ipcRenderer.on("maximized", () => {
-            callback(WindowStateListenerType.Maximized, true)
-        })
-        ipcRenderer.removeAllListeners("unmaximized")
+            callback(WindowStateListenerType.Maximized, true);
+        });
+        ipcRenderer.removeAllListeners("unmaximized");
         ipcRenderer.on("unmaximized", () => {
-            callback(WindowStateListenerType.Maximized, false)
-        })
-        ipcRenderer.removeAllListeners("enter-fullscreen")
+            callback(WindowStateListenerType.Maximized, false);
+        });
+        ipcRenderer.removeAllListeners("enter-fullscreen");
         ipcRenderer.on("enter-fullscreen", () => {
-            callback(WindowStateListenerType.Fullscreen, true)
-        })
-        ipcRenderer.removeAllListeners("leave-fullscreen")
+            callback(WindowStateListenerType.Fullscreen, true);
+        });
+        ipcRenderer.removeAllListeners("leave-fullscreen");
         ipcRenderer.on("leave-fullscreen", () => {
-            callback(WindowStateListenerType.Fullscreen, false)
-        })
-        ipcRenderer.removeAllListeners("window-focus")
+            callback(WindowStateListenerType.Fullscreen, false);
+        });
+        ipcRenderer.removeAllListeners("window-focus");
         ipcRenderer.on("window-focus", () => {
-            callback(WindowStateListenerType.Focused, true)
-        })
-        ipcRenderer.removeAllListeners("window-blur")
+            callback(WindowStateListenerType.Focused, true);
+        });
+        ipcRenderer.removeAllListeners("window-blur");
         ipcRenderer.on("window-blur", () => {
-            callback(WindowStateListenerType.Focused, false)
-        })
+            callback(WindowStateListenerType.Focused, false);
+        });
     },
 
     addTouchBarEventsListener: (callback: (IObjectWithKey) => any) => {
-        ipcRenderer.removeAllListeners("touchbar-event")
+        ipcRenderer.removeAllListeners("touchbar-event");
         ipcRenderer.on("touchbar-event", (_, key: string) => {
-            callback({ key: key })
-        })
+            callback({ key: key });
+        });
     },
     initTouchBar: (texts: TouchBarTexts) => {
-        ipcRenderer.invoke("touchbar-init", texts)
+        ipcRenderer.invoke("touchbar-init", texts);
     },
     destroyTouchBar: () => {
-        ipcRenderer.invoke("touchbar-destroy")
+        ipcRenderer.invoke("touchbar-destroy");
     },
 
     initFontList: (): Promise<Array<string>> => {
-        return ipcRenderer.invoke("init-font-list")
+        return ipcRenderer.invoke("init-font-list");
     },
 
     systemPreferencesGetAnimationSettings: (): AnimationSettingsResponse => {
-        return ipcRenderer.sendSync("system-preferences-get-animation-settings")
-    }
-}
+        return ipcRenderer.sendSync(
+            "system-preferences-get-animation-settings",
+        );
+    },
+};
 
 declare global {
     interface Window {
-        utils: typeof utilsBridge
-        fontList: Array<string>
+        utils: typeof utilsBridge;
+        fontList: Array<string>;
     }
 }
 
-export default utilsBridge
+export default utilsBridge;

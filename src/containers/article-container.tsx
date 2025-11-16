@@ -1,6 +1,6 @@
-import { connect } from "react-redux"
-import { createSelector } from "reselect"
-import { RootState } from "../scripts/reducer"
+import { connect } from "react-redux";
+import { createSelector } from "reselect";
+import { RootState } from "../scripts/reducer";
 import {
     RSSItem,
     markUnread,
@@ -8,30 +8,30 @@ import {
     toggleStarred,
     toggleHidden,
     itemShortcuts,
-} from "../scripts/models/item"
-import { AppDispatch } from "../scripts/utils"
-import { dismissItem, showOffsetItem } from "../scripts/models/page"
-import Article from "../components/article"
+} from "../scripts/models/item";
+import { AppDispatch } from "../scripts/utils";
+import { dismissItem, showOffsetItem } from "../scripts/models/page";
+import Article from "../components/article";
 import {
     openTextMenu,
     closeContextMenu,
     openImageMenu,
-} from "../scripts/models/app"
+} from "../scripts/models/app";
 import {
     RSSSource,
     SourceTextDirection,
     updateSource,
-} from "../scripts/models/source"
+} from "../scripts/models/source";
 
 type ArticleContainerProps = {
-    itemId: number
-}
+    itemId: number;
+};
 
 const getItem = (state: RootState, props: ArticleContainerProps) =>
-    state.items[props.itemId]
+    state.items[props.itemId];
 const getSource = (state: RootState, props: ArticleContainerProps) =>
-    state.sources[state.items[props.itemId].source]
-const getLocale = (state: RootState) => state.app.locale
+    state.sources[state.items[props.itemId].source];
+const getLocale = (state: RootState) => state.app.locale;
 
 const makeMapStateToProps = () => {
     return createSelector(
@@ -40,9 +40,9 @@ const makeMapStateToProps = () => {
             item: item,
             source: source,
             locale: locale,
-        })
-    )
-}
+        }),
+    );
+};
 
 const mapDispatchToProps = (dispatch: AppDispatch) => {
     return {
@@ -54,9 +54,9 @@ const mapDispatchToProps = (dispatch: AppDispatch) => {
             dispatch(item.hasRead ? markUnread(item) : markRead(item)),
         toggleStarred: (item: RSSItem) => dispatch(toggleStarred(item)),
         toggleHidden: (item: RSSItem) => {
-            if (!item.hidden) dispatch(dismissItem())
-            if (!item.hasRead && !item.hidden) dispatch(markRead(item))
-            dispatch(toggleHidden(item))
+            if (!item.hidden) dispatch(dismissItem());
+            if (!item.hasRead && !item.hidden) dispatch(markRead(item));
+            dispatch(toggleHidden(item));
         },
         textMenu: (position: [number, number], text: string, url: string) =>
             dispatch(openTextMenu(position, text, url)),
@@ -65,17 +65,17 @@ const mapDispatchToProps = (dispatch: AppDispatch) => {
         dismissContextMenu: () => dispatch(closeContextMenu()),
         updateSourceTextDirection: (
             source: RSSSource,
-            direction: SourceTextDirection
+            direction: SourceTextDirection,
         ) => {
             dispatch(
-                updateSource({ ...source, textDir: direction } as RSSSource)
-            )
+                updateSource({ ...source, textDir: direction } as RSSSource),
+            );
         },
-    }
-}
+    };
+};
 
 const ArticleContainer = connect(
     makeMapStateToProps,
-    mapDispatchToProps
-)(Article)
-export default ArticleContainer
+    mapDispatchToProps,
+)(Article);
+export default ArticleContainer;

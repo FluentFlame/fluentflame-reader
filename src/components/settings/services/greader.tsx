@@ -1,8 +1,8 @@
-import * as React from "react"
-import intl from "react-intl-universal"
-import { ServiceConfigsTabProps } from "../service"
-import { GReaderConfigs } from "../../../scripts/models/services/greader"
-import { SyncService } from "../../../schema-types"
+import * as React from "react";
+import intl from "react-intl-universal";
+import { ServiceConfigsTabProps } from "../service";
+import { GReaderConfigs } from "../../../scripts/models/services/greader";
+import { SyncService } from "../../../schema-types";
 import {
     Stack,
     Icon,
@@ -15,26 +15,26 @@ import {
     MessageBarType,
     Dropdown,
     IDropdownOption,
-} from "@fluentui/react"
-import DangerButton from "../../utils/danger-button"
-import { urlTest } from "../../../scripts/utils"
+} from "@fluentui/react";
+import DangerButton from "../../utils/danger-button";
+import { urlTest } from "../../../scripts/utils";
 
 type GReaderConfigsTabState = {
-    existing: boolean
-    endpoint: string
-    username: string
-    password: string
-    fetchLimit: number
-    importGroups: boolean
-}
+    existing: boolean;
+    endpoint: string;
+    username: string;
+    password: string;
+    fetchLimit: number;
+    importGroups: boolean;
+};
 
 class GReaderConfigsTab extends React.Component<
     ServiceConfigsTabProps,
     GReaderConfigsTabState
 > {
     constructor(props: ServiceConfigsTabProps) {
-        super(props)
-        const configs = props.configs as GReaderConfigs
+        super(props);
+        const configs = props.configs as GReaderConfigs;
         this.state = {
             existing: configs.type === SyncService.GReader,
             endpoint: configs.endpoint || "",
@@ -42,7 +42,7 @@ class GReaderConfigsTab extends React.Component<
             password: "",
             fetchLimit: configs.fetchLimit || 250,
             importGroups: true,
-        }
+        };
     }
 
     fetchLimitOptions = (): IDropdownOption[] => [
@@ -55,40 +55,40 @@ class GReaderConfigsTab extends React.Component<
             key: Number.MAX_SAFE_INTEGER,
             text: intl.get("service.fetchUnlimited"),
         },
-    ]
+    ];
     onFetchLimitOptionChange = (_, option: IDropdownOption) => {
-        this.setState({ fetchLimit: option.key as number })
-    }
+        this.setState({ fetchLimit: option.key as number });
+    };
 
-    handleInputChange = event => {
-        const name: string = event.target.name
+    handleInputChange = (event) => {
+        const name: string = event.target.name;
         // @ts-expect-error
-        this.setState({ [name]: event.target.value })
-    }
+        this.setState({ [name]: event.target.value });
+    };
 
     checkNotEmpty = (v: string) => {
         return !this.state.existing && v.length == 0
             ? intl.get("emptyField")
-            : ""
-    }
+            : "";
+    };
 
     validateForm = () => {
         return (
             urlTest(this.state.endpoint.trim()) &&
             (this.state.existing ||
                 (this.state.username && this.state.password))
-        )
-    }
+        );
+    };
 
     save = async () => {
-        let configs: GReaderConfigs
+        let configs: GReaderConfigs;
         if (this.state.existing) {
             configs = {
                 ...this.props.configs,
                 endpoint: this.state.endpoint,
                 fetchLimit: this.state.fetchLimit,
-            } as GReaderConfigs
-            if (this.state.password) configs.password = this.state.password
+            } as GReaderConfigs;
+            if (this.state.password) configs.password = this.state.password;
         } else {
             configs = {
                 type: SyncService.GReader,
@@ -97,29 +97,29 @@ class GReaderConfigsTab extends React.Component<
                 password: this.state.password,
                 fetchLimit: this.state.fetchLimit,
                 useInt64: !this.state.endpoint.endsWith("theoldreader.com"),
-            }
-            if (this.state.importGroups) configs.importGroups = true
+            };
+            if (this.state.importGroups) configs.importGroups = true;
         }
-        this.props.blockActions()
-        configs = (await this.props.reauthenticate(configs)) as GReaderConfigs
-        const valid = await this.props.authenticate(configs)
+        this.props.blockActions();
+        configs = (await this.props.reauthenticate(configs)) as GReaderConfigs;
+        const valid = await this.props.authenticate(configs);
         if (valid) {
-            this.props.save(configs)
-            this.setState({ existing: true })
-            this.props.sync()
+            this.props.save(configs);
+            this.setState({ existing: true });
+            this.props.sync();
         } else {
-            this.props.blockActions()
+            this.props.blockActions();
             window.utils.showErrorBox(
                 intl.get("service.failure"),
-                intl.get("service.failureHint")
-            )
+                intl.get("service.failureHint"),
+            );
         }
-    }
+    };
 
     remove = async () => {
-        this.props.exit()
-        await this.props.remove()
-    }
+        this.props.exit();
+        await this.props.remove();
+    };
 
     render() {
         return (
@@ -148,7 +148,7 @@ class GReaderConfigsTab extends React.Component<
                         </Stack.Item>
                         <Stack.Item grow>
                             <TextField
-                                onGetErrorMessage={v =>
+                                onGetErrorMessage={(v) =>
                                     urlTest(v.trim())
                                         ? ""
                                         : intl.get("sources.badUrl")
@@ -244,8 +244,8 @@ class GReaderConfigsTab extends React.Component<
                     </Stack>
                 </Stack>
             </>
-        )
+        );
     }
 }
 
-export default GReaderConfigsTab
+export default GReaderConfigsTab;

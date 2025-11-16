@@ -1,29 +1,29 @@
-import * as React from "react"
-import { FeedContainer } from "../containers/feed-container"
-import { AnimationClassNames, Icon, FocusTrapZone } from "@fluentui/react"
-import ArticleContainer from "../containers/article-container"
-import { ViewType } from "../schema-types"
-import ArticleSearch from "./utils/article-search"
+import * as React from "react";
+import { FeedContainer } from "../containers/feed-container";
+import { AnimationClassNames, Icon, FocusTrapZone } from "@fluentui/react";
+import ArticleContainer from "../containers/article-container";
+import { ViewType } from "../schema-types";
+import ArticleSearch from "./utils/article-search";
 
 type PageProps = {
-    menuOn: boolean
-    contextOn: boolean
-    settingsOn: boolean
-    feeds: string[]
-    itemId: number
-    itemFromFeed: boolean
-    viewType: ViewType
-    dismissItem: () => void
-    offsetItem: (offset: number) => void
-}
+    menuOn: boolean;
+    contextOn: boolean;
+    settingsOn: boolean;
+    feeds: string[];
+    itemId: number;
+    itemFromFeed: boolean;
+    viewType: ViewType;
+    dismissItem: () => void;
+    offsetItem: (offset: number) => void;
+};
 
 class Page extends React.Component<PageProps> {
     offsetItem = (event: React.MouseEvent, offset: number) => {
-        event.stopPropagation()
-        this.props.offsetItem(offset)
-    }
-    prevItem = (event: React.MouseEvent) => this.offsetItem(event, -1)
-    nextItem = (event: React.MouseEvent) => this.offsetItem(event, 1)
+        event.stopPropagation();
+        this.props.offsetItem(offset);
+    };
+    prevItem = (event: React.MouseEvent) => this.offsetItem(event, -1);
+    nextItem = (event: React.MouseEvent) => this.offsetItem(event, 1);
 
     render = () =>
         this.props.viewType !== ViewType.List ? (
@@ -33,9 +33,10 @@ class Page extends React.Component<PageProps> {
                         key="card"
                         className={
                             "main" + (this.props.menuOn ? " menu-on" : "")
-                        }>
+                        }
+                    >
                         <ArticleSearch />
-                        {this.props.feeds.map(fid => (
+                        {this.props.feeds.map((fid) => (
                             <FeedContainer
                                 viewType={this.props.viewType}
                                 feedId={fid}
@@ -50,10 +51,12 @@ class Page extends React.Component<PageProps> {
                         ignoreExternalFocusing={true}
                         isClickableOutsideFocusTrap={true}
                         className="article-container"
-                        onClick={this.props.dismissItem}>
+                        onClick={this.props.dismissItem}
+                    >
                         <div
                             className="article-wrapper"
-                            onClick={e => e.stopPropagation()}>
+                            onClick={(e) => e.stopPropagation()}
+                        >
                             <ArticleContainer itemId={this.props.itemId} />
                         </div>
                         {this.props.itemFromFeed && (
@@ -80,10 +83,11 @@ class Page extends React.Component<PageProps> {
                         key="list"
                         className={
                             "list-main" + (this.props.menuOn ? " menu-on" : "")
-                        }>
+                        }
+                    >
                         <ArticleSearch />
                         <div className="list-feed-container">
-                            {this.props.feeds.map(fid => (
+                            {this.props.feeds.map((fid) => (
                                 <FeedContainer
                                     viewType={this.props.viewType}
                                     feedId={fid}
@@ -110,7 +114,7 @@ class Page extends React.Component<PageProps> {
                     </div>
                 )}
             </>
-        )
+        );
 }
 
-export default Page
+export default Page;

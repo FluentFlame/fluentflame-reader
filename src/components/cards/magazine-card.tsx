@@ -1,24 +1,25 @@
-import * as React from "react"
-import { Card } from "./card"
-import CardInfo from "./info"
-import Highlights from "./highlights"
-import { SourceTextDirection } from "../../scripts/models/source"
-import CardThumbnail from "./thumbnail"
+import * as React from "react";
+import { Card } from "./card";
+import CardInfo from "./info";
+import Highlights from "./highlights";
+import { SourceTextDirection } from "../../scripts/models/source";
+import CardThumbnail from "./thumbnail";
 
 const className = (props: Card.Props) => {
-    let cn = ["card", "magazine-card"]
-    if (props.item.hasRead) cn.push("read")
-    if (props.item.hidden) cn.push("hidden")
-    if (props.source.textDir === SourceTextDirection.RTL) cn.push("rtl")
-    return cn.join(" ")
-}
+    let cn = ["card", "magazine-card"];
+    if (props.item.hasRead) cn.push("read");
+    if (props.item.hidden) cn.push("hidden");
+    if (props.source.textDir === SourceTextDirection.RTL) cn.push("rtl");
+    return cn.join(" ");
+};
 
-const MagazineCard: React.FunctionComponent<Card.Props> = props => (
+const MagazineCard: React.FunctionComponent<Card.Props> = (props) => (
     <div
         className={className(props)}
         {...Card.bindEventsToProps(props)}
         data-iid={props.item.iid}
-        data-is-focusable>
+        data-is-focusable
+    >
         {props.item.thumb ? (
             <div className="head">
                 <CardThumbnail item={props.item} />
@@ -43,6 +44,6 @@ const MagazineCard: React.FunctionComponent<Card.Props> = props => (
             <CardInfo source={props.source} item={props.item} showCreator />
         </div>
     </div>
-)
+);
 
-export default MagazineCard
+export default MagazineCard;

@@ -1,57 +1,57 @@
-import * as React from "react"
-import intl from "react-intl-universal"
-import { Icon } from "@fluentui/react/lib/Icon"
-import { AnimationClassNames } from "@fluentui/react/lib/Styling"
-import AboutTab from "./settings/about"
+import * as React from "react";
+import intl from "react-intl-universal";
+import { Icon } from "@fluentui/react/lib/Icon";
+import { AnimationClassNames } from "@fluentui/react/lib/Styling";
+import AboutTab from "./settings/about";
 import {
     Nav,
     Spinner,
     FocusTrapZone,
     INavLinkGroup,
     INavLink,
-} from "@fluentui/react"
-import SourcesTabContainer from "../containers/settings/sources-container"
-import GroupsTabContainer from "../containers/settings/groups-container"
-import AppTabContainer from "../containers/settings/app-container"
-import RulesTabContainer from "../containers/settings/rules-container"
-import ServiceTabContainer from "../containers/settings/service-container"
-import { initTouchBarWithTexts } from "../scripts/utils"
+} from "@fluentui/react";
+import SourcesTabContainer from "../containers/settings/sources-container";
+import GroupsTabContainer from "../containers/settings/groups-container";
+import AppTabContainer from "../containers/settings/app-container";
+import RulesTabContainer from "../containers/settings/rules-container";
+import ServiceTabContainer from "../containers/settings/service-container";
+import { initTouchBarWithTexts } from "../scripts/utils";
 
 type SettingsProps = {
-    display: boolean
-    blocked: boolean
-    exitting: boolean
-    close: () => void
-}
+    display: boolean;
+    blocked: boolean;
+    exitting: boolean;
+    close: () => void;
+};
 
-const INITIAL_PANEL: string = "app"
+const INITIAL_PANEL: string = "app";
 
 export default function Settings(props: SettingsProps): React.JSX.Element {
-    const [currentPanel, setCurrentPanel] = React.useState(INITIAL_PANEL)
+    const [currentPanel, setCurrentPanel] = React.useState(INITIAL_PANEL);
 
     const onKeyDown = (event: KeyboardEvent) => {
         if (event.key === "Escape" && !props.exitting) {
-            props.close()
+            props.close();
         }
-    }
+    };
 
     React.useEffect(() => {
         if (props.display) {
             if (window.utils.platform === "darwin")
-                window.utils.destroyTouchBar()
-            document.body.addEventListener("keydown", onKeyDown)
+                window.utils.destroyTouchBar();
+            document.body.addEventListener("keydown", onKeyDown);
         } else {
-            if (window.utils.platform === "darwin") initTouchBarWithTexts()
-            document.body.removeEventListener("keydown", onKeyDown)
+            if (window.utils.platform === "darwin") initTouchBarWithTexts();
+            document.body.removeEventListener("keydown", onKeyDown);
         }
-    }, [props.display])
+    }, [props.display]);
 
     const onLinkClick = (
         _ev: React.MouseEvent<HTMLElement>,
         item: INavLink,
     ) => {
-        setCurrentPanel(item.key)
-    }
+        setCurrentPanel(item.key);
+    };
 
     return (
         props.display && (
@@ -63,14 +63,16 @@ export default function Settings(props: SettingsProps): React.JSX.Element {
                                 "btn" + (props.exitting ? " disabled" : "")
                             }
                             title={intl.get("settings.exit")}
-                            onClick={props.close}>
+                            onClick={props.close}
+                        >
                             <Icon iconName="Back" />
                         </a>
                     </div>
                     {props.blocked && (
                         <FocusTrapZone
                             isClickableOutsideFocusTrap={true}
-                            className="loading">
+                            className="loading"
+                        >
                             <Spinner
                                 label={intl.get("settings.fetching")}
                                 tabIndex={0}
@@ -91,29 +93,29 @@ export default function Settings(props: SettingsProps): React.JSX.Element {
                 </div>
             </div>
         )
-    )
+    );
 }
 
 function renderSettingsPanel(currentPanel: string): React.JSX.Element {
     switch (currentPanel) {
         case "app":
-            return <AppTabContainer />
+            return <AppTabContainer />;
         case "sources":
-            return <SourcesTabContainer />
+            return <SourcesTabContainer />;
         case "grouping":
-            return <GroupsTabContainer />
+            return <GroupsTabContainer />;
         case "rules":
-            return <RulesTabContainer />
+            return <RulesTabContainer />;
         case "service":
-            return <ServiceTabContainer />
+            return <ServiceTabContainer />;
         case "about":
-            return <AboutTab />
+            return <AboutTab />;
     }
     return (
         <p>
             An error has occurred displaying this tab. This should never happen.
         </p>
-    )
+    );
 }
 
 function makeNavLinkGroups(): INavLinkGroup[] {
@@ -170,5 +172,5 @@ function makeNavLinkGroups(): INavLinkGroup[] {
                 },
             ],
         },
-    ]
+    ];
 }

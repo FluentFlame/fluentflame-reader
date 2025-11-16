@@ -1,6 +1,6 @@
-import * as React from "react"
-import intl from "react-intl-universal"
-import { SourceState, RSSSource } from "../../scripts/models/source"
+import * as React from "react";
+import intl from "react-intl-universal";
+import { SourceState, RSSSource } from "../../scripts/models/source";
 import {
     Stack,
     Label,
@@ -21,11 +21,11 @@ import {
     IDragDropEvents,
     Link,
     IIconProps,
-} from "@fluentui/react"
-import { SourceRule, RuleActions } from "../../scripts/models/rule"
-import { FilterType } from "../../scripts/models/feed"
-import { MyParserItem, validateRegex } from "../../scripts/utils"
-import { RSSItem } from "../../scripts/models/item"
+} from "@fluentui/react";
+import { SourceRule, RuleActions } from "../../scripts/models/rule";
+import { FilterType } from "../../scripts/models/feed";
+import { MyParserItem, validateRegex } from "../../scripts/utils";
+import { RSSItem } from "../../scripts/models/item";
 
 const actionKeyMap = {
     "r-true": "article.markRead",
@@ -36,36 +36,36 @@ const actionKeyMap = {
     "h-false": "article.unhide",
     "n-true": "article.notify",
     "n-false": "article.dontNotify",
-}
+};
 
 type RulesTabProps = {
-    sources: SourceState
-    updateSourceRules: (source: RSSSource, rules: SourceRule[]) => void
-}
+    sources: SourceState;
+    updateSourceRules: (source: RSSSource, rules: SourceRule[]) => void;
+};
 
 type RulesTabState = {
-    sid: string
-    selectedRules: number[]
-    editIndex: number
-    regex: string
-    searchType: number
-    caseSensitive: boolean
-    match: boolean
-    actionKeys: string[]
-    mockTitle: string
-    mockCreator: string
-    mockContent: string
-    mockResult: string
-}
+    sid: string;
+    selectedRules: number[];
+    editIndex: number;
+    regex: string;
+    searchType: number;
+    caseSensitive: boolean;
+    match: boolean;
+    actionKeys: string[];
+    mockTitle: string;
+    mockCreator: string;
+    mockContent: string;
+    mockResult: string;
+};
 
 class RulesTab extends React.Component<RulesTabProps, RulesTabState> {
-    rulesSelection: Selection
-    rulesDragDropEvents: IDragDropEvents
-    rulesDraggedItem: SourceRule
-    rulesDraggedIndex = -1
+    rulesSelection: Selection;
+    rulesDragDropEvents: IDragDropEvents;
+    rulesDraggedItem: SourceRule;
+    rulesDraggedIndex = -1;
 
     constructor(props) {
-        super(props)
+        super(props);
         this.state = {
             sid: null,
             selectedRules: [],
@@ -79,16 +79,16 @@ class RulesTab extends React.Component<RulesTabProps, RulesTabState> {
             mockCreator: "",
             mockContent: "",
             mockResult: "",
-        }
+        };
         this.rulesSelection = new Selection({
             getKey: (_, i) => i,
             onSelectionChanged: () => {
                 this.setState({
                     selectedRules: this.rulesSelection.getSelectedIndices(),
-                })
+                });
             },
-        })
-        this.rulesDragDropEvents = this.getRulesDragDropEvents()
+        });
+        this.rulesDragDropEvents = this.getRulesDragDropEvents();
     }
 
     getRulesDragDropEvents = (): IDragDropEvents => ({
@@ -96,41 +96,42 @@ class RulesTab extends React.Component<RulesTabProps, RulesTabState> {
         canDrag: () => true,
         onDrop: (item?: SourceRule) => {
             if (this.rulesDraggedItem) {
-                this.reorderRules(item)
+                this.reorderRules(item);
             }
         },
         onDragStart: (item?: SourceRule, itemIndex?: number) => {
-            this.rulesDraggedItem = item
-            this.rulesDraggedIndex = itemIndex!
+            this.rulesDraggedItem = item;
+            this.rulesDraggedIndex = itemIndex!;
         },
         onDragEnd: () => {
-            this.rulesDraggedItem = undefined
-            this.rulesDraggedIndex = -1
+            this.rulesDraggedItem = undefined;
+            this.rulesDraggedIndex = -1;
         },
-    })
+    });
 
     reorderRules = (item: SourceRule) => {
-        let rules = this.getSourceRules()
+        let rules = this.getSourceRules();
         let draggedItems = this.rulesSelection.isIndexSelected(
-            this.rulesDraggedIndex
+            this.rulesDraggedIndex,
         )
             ? (this.rulesSelection.getSelection() as SourceRule[])
-            : [this.rulesDraggedItem]
+            : [this.rulesDraggedItem];
 
-        let insertIndex = rules.indexOf(item)
-        let items = rules.filter(r => !draggedItems.includes(r))
+        let insertIndex = rules.indexOf(item);
+        let items = rules.filter((r) => !draggedItems.includes(r));
 
-        items.splice(insertIndex, 0, ...draggedItems)
-        this.rulesSelection.setAllSelected(false)
-        let source = this.props.sources[parseInt(this.state.sid)]
-        this.props.updateSourceRules(source, items)
-    }
+        items.splice(insertIndex, 0, ...draggedItems);
+        this.rulesSelection.setAllSelected(false);
+        let source = this.props.sources[parseInt(this.state.sid)];
+        this.props.updateSourceRules(source, items);
+    };
 
     initRuleEdit = (rule: SourceRule = null) => {
-        let searchType = 0
+        let searchType = 0;
         if (rule) {
-            if (rule.filter.type & FilterType.FullSearch) searchType = 1
-            else if (rule.filter.type & FilterType.CreatorSearch) searchType = 2
+            if (rule.filter.type & FilterType.FullSearch) searchType = 1;
+            else if (rule.filter.type & FilterType.CreatorSearch)
+                searchType = 2;
         }
         this.setState({
             regex: rule ? rule.filter.search : "",
@@ -140,10 +141,10 @@ class RulesTab extends React.Component<RulesTabProps, RulesTabState> {
                 : false,
             match: rule ? rule.match : true,
             actionKeys: rule ? RuleActions.toKeys(rule.actions) : [],
-        })
-    }
+        });
+    };
 
-    getSourceRules = () => this.props.sources[parseInt(this.state.sid)].rules
+    getSourceRules = () => this.props.sources[parseInt(this.state.sid)].rules;
 
     ruleColumns = (): IColumn[] => [
         {
@@ -160,22 +161,22 @@ class RulesTab extends React.Component<RulesTabProps, RulesTabState> {
             minWidth: 100,
             onRender: (rule: SourceRule) =>
                 RuleActions.toKeys(rule.actions)
-                    .map(k => intl.get(actionKeyMap[k]))
+                    .map((k) => intl.get(actionKeyMap[k]))
                     .join(", "),
         },
-    ]
+    ];
 
-    handleInputChange = event => {
-        const name = event.target.name as "regex"
-        this.setState({ [name]: event.target.value })
-    }
+    handleInputChange = (event) => {
+        const name = event.target.name as "regex";
+        this.setState({ [name]: event.target.value });
+    };
 
     sourceOptions = (): IDropdownOption[] =>
         Object.entries(this.props.sources).map(([sid, s]) => ({
             key: sid,
             text: s.name,
             data: { icon: s.iconurl },
-        }))
+        }));
     onRenderSourceOption = (option: IDropdownOption) => (
         <div>
             {option.data && option.data.icon && (
@@ -183,13 +184,13 @@ class RulesTab extends React.Component<RulesTabProps, RulesTabState> {
             )}
             <span>{option.text}</span>
         </div>
-    )
+    );
     onRenderSourceTitle = (options: IDropdownOption[]) => {
-        return this.onRenderSourceOption(options[0])
-    }
+        return this.onRenderSourceOption(options[0]);
+    };
     onSourceOptionChange = (_, item: IDropdownOption) => {
-        this.initRuleEdit()
-        this.rulesSelection.setAllSelected(false)
+        this.initRuleEdit();
+        this.rulesSelection.setAllSelected(false);
         this.setState({
             sid: item.key as string,
             selectedRules: [],
@@ -198,25 +199,25 @@ class RulesTab extends React.Component<RulesTabProps, RulesTabState> {
             mockCreator: "",
             mockContent: "",
             mockResult: "",
-        })
-    }
+        });
+    };
 
     searchOptions = (): IDropdownOption[] => [
         { key: 0, text: intl.get("rules.title") },
         { key: 1, text: intl.get("rules.fullSearch") },
         { key: 2, text: intl.get("rules.creator") },
-    ]
+    ];
     onSearchOptionChange = (_, item: IDropdownOption) => {
-        this.setState({ searchType: item.key as number })
-    }
+        this.setState({ searchType: item.key as number });
+    };
 
     matchOptions = (): IDropdownOption[] => [
         { key: 1, text: intl.get("rules.match") },
         { key: 0, text: intl.get("rules.notMatch") },
-    ]
+    ];
     onMatchOptionChange = (_, item: IDropdownOption) => {
-        this.setState({ match: Boolean(item.key) })
-    }
+        this.setState({ match: Boolean(item.key) });
+    };
 
     actionOptions = (): IDropdownOption[] =>
         [
@@ -229,78 +230,78 @@ class RulesTab extends React.Component<RulesTabProps, RulesTabState> {
                             text: "-",
                             itemType: DropdownMenuItemType.Divider,
                         },
-                    ]
+                    ];
                 } else {
-                    return [{ key: k, text: intl.get(t) }]
+                    return [{ key: k, text: intl.get(t) }];
                 }
             }),
-        ].flat(1)
+        ].flat(1);
 
     onActionOptionChange = (_, item: IDropdownOption) => {
         if (item.selected) {
-            this.setState(prevState => {
-                let [a, f] = (item.key as string).split("-")
+            this.setState((prevState) => {
+                let [a, f] = (item.key as string).split("-");
                 let keys = prevState.actionKeys.filter(
-                    k => !k.startsWith(`${a}-`)
-                )
-                keys.push(item.key as string)
-                return { actionKeys: keys }
-            })
+                    (k) => !k.startsWith(`${a}-`),
+                );
+                keys.push(item.key as string);
+                return { actionKeys: keys };
+            });
         } else {
-            this.setState(prevState => ({
-                actionKeys: prevState.actionKeys.filter(k => k !== item.key),
-            }))
+            this.setState((prevState) => ({
+                actionKeys: prevState.actionKeys.filter((k) => k !== item.key),
+            }));
         }
-    }
+    };
 
     validateRegexField = (value: string) => {
-        if (value.length === 0) return intl.get("emptyField")
+        if (value.length === 0) return intl.get("emptyField");
         else if (validateRegex(value) === null)
-            return intl.get("rules.badRegex")
-        else return ""
-    }
+            return intl.get("rules.badRegex");
+        else return "";
+    };
 
     saveRule = () => {
-        let filterType = FilterType.Default | FilterType.ShowHidden
-        if (!this.state.caseSensitive) filterType |= FilterType.CaseInsensitive
-        if (this.state.searchType === 1) filterType |= FilterType.FullSearch
+        let filterType = FilterType.Default | FilterType.ShowHidden;
+        if (!this.state.caseSensitive) filterType |= FilterType.CaseInsensitive;
+        if (this.state.searchType === 1) filterType |= FilterType.FullSearch;
         else if (this.state.searchType === 2)
-            filterType |= FilterType.CreatorSearch
+            filterType |= FilterType.CreatorSearch;
         let rule = new SourceRule(
             this.state.regex,
             this.state.actionKeys,
             filterType,
-            this.state.match
-        )
-        let source = this.props.sources[parseInt(this.state.sid)]
-        let rules = source.rules ? [...source.rules] : []
+            this.state.match,
+        );
+        let source = this.props.sources[parseInt(this.state.sid)];
+        let rules = source.rules ? [...source.rules] : [];
         if (this.state.editIndex === -1) {
-            rules.push(rule)
+            rules.push(rule);
         } else {
-            rules.splice(this.state.editIndex, 1, rule)
+            rules.splice(this.state.editIndex, 1, rule);
         }
-        this.props.updateSourceRules(source, rules)
-        this.setState({ editIndex: -1 })
-        this.initRuleEdit()
-    }
+        this.props.updateSourceRules(source, rules);
+        this.setState({ editIndex: -1 });
+        this.initRuleEdit();
+    };
     newRule = () => {
-        this.initRuleEdit()
-        this.setState({ editIndex: this.getSourceRules().length })
-    }
+        this.initRuleEdit();
+        this.setState({ editIndex: this.getSourceRules().length });
+    };
     editRule = (rule: SourceRule, index: number) => {
-        this.initRuleEdit(rule)
-        this.setState({ editIndex: index })
-    }
+        this.initRuleEdit(rule);
+        this.setState({ editIndex: index });
+    };
     deleteRules = () => {
-        let rules = this.getSourceRules()
-        for (let i of this.state.selectedRules) rules[i] = null
-        let source = this.props.sources[parseInt(this.state.sid)]
+        let rules = this.getSourceRules();
+        for (let i of this.state.selectedRules) rules[i] = null;
+        let source = this.props.sources[parseInt(this.state.sid)];
         this.props.updateSourceRules(
             source,
-            rules.filter(r => r !== null)
-        )
-        this.initRuleEdit()
-    }
+            rules.filter((r) => r !== null),
+        );
+        this.initRuleEdit();
+    };
 
     commandBarItems = (): ICommandBarItemProps[] => [
         {
@@ -309,18 +310,18 @@ class RulesTab extends React.Component<RulesTabProps, RulesTabState> {
             iconProps: { iconName: "Add" },
             onClick: this.newRule,
         },
-    ]
+    ];
     commandBarFarItems = (): ICommandBarItemProps[] => {
-        let items = []
+        let items = [];
         if (this.state.selectedRules.length === 1) {
-            let index = this.state.selectedRules[0]
+            let index = this.state.selectedRules[0];
             items.push({
                 key: "edit",
                 text: intl.get("edit"),
                 iconProps: { iconName: "Edit" },
                 onClick: () =>
                     this.editRule(this.getSourceRules()[index], index),
-            })
+            });
         }
         if (this.state.selectedRules.length > 0) {
             items.push({
@@ -328,31 +329,31 @@ class RulesTab extends React.Component<RulesTabProps, RulesTabState> {
                 text: intl.get("delete"),
                 iconProps: { iconName: "Delete", style: { color: "#d13438" } },
                 onClick: this.deleteRules,
-            })
+            });
         }
-        return items
-    }
+        return items;
+    };
 
     testMockItem = () => {
-        let parsed = { title: this.state.mockTitle }
-        let source = this.props.sources[parseInt(this.state.sid)]
-        let item = new RSSItem(parsed as MyParserItem, source)
-        item.snippet = this.state.mockContent
-        item.creator = this.state.mockCreator
-        SourceRule.applyAll(this.getSourceRules(), item)
-        let result = []
+        let parsed = { title: this.state.mockTitle };
+        let source = this.props.sources[parseInt(this.state.sid)];
+        let item = new RSSItem(parsed as MyParserItem, source);
+        item.snippet = this.state.mockContent;
+        item.creator = this.state.mockCreator;
+        SourceRule.applyAll(this.getSourceRules(), item);
+        let result = [];
         result.push(
-            intl.get(item.hasRead ? "article.markRead" : "article.markUnread")
-        )
-        if (item.starred) result.push(intl.get("article.star"))
-        if (item.hidden) result.push(intl.get("article.hide"))
-        if (item.notify) result.push(intl.get("article.notify"))
-        this.setState({ mockResult: result.join(", ") })
-    }
+            intl.get(item.hasRead ? "article.markRead" : "article.markUnread"),
+        );
+        if (item.starred) result.push(intl.get("article.star"));
+        if (item.hidden) result.push(intl.get("article.hide"));
+        if (item.notify) result.push(intl.get("article.notify"));
+        this.setState({ mockResult: result.join(", ") });
+    };
 
     toggleCaseSensitivity = () => {
-        this.setState({ caseSensitive: !this.state.caseSensitive })
-    }
+        this.setState({ caseSensitive: !this.state.caseSensitive });
+    };
     regexCaseIconProps = (): IIconProps => ({
         title: intl.get("context.caseSensitive"),
         children: "Aa",
@@ -367,7 +368,7 @@ class RulesTab extends React.Component<RulesTabProps, RulesTabState> {
             textDecoration: this.state.caseSensitive ? "underline" : "",
         },
         onClick: this.toggleCaseSensitivity,
-    })
+    });
 
     render = () => (
         <div className="tab-body">
@@ -398,7 +399,7 @@ class RulesTab extends React.Component<RulesTabProps, RulesTabState> {
                                     this.state.editIndex <
                                         this.getSourceRules().length
                                     ? "edit"
-                                    : "rules.new"
+                                    : "rules.new",
                             )}
                         </Label>
                         <Stack horizontal>
@@ -483,7 +484,8 @@ class RulesTab extends React.Component<RulesTabProps, RulesTabState> {
                         />
                         <MarqueeSelection
                             selection={this.rulesSelection}
-                            isDraggingConstrainedToRoot>
+                            isDraggingConstrainedToRoot
+                        >
                             <DetailsList
                                 compact
                                 columns={this.ruleColumns()}
@@ -544,7 +546,8 @@ class RulesTab extends React.Component<RulesTabProps, RulesTabState> {
                     <Stack
                         className="settings-rules-icons"
                         horizontal
-                        tokens={{ childrenGap: 12 }}>
+                        tokens={{ childrenGap: 12 }}
+                    >
                         <Icon iconName="Filter" />
                         <Icon iconName="FavoriteStar" />
                         <Icon iconName="Ringer" />
@@ -555,17 +558,18 @@ class RulesTab extends React.Component<RulesTabProps, RulesTabState> {
                         <Link
                             onClick={() =>
                                 window.utils.openExternal(
-                                    "https://github.com/yang991178/fluent-reader/wiki/Support#rules"
+                                    "https://github.com/yang991178/fluent-reader/wiki/Support#rules",
                                 )
                             }
-                            style={{ marginLeft: 6 }}>
+                            style={{ marginLeft: 6 }}
+                        >
                             {intl.get("rules.help")}
                         </Link>
                     </span>
                 </Stack>
             )}
         </div>
-    )
+    );
 }
 
-export default RulesTab
+export default RulesTab;

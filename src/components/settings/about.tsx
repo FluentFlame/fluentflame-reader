@@ -1,6 +1,6 @@
-import * as React from "react"
-import intl from "react-intl-universal"
-import { Stack, Link } from "@fluentui/react"
+import * as React from "react";
+import intl from "react-intl-universal";
+import { Stack, Link } from "@fluentui/react";
 
 class AboutTab extends React.Component {
     render = () => (
@@ -13,22 +13,24 @@ class AboutTab extends React.Component {
                 </small>
                 <p className="settings-hint">
                     Licensed under BSD 3-Clause License.
-                    <br/>
+                    <br />
                     Copyright © 2025 Community Contributors.
-                    <br/>
+                    <br />
                     Original Copyright © 2020 Haoyuan Liu.
                 </p>
                 <Stack
                     horizontal
                     horizontalAlign="center"
-                    tokens={{ childrenGap: 12 }}>
+                    tokens={{ childrenGap: 12 }}
+                >
                     <small>
                         <Link
                             onClick={() =>
                                 window.utils.openExternal(
-                                    "https://github.com/yang991178/fluent-reader/wiki/Support#keyboard-shortcuts"
+                                    "https://github.com/yang991178/fluent-reader/wiki/Support#keyboard-shortcuts",
                                 )
-                            }>
+                            }
+                        >
                             {intl.get("settings.shortcuts")}
                         </Link>
                     </small>
@@ -36,9 +38,10 @@ class AboutTab extends React.Component {
                         <Link
                             onClick={() =>
                                 window.utils.openExternal(
-                                    "https://github.com/FluentFlame/fluent-flame-reader"
+                                    "https://github.com/FluentFlame/fluent-flame-reader",
                                 )
-                            }>
+                            }
+                        >
                             {intl.get("settings.openSource")}
                         </Link>
                     </small>
@@ -46,16 +49,17 @@ class AboutTab extends React.Component {
                         <Link
                             onClick={() =>
                                 window.utils.openExternal(
-                                    "https://github.com/FluentFlame/fluent-flame-reader/issues"
+                                    "https://github.com/FluentFlame/fluent-flame-reader/issues",
                                 )
-                            }>
+                            }
+                        >
                             {intl.get("settings.feedback")}
                         </Link>
                     </small>
                 </Stack>
             </Stack>
         </div>
-    )
+    );
 }
 
-export default AboutTab
+export default AboutTab;

@@ -1,13 +1,13 @@
-import * as React from "react"
-import * as db from "../../scripts/db"
-import intl from "react-intl-universal"
-import { urlTest, byteToMB, getSearchEngineName } from "../../scripts/utils"
+import * as React from "react";
+import * as db from "../../scripts/db";
+import intl from "react-intl-universal";
+import { urlTest, byteToMB, getSearchEngineName } from "../../scripts/utils";
 import {
     AnimationMotionPref,
     ThemeSettings,
     SearchEngines,
     ThumbnailTypePref,
-} from "../../schema-types"
+} from "../../schema-types";
 import {
     getThemeSettings,
     setThemeSettings,
@@ -16,7 +16,7 @@ import {
     exportAll,
     getThumbnailTypePref,
     setThumbnailTypePref,
-} from "../../scripts/settings"
+} from "../../scripts/settings";
 import {
     Stack,
     Label,
@@ -28,28 +28,28 @@ import {
     Dropdown,
     IDropdownOption,
     PrimaryButton,
-} from "@fluentui/react"
-import DangerButton from "../utils/danger-button"
+} from "@fluentui/react";
+import DangerButton from "../utils/danger-button";
 
 type AppTabProps = {
-    setLanguage: (option: string) => void
-    setFetchInterval: (interval: number) => void
-    deleteArticles: (days: number) => Promise<void>
-    importAll: () => Promise<void>
-}
+    setLanguage: (option: string) => void;
+    setFetchInterval: (interval: number) => void;
+    deleteArticles: (days: number) => Promise<void>;
+    importAll: () => Promise<void>;
+};
 
 type AppTabState = {
-    pacStatus: boolean
-    pacUrl: string
-    themeSettings: ThemeSettings
-    itemSize: string
-    cacheSize: string
-    deleteIndex: string
-}
+    pacStatus: boolean;
+    pacUrl: string;
+    themeSettings: ThemeSettings;
+    itemSize: string;
+    cacheSize: string;
+    deleteIndex: string;
+};
 
 class AppTab extends React.Component<AppTabProps, AppTabState> {
     constructor(props: AppTabProps) {
-        super(props)
+        super(props);
         this.state = {
             pacStatus: window.settings.getProxyStatus(),
             pacUrl: window.settings.getProxy(),
@@ -57,33 +57,33 @@ class AppTab extends React.Component<AppTabProps, AppTabState> {
             itemSize: null,
             cacheSize: null,
             deleteIndex: null,
-        }
-        this.getItemSize()
-        this.getCacheSize()
+        };
+        this.getItemSize();
+        this.getCacheSize();
     }
 
     getCacheSize = () => {
-        window.utils.getCacheSize().then(size => {
-            this.setState({ cacheSize: byteToMB(size) })
-        })
-    }
+        window.utils.getCacheSize().then((size) => {
+            this.setState({ cacheSize: byteToMB(size) });
+        });
+    };
     getItemSize = () => {
         db.calculateItemSize().then((size: number) => {
-            this.setState({ itemSize: byteToMB(size) })
-        })
-    }
+            this.setState({ itemSize: byteToMB(size) });
+        });
+    };
 
     clearCache = () => {
         window.utils.clearCache().then(() => {
-            this.getCacheSize()
-        })
-    }
+            this.getCacheSize();
+        });
+    };
 
     themeChoices = (): IChoiceGroupOption[] => [
         { key: ThemeSettings.Default, text: intl.get("followSystem") },
         { key: ThemeSettings.Light, text: intl.get("app.lightTheme") },
         { key: ThemeSettings.Dark, text: intl.get("app.darkTheme") },
-    ]
+    ];
 
     fetchIntervalOptions = (): IDropdownOption[] => [
         { key: 0, text: intl.get("app.never") },
@@ -93,10 +93,10 @@ class AppTab extends React.Component<AppTabProps, AppTabState> {
         { key: 30, text: intl.get("time.minute", { m: 30 }) },
         { key: 45, text: intl.get("time.minute", { m: 45 }) },
         { key: 60, text: intl.get("time.hour", { h: 1 }) },
-    ]
+    ];
     onFetchIntervalChanged = (item: IDropdownOption) => {
-        this.props.setFetchInterval(item.key as number)
-    }
+        this.props.setFetchInterval(item.key as number);
+    };
 
     searchEngineOptions = (): IDropdownOption[] =>
         [
@@ -105,13 +105,13 @@ class AppTab extends React.Component<AppTabProps, AppTabState> {
             SearchEngines.Baidu,
             SearchEngines.DuckDuckGo,
             SearchEngines.Startpage,
-        ].map(engine => ({
+        ].map((engine) => ({
             key: engine,
             text: getSearchEngineName(engine),
-        }))
+        }));
     onSearchEngineChanged = (item: IDropdownOption) => {
-        window.settings.setSearchEngine(item.key as number)
-    }
+        window.settings.setSearchEngine(item.key as number);
+    };
 
     deleteOptions = (): IDropdownOption[] => [
         { key: "7", text: intl.get("app.daysAgo", { days: 7 }) },
@@ -119,18 +119,18 @@ class AppTab extends React.Component<AppTabProps, AppTabState> {
         { key: "21", text: intl.get("app.daysAgo", { days: 21 }) },
         { key: "28", text: intl.get("app.daysAgo", { days: 28 }) },
         { key: "0", text: intl.get("app.deleteAll") },
-    ]
+    ];
 
     deleteChange = (_, item: IDropdownOption) => {
-        this.setState({ deleteIndex: item ? String(item.key) : null })
-    }
+        this.setState({ deleteIndex: item ? String(item.key) : null });
+    };
 
     confirmDelete = () => {
-        this.setState({ itemSize: null })
+        this.setState({ itemSize: null });
         this.props
             .deleteArticles(parseInt(this.state.deleteIndex))
-            .then(() => this.getItemSize())
-    }
+            .then(() => this.getItemSize());
+    };
 
     languageOptions = (): IDropdownOption[] => [
         { key: "default", text: intl.get("followSystem") },
@@ -152,12 +152,12 @@ class AppTab extends React.Component<AppTabProps, AppTabState> {
         { key: "ja", text: "日本語" },
         { key: "zh-CN", text: "中文（简体）" },
         { key: "zh-TW", text: "中文（繁體）" },
-    ]
+    ];
 
     onThemeChange = (_, option: IChoiceGroupOption) => {
-        setThemeSettings(option.key as ThemeSettings)
-        this.setState({ themeSettings: option.key as ThemeSettings })
-    }
+        setThemeSettings(option.key as ThemeSettings);
+        this.setState({ themeSettings: option.key as ThemeSettings });
+    };
 
     render = () => (
         <div className="tab-body">
@@ -167,7 +167,7 @@ class AppTab extends React.Component<AppTabProps, AppTabState> {
                     <Dropdown
                         defaultSelectedKey={window.settings.getLocaleSettings()}
                         options={this.languageOptions()}
-                        onChanged={option =>
+                        onChanged={(option) =>
                             this.props.setLanguage(String(option.key))
                         }
                         style={{ width: 200 }}
@@ -267,7 +267,7 @@ class AppTab extends React.Component<AppTabProps, AppTabState> {
                 </Stack.Item>
             </Stack>
         </div>
-    )
+    );
 }
 
 /**
@@ -276,29 +276,29 @@ class AppTab extends React.Component<AppTabProps, AppTabState> {
 function PacSettings() {
     const [pacStatus, setPacStatus] = React.useState(
         window.settings.getProxyStatus(),
-    )
-    const [pacUrl, setPacUrl] = React.useState(window.settings.getProxy())
+    );
+    const [pacUrl, setPacUrl] = React.useState(window.settings.getProxy());
 
     const toggleStatus = () => {
-        window.settings.toggleProxyStatus()
-        setPacStatus(window.settings.getProxyStatus())
-        setPacUrl(window.settings.getProxy())
-    }
+        window.settings.toggleProxyStatus();
+        setPacStatus(window.settings.getProxyStatus());
+        setPacUrl(window.settings.getProxy());
+    };
 
     const handlePacUrlChange = (
         event: React.FormEvent<HTMLTextAreaElement>,
     ) => {
-        setPacUrl((event.target as HTMLTextAreaElement).value.trim())
-    }
+        setPacUrl((event.target as HTMLTextAreaElement).value.trim());
+    };
 
     const setUrl = (event: React.FormEvent) => {
-        event.preventDefault()
+        event.preventDefault();
         if (urlTest(pacUrl)) {
-            window.settings.setProxy(pacUrl)
+            window.settings.setProxy(pacUrl);
         }
-    }
+    };
 
-    let form = null
+    let form = null;
     if (pacStatus) {
         form = (
             <form onSubmit={setUrl}>
@@ -306,7 +306,7 @@ function PacSettings() {
                     <Stack.Item grow>
                         <TextField
                             required
-                            onGetErrorMessage={v =>
+                            onGetErrorMessage={(v) =>
                                 urlTest(v.trim()) ? "" : intl.get("app.badUrl")
                             }
                             placeholder={intl.get("app.pac")}
@@ -327,7 +327,7 @@ function PacSettings() {
                     {intl.get("app.pacHint")}
                 </span>
             </form>
-        )
+        );
     }
     return (
         <>
@@ -341,7 +341,7 @@ function PacSettings() {
             </Stack>
             {form}
         </>
-    )
+    );
 }
 
 /**
@@ -350,7 +350,7 @@ function PacSettings() {
 function AnimationPreferences() {
     const [animationProp, setAnimationProp] = React.useState(
         getAnimationMotionPref(),
-    )
+    );
     const preferenceOptions: IDropdownOption[] = [
         {
             key: AnimationMotionPref.System,
@@ -368,11 +368,11 @@ function AnimationPreferences() {
             key: AnimationMotionPref.Off,
             text: intl.get("app.animationsOff").d("Animations off"),
         },
-    ]
+    ];
     const prefChange = (_: any, item: IDropdownOption) => {
-        setAnimationMotionPref(item.key as AnimationMotionPref)
-        setAnimationProp(item.key as AnimationMotionPref)
-    }
+        setAnimationMotionPref(item.key as AnimationMotionPref);
+        setAnimationProp(item.key as AnimationMotionPref);
+    };
 
     return (
         <>
@@ -388,13 +388,13 @@ function AnimationPreferences() {
                 </Stack.Item>
             </Stack>
         </>
-    )
+    );
 }
 
 function ThumbnailTypePreferences() {
     const [thumbnailType, setThumbnailType] = React.useState(
         getThumbnailTypePref(),
-    )
+    );
     const preferenceOptions: IDropdownOption[] = [
         {
             key: ThumbnailTypePref.OpenGraph,
@@ -414,11 +414,11 @@ function ThumbnailTypePreferences() {
             key: ThumbnailTypePref.Other,
             text: intl.get("app.thumbnails.other").d("Any other thumbnail"),
         },
-    ]
+    ];
     const prefChange = (_: any, item: IDropdownOption) => {
-        setThumbnailTypePref(item.key as ThumbnailTypePref)
-        setThumbnailType(item.key as ThumbnailTypePref)
-    }
+        setThumbnailTypePref(item.key as ThumbnailTypePref);
+        setThumbnailType(item.key as ThumbnailTypePref);
+    };
 
     return (
         <>
@@ -438,7 +438,7 @@ function ThumbnailTypePreferences() {
                 </Stack.Item>
             </Stack>
         </>
-    )
+    );
 }
 
-export default AppTab
+export default AppTab;

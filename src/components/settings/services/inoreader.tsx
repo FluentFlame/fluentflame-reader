@@ -1,8 +1,8 @@
-import * as React from "react"
-import intl from "react-intl-universal"
-import { ServiceConfigsTabProps } from "../service"
-import { GReaderConfigs } from "../../../scripts/models/services/greader"
-import { SyncService } from "../../../schema-types"
+import * as React from "react";
+import intl from "react-intl-universal";
+import { ServiceConfigsTabProps } from "../service";
+import { GReaderConfigs } from "../../../scripts/models/services/greader";
+import { SyncService } from "../../../schema-types";
 import {
     Stack,
     Label,
@@ -16,38 +16,38 @@ import {
     IDropdownOption,
     MessageBarButton,
     Link,
-} from "@fluentui/react"
-import DangerButton from "../../utils/danger-button"
+} from "@fluentui/react";
+import DangerButton from "../../utils/danger-button";
 
 type GReaderConfigsTabState = {
-    existing: boolean
-    endpoint: string
-    username: string
-    password: string
-    apiId: string
-    apiKey: string
-    removeAd: boolean
-    fetchLimit: number
-}
+    existing: boolean;
+    endpoint: string;
+    username: string;
+    password: string;
+    apiId: string;
+    apiKey: string;
+    removeAd: boolean;
+    fetchLimit: number;
+};
 
 const endpointOptions: IDropdownOption[] = [
     "https://www.inoreader.com",
     "https://www.innoreader.com",
     "https://jp.inoreader.com",
-].map(s => ({ key: s, text: s }))
+].map((s) => ({ key: s, text: s }));
 
 const openSupport = () =>
     window.utils.openExternal(
-        "https://github.com/yang991178/fluent-reader/wiki/Support#inoreader"
-    )
+        "https://github.com/yang991178/fluent-reader/wiki/Support#inoreader",
+    );
 
 class InoreaderConfigsTab extends React.Component<
     ServiceConfigsTabProps,
     GReaderConfigsTabState
 > {
     constructor(props: ServiceConfigsTabProps) {
-        super(props)
-        const configs = props.configs as GReaderConfigs
+        super(props);
+        const configs = props.configs as GReaderConfigs;
         this.state = {
             existing: configs.type === SyncService.Inoreader,
             endpoint: configs.endpoint || "https://www.inoreader.com",
@@ -60,7 +60,7 @@ class InoreaderConfigsTab extends React.Component<
                     ? true
                     : configs.removeInoreaderAd,
             fetchLimit: configs.fetchLimit || 250,
-        }
+        };
     }
 
     fetchLimitOptions = (): IDropdownOption[] => [
@@ -72,25 +72,25 @@ class InoreaderConfigsTab extends React.Component<
             key: Number.MAX_SAFE_INTEGER,
             text: intl.get("service.fetchUnlimited"),
         },
-    ]
+    ];
     onFetchLimitOptionChange = (_, option: IDropdownOption) => {
-        this.setState({ fetchLimit: option.key as number })
-    }
+        this.setState({ fetchLimit: option.key as number });
+    };
     onEndpointChange = (_, option: IDropdownOption) => {
-        this.setState({ endpoint: option.key as string })
-    }
+        this.setState({ endpoint: option.key as string });
+    };
 
-    handleInputChange = event => {
-        const name: string = event.target.name
+    handleInputChange = (event) => {
+        const name: string = event.target.name;
         // @ts-expect-error
-        this.setState({ [name]: event.target.value })
-    }
+        this.setState({ [name]: event.target.value });
+    };
 
     checkNotEmpty = (v: string) => {
         return !this.state.existing && v.length == 0
             ? intl.get("emptyField")
-            : ""
-    }
+            : "";
+    };
 
     validateForm = () => {
         return (
@@ -98,11 +98,11 @@ class InoreaderConfigsTab extends React.Component<
                 (this.state.username && this.state.password)) &&
             this.state.apiId &&
             this.state.apiKey
-        )
-    }
+        );
+    };
 
     save = async () => {
-        let configs: GReaderConfigs
+        let configs: GReaderConfigs;
         if (this.state.existing) {
             configs = {
                 ...this.props.configs,
@@ -111,8 +111,8 @@ class InoreaderConfigsTab extends React.Component<
                 inoreaderId: this.state.apiId,
                 inoreaderKey: this.state.apiKey,
                 removeInoreaderAd: this.state.removeAd,
-            } as GReaderConfigs
-            if (this.state.password) configs.password = this.state.password
+            } as GReaderConfigs;
+            if (this.state.password) configs.password = this.state.password;
         } else {
             configs = {
                 type: SyncService.Inoreader,
@@ -125,33 +125,33 @@ class InoreaderConfigsTab extends React.Component<
                 fetchLimit: this.state.fetchLimit,
                 importGroups: true,
                 useInt64: true,
-            }
+            };
         }
-        this.props.blockActions()
-        configs = (await this.props.reauthenticate(configs)) as GReaderConfigs
-        const valid = await this.props.authenticate(configs)
+        this.props.blockActions();
+        configs = (await this.props.reauthenticate(configs)) as GReaderConfigs;
+        const valid = await this.props.authenticate(configs);
         if (valid) {
-            this.props.save(configs)
-            this.setState({ existing: true })
-            this.props.sync()
+            this.props.save(configs);
+            this.setState({ existing: true });
+            this.props.sync();
         } else {
-            this.props.blockActions()
+            this.props.blockActions();
             window.utils.showErrorBox(
                 intl.get("service.failure"),
-                intl.get("service.failureHint")
-            )
+                intl.get("service.failureHint"),
+            );
         }
-    }
+    };
 
     createKey = () =>
         window.utils.openExternal(
-            this.state.endpoint + "/all_articles#preferences-developer"
-        )
+            this.state.endpoint + "/all_articles#preferences-developer",
+        );
 
     remove = async () => {
-        this.props.exit()
-        await this.props.remove()
-    }
+        this.props.exit();
+        await this.props.remove();
+    };
 
     render() {
         return (
@@ -164,7 +164,8 @@ class InoreaderConfigsTab extends React.Component<
                             text={intl.get("create")}
                             onClick={this.createKey}
                         />
-                    }>
+                    }
+                >
                     {intl.get("service.rateLimitWarning")}
                     <Link onClick={openSupport} style={{ marginLeft: 6 }}>
                         {intl.get("rules.help")}
@@ -182,10 +183,12 @@ class InoreaderConfigsTab extends React.Component<
                             width: 36,
                             userSelect: "none",
                         }}
-                        viewBox="0 0 72 72">
+                        viewBox="0 0 72 72"
+                    >
                         <path
                             transform="translate(-1250.000000, -1834.000000)"
-                            d="M1286,1834 C1305.88225,1834 1322,1850.11775 1322,1870 C1322,1889.88225 1305.88225,1906 1286,1906 C1266.11775,1906 1250,1889.88225 1250,1870 C1250,1850.11775 1266.11775,1834 1286,1834 Z M1278.01029,1864.98015 C1270.82534,1864.98015 1265,1870.80399 1265,1877.98875 C1265,1885.17483 1270.82534,1891 1278.01029,1891 C1285.19326,1891 1291.01859,1885.17483 1291.01859,1877.98875 C1291.01859,1870.80399 1285.19326,1864.98015 1278.01029,1864.98015 Z M1281.67908,1870.54455 C1283.73609,1870.54455 1285.40427,1872.21533 1285.40427,1874.2703 C1285.40427,1876.33124 1283.73609,1877.9987 1281.67908,1877.9987 C1279.61941,1877.9987 1277.94991,1876.33124 1277.94991,1874.2703 C1277.94991,1872.21533 1279.61941,1870.54455 1281.67908,1870.54455 Z M1278.01003,1855.78714 L1278.01003,1860.47435 C1287.66605,1860.47435 1295.52584,1868.33193 1295.52584,1877.98901 L1295.52584,1877.98901 L1300.21451,1877.98901 C1300.21451,1865.74746 1290.25391,1855.78714 1278.01003,1855.78714 L1278.01003,1855.78714 Z M1278.01009,1846 L1278.01009,1850.68721 C1285.30188,1850.68721 1292.15771,1853.5278 1297.31618,1858.68479 C1302.47398,1863.84179 1305.31067,1870.69942 1305.31067,1877.98901 L1305.31067,1877.98901 L1310,1877.98901 C1310,1869.44534 1306.67162,1861.41192 1300.6293,1855.36845 C1294.58632,1849.32696 1286.55533,1846 1278.01009,1846 L1278.01009,1846 Z"></path>
+                            d="M1286,1834 C1305.88225,1834 1322,1850.11775 1322,1870 C1322,1889.88225 1305.88225,1906 1286,1906 C1266.11775,1906 1250,1889.88225 1250,1870 C1250,1850.11775 1266.11775,1834 1286,1834 Z M1278.01029,1864.98015 C1270.82534,1864.98015 1265,1870.80399 1265,1877.98875 C1265,1885.17483 1270.82534,1891 1278.01029,1891 C1285.19326,1891 1291.01859,1885.17483 1291.01859,1877.98875 C1291.01859,1870.80399 1285.19326,1864.98015 1278.01029,1864.98015 Z M1281.67908,1870.54455 C1283.73609,1870.54455 1285.40427,1872.21533 1285.40427,1874.2703 C1285.40427,1876.33124 1283.73609,1877.9987 1281.67908,1877.9987 C1279.61941,1877.9987 1277.94991,1876.33124 1277.94991,1874.2703 C1277.94991,1872.21533 1279.61941,1870.54455 1281.67908,1870.54455 Z M1278.01003,1855.78714 L1278.01003,1860.47435 C1287.66605,1860.47435 1295.52584,1868.33193 1295.52584,1877.98901 L1295.52584,1877.98901 L1300.21451,1877.98901 C1300.21451,1865.74746 1290.25391,1855.78714 1278.01003,1855.78714 L1278.01003,1855.78714 Z M1278.01009,1846 L1278.01009,1850.68721 C1285.30188,1850.68721 1292.15771,1853.5278 1297.31618,1858.68479 C1302.47398,1863.84179 1305.31067,1870.69942 1305.31067,1877.98901 L1305.31067,1877.98901 L1310,1877.98901 C1310,1869.44534 1306.67162,1861.41192 1300.6293,1855.36845 C1294.58632,1849.32696 1286.55533,1846 1278.01009,1846 L1278.01009,1846 Z"
+                        ></path>
                     </svg>
                     <Label style={{ margin: "8px 0 36px" }}>Inoreader</Label>
                     <Stack className="login-form" horizontal>
@@ -308,8 +311,8 @@ class InoreaderConfigsTab extends React.Component<
                     </Stack>
                 </Stack>
             </>
-        )
+        );
     }
 }
 
-export default InoreaderConfigsTab
+export default InoreaderConfigsTab;

@@ -1,8 +1,8 @@
-import intl from "react-intl-universal"
-import { connect } from "react-redux"
-import { createSelector } from "reselect"
-import { RootState } from "../../scripts/reducer"
-import SourcesTab from "../../components/settings/sources"
+import intl from "react-intl-universal";
+import { connect } from "react-redux";
+import { createSelector } from "reselect";
+import { RootState } from "../../scripts/reducer";
+import SourcesTab from "../../components/settings/sources";
 import {
     addSource,
     RSSSource,
@@ -11,17 +11,17 @@ import {
     SourceOpenTarget,
     deleteSources,
     toggleSourceHidden,
-} from "../../scripts/models/source"
-import { importOPML, exportOPML } from "../../scripts/models/group"
-import { AppDispatch, validateFavicon } from "../../scripts/utils"
-import { saveSettings, toggleSettings } from "../../scripts/models/app"
-import { fetchItems } from "../../scripts/models/item"
-import { SyncService } from "../../schema-types"
+} from "../../scripts/models/source";
+import { importOPML, exportOPML } from "../../scripts/models/group";
+import { AppDispatch, validateFavicon } from "../../scripts/utils";
+import { saveSettings, toggleSettings } from "../../scripts/models/app";
+import { fetchItems } from "../../scripts/models/item";
+import { SyncService } from "../../schema-types";
 
-const getSources = (state: RootState) => state.sources
+const getSources = (state: RootState) => state.sources;
 const getServiceOn = (state: RootState) =>
-    state.service.type !== SyncService.None
-const getSIDs = (state: RootState) => state.app.settings.sids
+    state.service.type !== SyncService.None;
+const getSIDs = (state: RootState) => state.app.settings.sids;
 
 const mapStateToProps = createSelector(
     [getSources, getServiceOn, getSIDs],
@@ -30,7 +30,7 @@ const mapStateToProps = createSelector(
         serviceOn: serviceOn,
         sids: sids,
     }),
-)
+);
 
 const mapDispatchToProps = (dispatch: AppDispatch) => {
     return {
@@ -41,21 +41,21 @@ const mapDispatchToProps = (dispatch: AppDispatch) => {
                 () => {
                     // We need to fetch after updating because otherwise
                     // nothing will actually happen when we set the URL.
-                    return dispatch(fetchItems(true, [source.sid]))
+                    return dispatch(fetchItems(true, [source.sid]));
                 },
-            )
+            );
         },
         updateSourceName: (source: RSSSource, name: string) => {
-            dispatch(updateSource({ ...source, name: name } as RSSSource))
+            dispatch(updateSource({ ...source, name: name } as RSSSource));
         },
         updateSourceIcon: async (source: RSSSource, iconUrl: string) => {
-            dispatch(saveSettings())
+            dispatch(saveSettings());
             if (await validateFavicon(iconUrl)) {
-                dispatch(updateSource({ ...source, iconurl: iconUrl }))
+                dispatch(updateSource({ ...source, iconurl: iconUrl }));
             } else {
-                window.utils.showErrorBox(intl.get("sources.badIcon"), "")
+                window.utils.showErrorBox(intl.get("sources.badIcon"), "");
             }
-            dispatch(saveSettings())
+            dispatch(saveSettings());
         },
         updateSourceOpenTarget: (
             source: RSSSource,
@@ -63,7 +63,7 @@ const mapDispatchToProps = (dispatch: AppDispatch) => {
         ) => {
             dispatch(
                 updateSource({ ...source, openTarget: target } as RSSSource),
-            )
+            );
         },
         updateFetchFrequency: (source: RSSSource, frequency: number) => {
             dispatch(
@@ -71,7 +71,7 @@ const mapDispatchToProps = (dispatch: AppDispatch) => {
                     ...source,
                     fetchFrequency: frequency,
                 } as RSSSource),
-            )
+            );
         },
         deleteSource: (source: RSSSource) => dispatch(deleteSource(source)),
         deleteSources: (sources: RSSSource[]) =>
@@ -80,11 +80,11 @@ const mapDispatchToProps = (dispatch: AppDispatch) => {
         exportOPML: () => dispatch(exportOPML()),
         toggleSourceHidden: (source: RSSSource) =>
             dispatch(toggleSourceHidden(source)),
-    }
-}
+    };
+};
 
 const SourcesTabContainer = connect(
     mapStateToProps,
     mapDispatchToProps,
-)(SourcesTab)
-export default SourcesTabContainer
+)(SourcesTab);
+export default SourcesTabContainer;

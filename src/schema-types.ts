@@ -1,28 +1,28 @@
 export class SourceGroup {
-    isMultiple: boolean
-    sids: number[]
-    name?: string
-    expanded?: boolean
-    index?: number // available only from menu or groups tab container
+    isMultiple: boolean;
+    sids: number[];
+    name?: string;
+    expanded?: boolean;
+    index?: number; // available only from menu or groups tab container
 
     constructor(sids: number[], name: string = null) {
-        name = (name && name.trim()) || "Source group"
+        name = (name && name.trim()) || "Source group";
         if (sids.length == 1) {
-            this.isMultiple = false
+            this.isMultiple = false;
         } else {
-            this.isMultiple = true
-            this.name = name
-            this.expanded = true
+            this.isMultiple = true;
+            this.name = name;
+            this.expanded = true;
         }
-        this.sids = sids
+        this.sids = sids;
     }
 }
 
 // From https://www.electronjs.org/docs/latest/api/system-preferences#systempreferencesgetanimationsettings
 export interface AnimationSettingsResponse {
-    shouldRenderRichAnimation: boolean
-    scrollAnimationsEnabledBySystem: boolean
-    prefersReducedMotion: boolean
+    shouldRenderRichAnimation: boolean;
+    scrollAnimationsEnabledBySystem: boolean;
+    prefersReducedMotion: boolean;
 }
 
 export const enum ViewType {
@@ -86,8 +86,8 @@ export const enum SyncService {
 }
 
 export interface ServiceConfigs {
-    type: SyncService
-    importGroups?: boolean
+    type: SyncService;
+    importGroups?: boolean;
 }
 
 export const enum WindowStateListenerType {
@@ -97,29 +97,29 @@ export const enum WindowStateListenerType {
 }
 
 export interface TouchBarTexts {
-    menu: string
-    search: string
-    refresh: string
-    markAll: string
-    notifications: string
+    menu: string;
+    search: string;
+    refresh: string;
+    markAll: string;
+    notifications: string;
 }
 
 export type SchemaTypes = {
-    animationMotionPref: AnimationMotionPref
-    version: string
-    theme: ThemeSettings
-    pac: string
-    pacOn: boolean
-    view: ViewType
-    locale: string
-    sourceGroups: SourceGroup[]
-    fontSize: number
-    fontFamily: string
-    menuOn: boolean
-    fetchInterval: number
-    searchEngine: SearchEngines
-    serviceConfigs: ServiceConfigs
-    filterType: number
-    listViewConfigs: ViewConfigs
-    thumbnailTypePref: ThumbnailTypePref
-}
+    animationMotionPref: AnimationMotionPref;
+    version: string;
+    theme: ThemeSettings;
+    pac: string;
+    pacOn: boolean;
+    view: ViewType;
+    locale: string;
+    sourceGroups: SourceGroup[];
+    fontSize: number;
+    fontFamily: string;
+    menuOn: boolean;
+    fetchInterval: number;
+    searchEngine: SearchEngines;
+    serviceConfigs: ServiceConfigs;
+    filterType: number;
+    listViewConfigs: ViewConfigs;
+    thumbnailTypePref: ThumbnailTypePref;
+};

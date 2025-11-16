@@ -1,9 +1,9 @@
-import * as React from "react"
-import intl from "react-intl-universal"
-import md5 from "js-md5"
-import { ServiceConfigsTabProps } from "../service"
-import { FeverConfigs } from "../../../scripts/models/services/fever"
-import { SyncService } from "../../../schema-types"
+import * as React from "react";
+import intl from "react-intl-universal";
+import md5 from "js-md5";
+import { ServiceConfigsTabProps } from "../service";
+import { FeverConfigs } from "../../../scripts/models/services/fever";
+import { SyncService } from "../../../schema-types";
 import {
     Stack,
     Icon,
@@ -16,26 +16,26 @@ import {
     MessageBarType,
     Dropdown,
     IDropdownOption,
-} from "@fluentui/react"
-import DangerButton from "../../utils/danger-button"
-import { urlTest } from "../../../scripts/utils"
+} from "@fluentui/react";
+import DangerButton from "../../utils/danger-button";
+import { urlTest } from "../../../scripts/utils";
 
 type FeverConfigsTabState = {
-    existing: boolean
-    endpoint: string
-    username: string
-    password: string
-    fetchLimit: number
-    importGroups: boolean
-}
+    existing: boolean;
+    endpoint: string;
+    username: string;
+    password: string;
+    fetchLimit: number;
+    importGroups: boolean;
+};
 
 class FeverConfigsTab extends React.Component<
     ServiceConfigsTabProps,
     FeverConfigsTabState
 > {
     constructor(props: ServiceConfigsTabProps) {
-        super(props)
-        const configs = props.configs as FeverConfigs
+        super(props);
+        const configs = props.configs as FeverConfigs;
         this.state = {
             existing: configs.type === SyncService.Fever,
             endpoint: configs.endpoint || "",
@@ -43,7 +43,7 @@ class FeverConfigsTab extends React.Component<
             password: "",
             fetchLimit: configs.fetchLimit || 250,
             importGroups: true,
-        }
+        };
     }
 
     fetchLimitOptions = (): IDropdownOption[] => [
@@ -56,43 +56,43 @@ class FeverConfigsTab extends React.Component<
             key: Number.MAX_SAFE_INTEGER,
             text: intl.get("service.fetchUnlimited"),
         },
-    ]
+    ];
     onFetchLimitOptionChange = (_, option: IDropdownOption) => {
-        this.setState({ fetchLimit: option.key as number })
-    }
+        this.setState({ fetchLimit: option.key as number });
+    };
 
-    handleInputChange = event => {
-        const name: string = event.target.name
+    handleInputChange = (event) => {
+        const name: string = event.target.name;
         // @ts-expect-error
-        this.setState({ [name]: event.target.value })
-    }
+        this.setState({ [name]: event.target.value });
+    };
 
     checkNotEmpty = (v: string) => {
         return !this.state.existing && v.length == 0
             ? intl.get("emptyField")
-            : ""
-    }
+            : "";
+    };
 
     validateForm = () => {
         return (
             urlTest(this.state.endpoint.trim()) &&
             (this.state.existing ||
                 (this.state.username && this.state.password))
-        )
-    }
+        );
+    };
 
     save = async () => {
-        let configs: FeverConfigs
+        let configs: FeverConfigs;
         if (this.state.existing) {
             configs = {
                 ...this.props.configs,
                 endpoint: this.state.endpoint,
                 fetchLimit: this.state.fetchLimit,
-            } as FeverConfigs
+            } as FeverConfigs;
             if (this.state.password)
                 configs.apiKey = md5(
-                    `${configs.username}:${this.state.password}`
-                )
+                    `${configs.username}:${this.state.password}`,
+                );
         } else {
             configs = {
                 type: SyncService.Fever,
@@ -100,28 +100,28 @@ class FeverConfigsTab extends React.Component<
                 username: this.state.username,
                 fetchLimit: this.state.fetchLimit,
                 apiKey: md5(`${this.state.username}:${this.state.password}`),
-            }
-            if (this.state.importGroups) configs.importGroups = true
+            };
+            if (this.state.importGroups) configs.importGroups = true;
         }
-        this.props.blockActions()
-        const valid = await this.props.authenticate(configs)
+        this.props.blockActions();
+        const valid = await this.props.authenticate(configs);
         if (valid) {
-            this.props.save(configs)
-            this.setState({ existing: true })
-            this.props.sync()
+            this.props.save(configs);
+            this.setState({ existing: true });
+            this.props.sync();
         } else {
-            this.props.blockActions()
+            this.props.blockActions();
             window.utils.showErrorBox(
                 intl.get("service.failure"),
-                intl.get("service.failureHint")
-            )
+                intl.get("service.failureHint"),
+            );
         }
-    }
+    };
 
     remove = async () => {
-        this.props.exit()
-        await this.props.remove()
-    }
+        this.props.exit();
+        await this.props.remove();
+    };
 
     render() {
         return (
@@ -147,7 +147,7 @@ class FeverConfigsTab extends React.Component<
                         </Stack.Item>
                         <Stack.Item grow>
                             <TextField
-                                onGetErrorMessage={v =>
+                                onGetErrorMessage={(v) =>
                                     urlTest(v.trim())
                                         ? ""
                                         : intl.get("sources.badUrl")
@@ -243,8 +243,8 @@ class FeverConfigsTab extends React.Component<
                     </Stack>
                 </Stack>
             </>
-        )
+        );
     }
 }
 
-export default FeverConfigsTab
+export default FeverConfigsTab;
