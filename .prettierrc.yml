@@ -1,3 +1,4 @@
 tabWidth: 4
 semi: true
 quoteProps: "consistent"
+bracketSameLine: true
