@@ -213,6 +213,7 @@
         "fetchUnlimited": "Unlimited (not recommended)"
     },
     "app": {
+        "animationsLabel": "Animations settings",
         "animationsOff": "Animations off",
         "animationsOn": "Animations on",
         "cleanup": "Clean up",

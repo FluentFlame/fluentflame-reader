@@ -216,6 +216,7 @@
         "fetchUnlimited": "Ilimitado (no recomendado)"
     },
     "app": {
+        "animationsLabel": "AJustes de animaciones",
         "animationsOff": "Desactivar animaciones",
         "animationsOn": "Activar animaciones",
         "cleanup": "Limpiar",
