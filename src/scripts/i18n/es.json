@@ -245,6 +245,12 @@
         "fetchInterval": "Intervalo de recuperación automática",
         "feedDelay": "Retraso del feed",
         "never": "Nunca",
-        "nodelay": "Sin retraso"
+        "nodelay": "Sin retraso",
+        "thumbnails": {
+            "prefLabel": "Fuente preferida de miniatura",
+            "opengraph": "OpenGraph",
+            "mediaThumbnail": "RSS media:thumbnail",
+            "thumb": "Miniatura RSS",
+            "other": "Cualquier otra miniatura"
     }
 }
