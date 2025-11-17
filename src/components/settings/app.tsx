@@ -376,7 +376,9 @@ function AnimationPreferences() {
 
     return (
         <>
-            <Label>{"Enable Animations"}</Label>
+            <Label>
+                {intl.get("app.animationsLabel").d("Animations settings")}
+            </Label>
             <Stack horizontal>
                 <Stack.Item>
                     <Dropdown
