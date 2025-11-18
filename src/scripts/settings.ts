@@ -166,6 +166,23 @@ export function getCurrentLocale() {
     return locale in locales ? locale : "en-US";
 }
 
+export interface DatabaseConfig {
+    sources: db.SourceEntry[];
+    items: db.ItemEntry[];
+    // TODO: Replace with actual globalRules.
+    globalRules: any[];
+}
+
+export interface FluentflameSettingConfig {
+    version: string;
+
+    database: DatabaseConfig;
+    filterType: number;
+    menuOn: boolean;
+    sourceGroups: any[];
+    view: number;
+}
+
 export async function exportAll() {
     const filters = [{ name: intl.get("app.frData"), extensions: ["frdata"] }];
     const write = await window.utils.showSaveDialog(
@@ -182,7 +199,60 @@ export async function exportAll() {
     }
 }
 
-export async function importAll() {
+function isFluentReaderExport(jsonObject: any) {
+    return jsonObject.lovefield != null;
+}
+
+/**
+ * Migrate Fluent Reader exports.
+ */
+function migrateExport(input: any): FluentflameSettingConfig {
+    console.log("Identified an input from Fluent Reader, trying to migrate...");
+    return {
+        version: input.version, // This gets updated in update-scripts.
+
+        database: {
+            items: input.lovefield.items.map((item: any): db.ItemEntry => {
+                return {
+                    iid: item._id,
+                    source: item.source,
+                    title: item.title,
+                    link: item.link,
+                    // Incorrect type, converting later.
+                    date: item.date,
+                    // Incorrect type, converting later.
+                    fetchedDate: item.fetchedDate,
+                    thumbnails: [
+                        {
+                            medium: "image",
+                            url: item.thumb,
+                            type: ThumbnailTypePref.Thumb,
+                        },
+                    ],
+                    content: item.content,
+                    snippet: item.snippet,
+                    creator: item.creator,
+                    hasRead: item.hasRead,
+                    starred: item.starred,
+                    hidden: item.hidden,
+                    notify: item.notify,
+                    serviceRef: item.serviceRef,
+                };
+            }),
+            // Global rules were not used in Fluent Reader.
+            globalRules: [],
+            // These haven't changed in a bit, so we can
+            // do this for now. But it will become a problem later.
+            sources: input.lovefield.sources,
+        },
+        filterType: input.filterType ?? 0,
+        menuOn: input.menuOn ?? false,
+        sourceGroups: input.sourceGroups ?? [],
+        view: input.view ?? 0,
+    };
+}
+
+export async function importAll(): Promise<boolean> {
     const filters = [{ name: intl.get("app.frData"), extensions: ["frdata"] }];
     let data = await window.utils.showOpenDialog(filters);
     if (!data) return true;
@@ -196,20 +266,28 @@ export async function importAll() {
     );
     if (!confirmed) return true;
     let configs = JSON.parse(data);
+
     await db.fluentDB.sources.clear();
     await db.fluentDB.items.clear();
-    configs.database.sources.forEach((s) => {
+
+    const newConfigs: FluentflameSettingConfig = isFluentReaderExport(configs)
+        ? migrateExport(configs)
+        : configs;
+    newConfigs.database.sources.forEach((s) => {
         s.lastFetched = new Date(s.lastFetched);
         if (!s.textDir) s.textDir = SourceTextDirection.LTR;
         if (!s.hidden) s.hidden = false;
         return db.fluentDB.sources.add(s);
     });
-    configs.database.items.forEach((i) => {
-        i.date = new Date(i.date);
-        i.fetchedDate = new Date(i.fetchedDate);
+    newConfigs.database.items.forEach((i) => {
+        // Dates aren't stored correctly, and we need to convert them
+        // to the right types.
+        i.date = new Date(i.date as unknown as string);
+        i.fetchedDate = new Date(i.fetchedDate as unknown as string);
     });
-    await db.fluentDB.items.bulkAdd(configs.database.items);
-    delete configs.database;
-    window.settings.setAll(configs);
+
+    await db.fluentDB.items.bulkAdd(newConfigs.database.items);
+    delete newConfigs.database;
+    window.settings.setAll(newConfigs);
     return false;
 }
