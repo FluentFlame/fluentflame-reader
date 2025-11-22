@@ -30,6 +30,11 @@
       pango
       udev
 
+      libxcrypt-legacy # For 'libcrypt.so.1' for deb packaging
+      binutils # For ruby deb packaging, needs 'ar'
+      rpm # For RPM packaging
+      flatpak-builder # For flatpak building
+
       appimage-run # For appimage running (not building)
     ])
     ++ (with pkgs.xorg; [
