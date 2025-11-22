@@ -18,7 +18,19 @@ jobs:
             - run: "npm ci"
             - run: "npm run build"
             - run: "npm run test"
-            - run: "npm run package-linux"
+            - run: "npm run package-appimage"
+    ubuntu_package_deb:
+        runs-on: "ubuntu-latest"
+        steps:
+            - uses: "actions/checkout@v5"
+            - name: "Build Debian Package"
+              uses: "actions/setup-node@v4"
+              with:
+                  node-version: "22.x"
+                  cache: "npm"
+            - run: "npm ci"
+            - run: "npm run build"
+            - run: "npm run package-deb"
     check_nix:
         runs-on: "ubuntu-latest"
         steps:
