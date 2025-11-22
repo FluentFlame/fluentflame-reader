@@ -91,6 +91,7 @@ export class AppState {
         changed: false,
         sids: new Array<number>(),
         saving: false,
+        tab: null,
     };
     logMenu = {
         display: false,
@@ -188,6 +189,7 @@ export interface MenuActionTypes {
 }
 
 export const TOGGLE_SETTINGS = "TOGGLE_SETTINGS";
+export const SET_SETTINGS_TAB = "SET_SETTINGS_TAB";
 export const SAVE_SETTINGS = "SAVE_SETTINGS";
 export const FREE_MEMORY = "FREE_MEMORY";
 
@@ -195,6 +197,11 @@ interface ToggleSettingsAction {
     type: typeof TOGGLE_SETTINGS;
     open: boolean;
     sids: number[];
+    tab: string | null;
+}
+interface SetSettingsTabAction {
+    type: typeof SET_SETTINGS_TAB;
+    tab: string | null;
 }
 interface SaveSettingsAction {
     type: typeof SAVE_SETTINGS;
@@ -205,6 +212,7 @@ interface FreeMemoryAction {
 }
 export type SettingsActionTypes =
     | ToggleSettingsAction
+    | SetSettingsTabAction
     | SaveSettingsAction
     | FreeMemoryAction;
 
@@ -283,6 +291,11 @@ export const toggleSettings = (open = true, sids = new Array<number>()) => ({
     type: TOGGLE_SETTINGS,
     open: open,
     sids: sids,
+});
+
+export const setSettingsTab = (newTab: string | null) => ({
+    type: SET_SETTINGS_TAB,
+    tab: newTab,
 });
 
 export function exitSettings(): AppThunk<Promise<void>> {
@@ -676,10 +689,19 @@ export function appReducer(
             return {
                 ...state,
                 settings: {
+                    ...state.settings,
                     display: action.open,
                     changed: false,
                     sids: action.sids,
                     saving: false,
+                },
+            };
+        case SET_SETTINGS_TAB:
+            return {
+                ...state,
+                settings: {
+                    ...state.settings,
+                    tab: action.tab,
                 },
             };
         case TOGGLE_LOGS:

@@ -13,13 +13,18 @@ import {
     ContextualMenuItemType,
     DirectionalHint,
 } from "@fluentui/react";
-import { closeContextMenu, ContextMenuType } from "../scripts/models/app";
 import {
+    ContextMenuType,
+    closeContextMenu,
+    setSettingsTab,
+    toggleSettings,
+} from "../scripts/models/app";
+import {
+    RSSItem,
     fetchItems,
     markAllRead,
     markRead,
     markUnread,
-    RSSItem,
     toggleHidden,
     toggleStarred,
 } from "../scripts/models/item";
@@ -531,7 +536,8 @@ function GroupContextMenu() {
             text: intl.get("context.manageSources"),
             iconProps: { iconName: "Settings" },
             onClick: () => {
-                dispatch(markAllRead(sids));
+                dispatch(setSettingsTab("sources"));
+                dispatch(toggleSettings(true, sids));
             },
         },
     ];

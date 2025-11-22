@@ -1,13 +1,14 @@
 import { connect } from "react-redux";
 import { createSelector } from "reselect";
 import { RootState } from "../scripts/reducer";
-import { exitSettings } from "../scripts/models/app";
+import { exitSettings, setSettingsTab } from "../scripts/models/app";
 import Settings from "../components/settings";
 
 const getApp = (state: RootState) => state.app;
 
 const mapStateToProps = createSelector([getApp], (app) => ({
     display: app.settings.display,
+    currentTab: app.settings.tab,
     blocked:
         !app.sourceInit ||
         app.syncing ||
@@ -19,6 +20,7 @@ const mapStateToProps = createSelector([getApp], (app) => ({
 const mapDispatchToProps = (dispatch) => {
     return {
         close: () => dispatch(exitSettings()),
+        setTab: (newTab: string | null) => dispatch(setSettingsTab(newTab)),
     };
 };
 

@@ -19,15 +19,17 @@ import { initTouchBarWithTexts } from "../scripts/utils";
 
 type SettingsProps = {
     display: boolean;
+    currentTab: string | null;
     blocked: boolean;
     exitting: boolean;
     close: () => void;
+    setTab: (newTab: string | null) => void;
 };
 
 const INITIAL_PANEL: string = "app";
 
 export default function Settings(props: SettingsProps): React.JSX.Element {
-    const [currentPanel, setCurrentPanel] = React.useState(INITIAL_PANEL);
+    const getCurrentTab = () => props.currentTab ?? INITIAL_PANEL;
 
     const onKeyDown = (event: KeyboardEvent) => {
         if (event.key === "Escape" && !props.exitting) {
@@ -50,7 +52,7 @@ export default function Settings(props: SettingsProps): React.JSX.Element {
         _ev: React.MouseEvent<HTMLElement>,
         item: INavLink,
     ) => {
-        setCurrentPanel(item.key);
+        props.setTab(item.key);
     };
 
     return (
@@ -79,13 +81,13 @@ export default function Settings(props: SettingsProps): React.JSX.Element {
                     )}
                     <div className="settings-inner-container">
                         <Nav
-                            initialSelectedKey={currentPanel}
+                            initialSelectedKey={getCurrentTab()}
                             className="settings-nav"
                             groups={makeNavLinkGroups()}
                             onLinkClick={onLinkClick}
                         />
                         <div className="settings-panel">
-                            {renderSettingsPanel(currentPanel)}
+                            {renderSettingsPanel(getCurrentTab())}
                         </div>
                     </div>
                 </div>
