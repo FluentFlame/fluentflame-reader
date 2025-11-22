@@ -7,6 +7,8 @@ files:
     - "!**/*.js.map"
 directories:
     output: "./bin/${platform}/${arch}/"
+appImage:
+    artifactName: "fluentflame-reader-${arch}-${version}.AppImage"
 mac:
     darkModeSupport: true
     target:
@@ -36,8 +38,8 @@ win:
         - zip
 appx:
     applicationId: FluentflameReader
-    identityName: TODO.FluentflameReader
-    publisher: TODO
+    identityName: FluentFlame.FluentflameReader
+    publisher: FluentFlame
     backgroundColor: transparent
     languages:
         - zh-CN
@@ -65,11 +67,14 @@ nsis:
     allowToChangeInstallationDirectory: true
     deleteAppDataOnUninstall: true
 linux:
+    description: "A modern desktop RSS reader given new life"
     target:
         - AppImage
-        - Dir
+        - deb
+        - dir
+        - tar.xz
     icon: icons
-    category: Utility
+    category: Network;Feed
     desktop:
         entry:
             StartupWMClass: fluentflame-reader

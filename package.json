@@ -1,7 +1,7 @@
 {
   "name": "fluentflame-reader",
   "version": "1.1.4",
-  "description": "Modern desktop RSS reader",
+  "description": "A modern desktop RSS reader given new life",
   "main": "./dist/electron.js",
   "scripts": {
     "build": "webpack --config ./webpack.config.js",
@@ -14,10 +14,33 @@
     "package-mac": "electron-builder --mac --x64",
     "package-mas": "bash build/resignAndPackage.sh",
     "package-linux": "electron-builder --linux --x64 -p never",
+    "package-tarball": "electron-builder --linux tar.xz --x64 -p never",
+    "package-appimage": "electron-builder --linux AppImage --x64 -p never",
+    "package-deb": "electron-builder --linux --x64 -p never",
     "test": "mocha tests/**/*.ts"
   },
-  "keywords": [],
-  "author": "Fluentflame contributors & Haoyuan Liu",
+  "keywords": ["rss", "atom", "rss reader"],
+  "author": {
+    "name": "Crystal",
+    "email": "crystal@crystalwobsite.gay",
+    "url": "https://crystalwobsite.gay"
+  },
+  "contributors": [
+    {
+      "name": "Crystal",
+      "email": "crystal@crystalwobsite.gay",
+      "url": "https://crystalwobsite.gay"
+    },
+    {
+      "name": "Nube",
+      "email": "nubesu@tuta.io",
+      "url": "https://nube.codeberg.page"
+    },
+    {
+      "name": "Haoyuan Liu",
+      "email": "hy.liu@berkeley.edu"
+    }
+  ],
   "license": "BSD-3-Clause",
   "repository": "github:FluentFlame/fluentflame-reader",
   "devDependencies": {
