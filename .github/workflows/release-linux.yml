@@ -8,6 +8,8 @@ on:
 jobs:
     release_linux_x86_64_appimage:
         runs-on: "ubuntu-latest"
+        permissions:
+            deployment: "write"
         steps:
             - uses: "actions/checkout@v5"
             - name: "Set Up Node"
