@@ -9,7 +9,7 @@ jobs:
     release_linux_x86_64_appimage:
         runs-on: "ubuntu-latest"
         permissions:
-            deployments: "write"
+            contents: "write"  # Needed by shogo82148/actions-upload-release-asset
         steps:
             - uses: "actions/checkout@v5"
             - name: "Set Up Node"
