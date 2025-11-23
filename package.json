@@ -1,6 +1,6 @@
 {
   "name": "fluentflame-reader",
-  "version": "1.1.4",
+  "version": "2.0.0",
   "description": "A modern desktop RSS reader given new life",
   "main": "./dist/electron.js",
   "scripts": {
