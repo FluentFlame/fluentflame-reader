@@ -1,0 +1,23 @@
+name: "Test MacOS"
+
+on:
+    push:
+        branches: ["master"]
+    pull_request:
+
+jobs:
+    macos_package_dmg:
+        runs-on: "macos-latest"
+        steps:
+            - uses: "actions/checkout@v5"
+            - name: "Set Up Node"
+              uses: "actions/setup-node@v4"
+              with:
+                  node-version: "22.x"
+                  cache: "npm"
+            - run: "npm ci"
+            - run: "npm run build"
+            - run: "npm run test"
+            # Test both arm and universal
+            - run: "npm run package-arm-mac"
+            - run: "npm run package-universal-mac"
