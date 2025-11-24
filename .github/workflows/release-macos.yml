@@ -1,0 +1,43 @@
+name: "CD Release MacOS"
+
+on:
+    release:
+        types:
+            - "published"
+
+jobs:
+    release_macos-dmg:
+        runs-on: "macos-latest"
+        permissions:
+            contents: "write"  # Needed by shogo82148/actions-upload-release-asset
+        steps:
+            - uses: "actions/checkout@v5"
+            - name: "Set Up Node"
+              uses: "actions/setup-node@v4"
+              with:
+                  node-version: "22.x"
+                  cache: "npm"
+            - run: "npm ci"
+            - run: "npm run build"
+            - run: "npm run package-arm-mac"
+            - run: "npm run package-universal-mac"
+            - name: "Get App Version"
+              id: "package-version"
+              shell: zsh
+              run: |
+                version="$(jq -r '.version' package.json)"
+                echo "version=${version}"
+                echo "version=${version}" >> "${GITHUB_OUTPUT}"
+
+            # For some reason, AppImage uses x86_64, tarball uses x64, and debian uses amd64 for arch?
+            - name: "Upload ARM64 DMG"
+              uses: "shogo82148/actions-upload-release-asset@v1.9.1"
+              with:
+                  upload_url: ${{ github.event.release.upload_url }}
+                  asset_path: bin/darwin/arm64/fluentflame-reader-mac-arm64-${{ steps.package-version.outputs.version }}.dmg
+
+            - name: "Upload MacOS Universal Binary"
+              uses: "shogo82148/actions-upload-release-asset@v1.9.1"
+              with:
+                  upload_url: ${{ github.event.release.upload_url }}
+                  asset_path: bin/darwin/universal/fluentflame-reader-mac-universal-${{ steps.package-version.outputs.version }}.dmg
