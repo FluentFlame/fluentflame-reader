@@ -1,4 +1,4 @@
-name: "CD Release Linux"
+name: "CD Release Windows"
 
 on:
     release:
@@ -6,8 +6,8 @@ on:
             - "published"
 
 jobs:
-    release_linux_x86_64:
-        runs-on: "ubuntu-latest"
+    release_windows_x86_64:
+        runs-on: "ubuntu-latest"  # Should be able to be built on Ubuntu still.
         permissions:
             contents: "write"  # Needed by shogo82148/actions-upload-release-asset
         steps:
@@ -19,7 +19,7 @@ jobs:
                   cache: "npm"
             - run: "npm ci"
             - run: "npm run build"
-            - run: "npm run package-linux"
+            - run: "npm run package-win-ci"
             - name: "Packaging Setup"
               run: |
                 sudo apt-get update
@@ -32,21 +32,14 @@ jobs:
                 echo "version=${version}"
                 echo "version=${version}" >> "${GITHUB_OUTPUT}"
 
-            # For some reason, AppImage uses x86_64, tarball uses x64, and debian uses amd64 for arch?
-            - name: "Upload AppImage"
+            - name: "Upload Windows .zip"
               uses: "shogo82148/actions-upload-release-asset@v1.9.1"
               with:
                   upload_url: ${{ github.event.release.upload_url }}
-                  asset_path: bin/linux/x64/fluentflame-reader-linux-x86_64-${{ steps.package-version.outputs.version }}.AppImage
+                  asset_path: ./bin/linux/x64/fluentflame-reader-win-x64-${{ steps.package-version.outputs.version }}.zip
 
-            - name: "Upload Linux Tarball"
+            - name: "Upload Windows NSIS Installer"
               uses: "shogo82148/actions-upload-release-asset@v1.9.1"
               with:
                   upload_url: ${{ github.event.release.upload_url }}
-                  asset_path: bin/linux/x64/fluentflame-reader-linux-x64-${{ steps.package-version.outputs.version }}.tar.xz
-
-            - name: "Upload .deb"
-              uses: "shogo82148/actions-upload-release-asset@v1.9.1"
-              with:
-                  upload_url: ${{ github.event.release.upload_url }}
-                  asset_path: bin/linux/x64/fluentflame-reader-linux-amd64-${{ steps.package-version.outputs.version }}.deb
+                  asset_path: ./bin/linux/x64/fluentflame-reader-win-x64-installer-${{ steps.package-version.outputs.version }}.exe

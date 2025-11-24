@@ -1,5 +1,6 @@
 appId: org.fluentflame.fluentflamereader
 productName: Fluentflame Reader
+artifactName: fluentflame-reader-${os}-${arch}-${version}.${ext}
 copyright: Fluentflame Copyright © 2025 Nube & Individual Collaborators. Original copyright © 2020 Haoyuan Liu
 files:
     - "./dist/**/*"
@@ -7,8 +8,6 @@ files:
     - "!**/*.js.map"
 directories:
     output: "./bin/${platform}/${arch}/"
-appImage:
-    artifactName: "fluentflame-reader-${arch}-${version}.AppImage"
 mac:
     darkModeSupport: true
     target:
@@ -62,6 +61,7 @@ appx:
     showNameOnTiles: true
     setBuildNumber: true
 nsis:
+    artifactName: fluentflame-reader-${os}-${arch}-installer-${version}.${ext}
     oneClick: false
     perMachine: true
     allowToChangeInstallationDirectory: true
