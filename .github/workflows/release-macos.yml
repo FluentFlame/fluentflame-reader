@@ -23,7 +23,7 @@ jobs:
             - run: "npm run package-universal-mac"
             - name: "Get App Version"
               id: "package-version"
-              shell: zsh
+              shell: bash
               run: |
                 version="$(jq -r '.version' package.json)"
                 echo "version=${version}"
