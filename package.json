@@ -10,7 +10,7 @@
     "start": "npm run build && npm run electron",
     "format": "prettier --write .",
     "package-win": "electron-builder -w appx:x64 && electron-builder -w appx:ia32 && electron-builder -w appx:arm64",
-    "package-win-ci": "electron-builder -w --x64 -p never && electron-builder -w --ia32 -p never",
+    "package-win-ci": "electron-builder -w --x64 -p never",
     "package-intel-mac": "electron-builder --mac --x64 -p never",
     "package-arm-mac": "electron-builder --mac --arm64 -p never",
     "package-universal-mac": "electron-builder --mac --universal -p never",
@@ -18,7 +18,7 @@
     "package-linux": "electron-builder --linux --x64 -p never",
     "package-tarball": "electron-builder --linux tar.xz --x64 -p never",
     "package-appimage": "electron-builder --linux AppImage --x64 -p never",
-    "package-deb": "electron-builder --linux --x64 -p never",
+    "package-deb": "electron-builder --linux deb --x64 -p never",
     "test": "mocha tests/**/*.ts"
   },
   "keywords": ["rss", "atom", "rss reader"],
