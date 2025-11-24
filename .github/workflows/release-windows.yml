@@ -7,7 +7,7 @@ on:
 
 jobs:
     release_windows_x86_64:
-        runs-on: "ubuntu-latest"  # Should be able to be built on Ubuntu still.
+        runs-on: "windows-latest"
         permissions:
             contents: "write"  # Needed by shogo82148/actions-upload-release-asset
         steps:
@@ -21,10 +21,7 @@ jobs:
             - run: "npm run build"
             - run: "npm run package-win-ci"
             - name: "Packaging Setup"
-              run: |
-                sudo apt-get update
-                sudo apt-get install jq
-
+              run: "choco install jq"
             - name: "Get App Version"
               id: "package-version"
               run: |
@@ -36,10 +33,10 @@ jobs:
               uses: "shogo82148/actions-upload-release-asset@v1.9.1"
               with:
                   upload_url: ${{ github.event.release.upload_url }}
-                  asset_path: ./bin/linux/x64/fluentflame-reader-win-x64-${{ steps.package-version.outputs.version }}.zip
+                  asset_path: bin/linux/x64/fluentflame-reader-win-x64-${{ steps.package-version.outputs.version }}.zip
 
             - name: "Upload Windows NSIS Installer"
               uses: "shogo82148/actions-upload-release-asset@v1.9.1"
               with:
                   upload_url: ${{ github.event.release.upload_url }}
-                  asset_path: ./bin/linux/x64/fluentflame-reader-win-x64-installer-${{ steps.package-version.outputs.version }}.exe
+                  asset_path: bin/linux/x64/fluentflame-reader-win-x64-installer-${{ steps.package-version.outputs.version }}.exe
