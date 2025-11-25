@@ -1,2 +1,3 @@
-dist/article/article.js text eol=lf
-dist/article/mercury.web.js text eol=lf
+# Very important for Electron SRI hash consistency!
+resources/article/article.js text eol=lf
+resources/article/mercury.web.js text eol=lf
