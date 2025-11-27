@@ -10,7 +10,17 @@
 </p>
 <hr />
 
+
+### About this fork
+
+Fluentflame Reader is a community fork of Fluent Reader with a maintained and constantly updated codebase and a number of new features that our contributors have added. We are a hard fork, we use the base left by Fluent Reader but we decide our own path even if that means having changes that make us very different from the original, we propose a different experience.
+
+The differences with Fluent Reader are not only that we have different maintainers, we have different ideas, different vision and of course, different code.
+
 ## Download
+
+[!WARNING] 
+Currently we do not have any stable version!, all our builds are testing and may contain bugs, however we have released them to the community to be able to expand our testing capacity and identify new bugs, if you find any bugs do not hesitate to report it!
 
 Download from the [Releases Page](https://github.com/FluentFlame/fluentflame-reader/releases)
 
@@ -38,37 +48,14 @@ Support for other RSS services can be contributed through Pull Requests.
 
 ## Development
 
+If you want to build our app from source, please look at our [building instructions](/docs/BUILDING.md)!
+
 ### Contribute
 
 Help make Fluentflame Reader better by reporting bugs or opening feature requests through [GitHub issues](https://github.com/FluentFlame/fluentflame-reader/issues). 
 
 You can also help internationalize the app by providing [translations into additional languages](https://github.com/FluentFlame/fluentflame-reader/tree/master/src/scripts/i18n). 
 Refer to the repo of [react-intl-universal](https://github.com/alibaba/react-intl-universal) to get started on internationalization. 
-
-### Build from source
-```bash
-# Install dependencies
-npm install
-
-# Compile ts & dependencies
-npm run build
-
-# Start the application
-npm run electron
-
-# Generate certificate for signature
-electron-builder create-self-signed-cert
-# Package the app for Windows
-npm run package-win
-```
-
-### Run Tests
-
-```bash
-# Install dependencies
-npm install
-npm run test
-```
 
 ### Developed with
 
