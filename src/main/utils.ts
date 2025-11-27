@@ -7,6 +7,7 @@ import {
     clipboard,
     systemPreferences,
 } from "electron";
+import { version } from "../../package.json"
 import { WindowManager } from "./window";
 import fs = require("fs");
 import { ImageCallbackTypes, TouchBarTexts } from "../schema-types";
@@ -49,7 +50,7 @@ export function setUtilsListeners(manager: WindowManager) {
     });
 
     ipcMain.on("get-version", (event) => {
-        event.returnValue = app.getVersion();
+        event.returnValue = version;
     });
 
     ipcMain.handle("open-external", (_, url: string, background: boolean) => {
