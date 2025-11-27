@@ -60,7 +60,7 @@ And you are now ready to make the windows package:
 
 On Linux there are different package formats and it can be confusing, but if you need help figuring out which package you need, don't worry, an explanation will be added in each format n.n
 
-- AppImage: AppImage is a "more global" format, you can read about it here, but the important thing is: it can run on different distributions (if they support it) and it's portable, you don't even need to install it. To package the app in this format just run:
+- AppImage: AppImage is a "more global" format, you can read about it [here](https://appimage.org/), but the important thing is: it can run on different distributions (if they support it) and it's portable, you don't even need to install it. To package the app in this format just run:
 
 > npm run package-appimage
 
