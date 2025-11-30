@@ -11,11 +11,11 @@
 <hr />
 
 
-### About this fork
+## About this fork
 
 Fluentflame Reader is a community fork of Fluent Reader with a maintained and constantly updated codebase and a number of new features that our contributors have added. We are a hard fork, we use the base left by Fluent Reader but we decide our own path even if that means having changes that make us very different from the original, we propose a different experience.
 
-The differences with Fluent Reader are not only that we have different maintainers, we have different ideas, different vision and of course, different code.
+However, we continue to offer a similar experience for the original users, we do not intend to simply abandon them.
 
 ## Download
 
