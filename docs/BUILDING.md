@@ -3,7 +3,7 @@
 To build Fluentflame from source you need to have the following tools installed on your system:
 
 - [git](https://git-scm.com/install/)
-- [Node.js](https://nodejs.org/es/download)
+- [Node.js](https://nodejs.org/)
  
 Next you have to clone our repository like this:
 
@@ -11,7 +11,11 @@ Next you have to clone our repository like this:
 git clone https://github.com/FluentFlame/fluentflame-reader.git
 ```
 
-Or change the repo link for: git@github.com:FluentFlame/fluentflame-reader.git if you use ssh.
+ if you use ssh, change the repo link to:
+
+```bash
+git@github.com:FluentFlame/fluentflame-reader.git
+```
 
 ---
 ## Dependencies
@@ -26,7 +30,7 @@ This will install the packages that Fluentflame needs to build, don't worry, thi
 
 ---
 
-## Compile ts & dependencies
+## Build ts & dependencies
 
 Simply type this on your terminal:
 
@@ -34,7 +38,7 @@ Simply type this on your terminal:
 npm run build
 ```
 
-With this command you will proceed to compile everything you need to run the app, keep in mind that depending on the hardware you use this can be fast or it can take time. If you have any errors such as "JavaScript heap out of memory error" try to increase the node.js memory limit to a higher level (if you have enough memory), currently the lowest low end hardware we have tested is an intel core 2 duo with 2gb of memory where the solution to run the build was to raise the limit to 1280 like this: NODE_OPTIONS="--max-old-space-size=1280".
+With this command you will proceed to compile everything you need to run the app, keep in mind that depending on the hardware you use this can be fast or it can take time.
 
 ---
 
@@ -46,7 +50,7 @@ If you just want to test the app without packaging it, run this:
 npm run electron
 ```
 
-Also you can quickly check if everything is okay by running a simple test like this:
+You can also do a simple test to check very basic things like this:
 
 ```bash
 npm run test
@@ -54,15 +58,15 @@ npm run test
 
 ---
 
-## Package app for windows
+## Package app for Windows
 
 First of all, you'll probably need a certificate for code signing. Generate one with:
 
 ```bash
-electron-builder create-self-signed-cert
+npx electron-builder create-self-signed-cert
 ```
 
-And you are now ready to make the windows package:
+And you are now ready to make the Windows package:
 
 ```bash
 npm run package-win
@@ -93,7 +97,7 @@ npm run package-tarball
 
 ---
 
-### Package app for macOS
+## Package app for macOS
 
 To build the mac package the only option currently available is:
 
@@ -103,6 +107,17 @@ npm run package-universal-mac
 
 And that's it!
 
+---
+
+# Debugging Common Build Problems
+
+In this section we will be adding problems that we have found in specific situations when trying to build from source, we invite everyone to contribute what they have found and how to solve it. It may be useful to someone :3
+
+- **JavaScript heap out of memory error**: This error can occur when building dependencies, although it could only happen in very low end hardware (less than 4gb of ram), most will not find this issue but if you have it, try to increase the node.js memory limit to a higher level (if you have enough memory), currently the lowest low end hardware we have tested is an intel core 2 duo with 2gb of memory where the solution to run the build was to raise the limit to 1280 like this: 
+
+```bash
+NODE_OPTIONS="--max-old-space-size=1280".
+```
 ---
 
 I hope these instructions have been useful for you, we made them thinking that they would be understandable by both beginners and experts. Something more human than just empty instructions.
