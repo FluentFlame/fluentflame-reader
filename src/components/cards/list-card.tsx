@@ -4,6 +4,7 @@ import CardInfo from "./info";
 import Highlights from "./highlights";
 import { ViewConfigs } from "../../schema-types";
 import { SourceTextDirection } from "../../scripts/models/source";
+import { RSSItem } from "../../scripts/models/item";
 import CardThumbnail from "./thumbnail";
 
 const className = (props: Card.Props) => {
@@ -18,6 +19,7 @@ const className = (props: Card.Props) => {
 
 function ListCard(props: Card.Props): React.JSX.Element {
     const hasThumbs = props.item.thumbnails?.length != 0;
+    const title = RSSItem.getTitle(props.item);
     return (
         <div
             className={className(props)}
@@ -32,11 +34,7 @@ function ListCard(props: Card.Props): React.JSX.Element {
             <div className="data">
                 <CardInfo source={props.source} item={props.item} />
                 <h3 className="title">
-                    <Highlights
-                        text={props.item.title}
-                        filter={props.filter}
-                        title
-                    />
+                    <Highlights text={title} filter={props.filter} title />
                 </h3>
                 {Boolean(props.viewConfigs & ViewConfigs.ShowSnippet) && (
                     <p className="snippet">

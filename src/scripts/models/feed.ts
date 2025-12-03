@@ -67,11 +67,11 @@ export class FeedFilter {
                 const regex = RegExp(filter.search, flags);
                 if (type & FilterType.FullSearch) {
                     return (
-                        item.title.match(regex) != null ||
+                        (item.title ?? "").match(regex) != null ||
                         item.snippet.match(regex) != null
                     );
                 } else {
-                    return item.title.match(regex) != null;
+                    return (item.title ?? "").match(regex) != null;
                 }
             }
             return true;
@@ -90,11 +90,11 @@ export class FeedFilter {
             if (type & FilterType.FullSearch) {
                 flag =
                     flag &&
-                    (regex.test(item.title) || regex.test(item.snippet));
+                    (regex.test(item.title ?? "") || regex.test(item.snippet));
             } else if (type & FilterType.CreatorSearch) {
                 flag = flag && regex.test(item.creator || "");
             } else {
-                flag = flag && regex.test(item.title);
+                flag = flag && regex.test(item.title ?? "");
             }
         }
         return Boolean(flag);

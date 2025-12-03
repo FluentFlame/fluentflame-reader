@@ -7,7 +7,7 @@ import {
     clipboard,
     systemPreferences,
 } from "electron";
-import { version } from "../../package.json"
+import { version } from "../../package.json";
 import { WindowManager } from "./window";
 import fs = require("fs");
 import { ImageCallbackTypes, TouchBarTexts } from "../schema-types";

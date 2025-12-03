@@ -32,7 +32,7 @@ import { ThumbnailTypePref } from "../../schema-types";
 export class RSSItem {
     iid: number;
     source: number;
-    title: string;
+    title: string | null;
     link: string;
     date: Date;
     fetchedDate: Date;
@@ -53,7 +53,7 @@ export class RSSItem {
             if (content && typeof content !== "string") delete item[field];
         }
         this.source = source.sid;
-        this.title = item.title || intl.get("article.untitled");
+        this.title = item.title || null;
         this.link = item.link || "";
         this.fetchedDate = new Date();
         this.date = new Date(item.isoDate ?? item.pubDate ?? this.fetchedDate);
@@ -62,6 +62,24 @@ export class RSSItem {
         this.starred = false;
         this.hidden = false;
         this.notify = false;
+    }
+
+    /**
+     * Return title or renderable alternative that can act as a title if
+     * none exists.
+     */
+    static getTitle(item: RSSItem): string {
+        if (item.title) {
+            return item.title.trim();
+        }
+        const maxLength = 45;
+        if (item.snippet) {
+            if (item.snippet.length > maxLength - 1) {
+                return item.snippet.slice(0, maxLength - 1).trim() + "…";
+            }
+            return item.snippet.trim();
+        }
+        return intl.get("article.untitled");
     }
 
     static async fetchHead(url: string): Promise<string> {

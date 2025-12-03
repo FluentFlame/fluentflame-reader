@@ -178,7 +178,7 @@
     margin: 10px 12px;
     position: relative;
     -webkit-line-clamp: 3;
-    overflow: hidden;
+    overflow-wrap: break-word;
     display: -webkit-box;
     -webkit-box-orient: vertical;
 }

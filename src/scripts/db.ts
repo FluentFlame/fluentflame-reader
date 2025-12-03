@@ -20,11 +20,11 @@ export interface SourceEntry {
 export interface ItemEntry {
     iid: number;
     source: number;
-    title: string;
+    title: string | null;
     link: string;
     date: Date;
     fetchedDate: Date;
-    thumb?: string;
+    thumb?: never;
     thumbnails?: ThumbnailAttributes[];
     content: string;
     snippet: string;
@@ -44,6 +44,8 @@ fluentDB.version(4).stores({
     sources: `++sid, &url`,
     items: `++iid, source, date, serviceRef`,
 });
+
+// Introduce thumbnail types.
 fluentDB
     .version(5)
     .stores({
@@ -51,6 +53,12 @@ fluentDB
         items: `++iid, source, date, serviceRef`,
     })
     .upgrade(migrateThumbs);
+
+// Introduce optional titles, delete thumbs.
+fluentDB.version(6).stores({
+    sources: `++sid, &url`,
+    items: `++iid, source, date, serviceRef`,
+});
 
 export async function calculateItemSize(): Promise<number> {
     await fluentDB.open();

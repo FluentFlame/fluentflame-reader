@@ -3,6 +3,7 @@ import { Card } from "./card";
 import CardInfo from "./info";
 import Time from "../utils/time";
 import Highlights from "./highlights";
+import { RSSItem } from "../../scripts/models/item";
 import { SourceTextDirection } from "../../scripts/models/source";
 
 const className = (props: Card.Props) => {
@@ -13,6 +14,7 @@ const className = (props: Card.Props) => {
 };
 
 function CompactCard(props: Card.Props): React.JSX.Element {
+    const title = RSSItem.getTitle(props.item);
     return (
         <div
             className={className(props)}
@@ -22,11 +24,7 @@ function CompactCard(props: Card.Props): React.JSX.Element {
             <CardInfo source={props.source} item={props.item} hideTime />
             <div className="data">
                 <span className="title">
-                    <Highlights
-                        text={props.item.title}
-                        filter={props.filter}
-                        title
-                    />
+                    <Highlights text={title} filter={props.filter} title />
                 </span>
                 <span className="snippet">
                     <Highlights

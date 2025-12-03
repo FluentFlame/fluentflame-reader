@@ -364,10 +364,11 @@ class Article extends React.Component<ArticleProps, ArticleState> {
                 ? this.state.fullContent
                 : this.props.item.content,
         );
+        const title = RSSItem.getTitle(this.props.item);
         const h = encodeURIComponent(
             renderToString(
                 <>
-                    <p className="title">{this.props.item.title}</p>
+                    <p className="title">{title}</p>
                     <p className="date">
                         {this.props.item.date.toLocaleString(
                             this.props.locale,

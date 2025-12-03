@@ -21,8 +21,7 @@ const mediaElement = (
             src={src}
             className={className}
             width={width}
-            height={height}
-        ></CachedImg>
+            height={height}></CachedImg>
     );
 };
 
