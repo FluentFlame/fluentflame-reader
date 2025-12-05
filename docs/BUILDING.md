@@ -73,7 +73,7 @@ npm run package-win
 ```
 ---
 
-## Package app for Linux specifics formats
+## Linux packaging
 
 On Linux there are different package formats and it can be confusing, but if you need help figuring out which package you need, don't worry, an explanation will be added in each format n.n
 
@@ -83,13 +83,13 @@ On Linux there are different package formats and it can be confusing, but if you
 npm run package-appimage
 ```
 
-- Deb package: If you're using a Linux distribution like Ubuntu or Debian or any based on them, it's probably more convenient to package the app in.deb. To do this, run:
+- Debian package: If you're using a Linux distribution like Ubuntu or Debian or any based on them, it's probably more convenient to package the app in a `deb`, the extension used for Debian packages. To do this, run:
 
 ```bash
 npm run package-deb
 ```
 
-- Tarball: Use this if you don't want to use AppImage and you're not on a distribution that supports deb packages (like Arch Linux)
+- Tarball: Use this if you don't want to use AppImage and you're not on a distribution that supports Debian packages (like Arch Linux)
 
 ```bash
 npm run package-tarball
@@ -113,10 +113,10 @@ And that's it!
 
 In this section we will be adding problems that we have found in specific situations when trying to build from source, we invite everyone to contribute what they have found and how to solve it. It may be useful to someone :3
 
-- **JavaScript heap out of memory error**: This error can occur when building dependencies, although it could only happen in very low end hardware (less than 4gb of ram), most will not find this issue but if you have it, try to increase the node.js memory limit to a higher level (if you have enough memory), currently the lowest low end hardware we have tested is an intel core 2 duo with 2gb of memory where the solution to run the build was to raise the limit to 1280 like this: 
+- **JavaScript heap out of memory error**: This error can occur when building dependencies, although it could only happen in very low end hardware (less than 4 GB of RAM), most will not find this issue but if you have it, try to increase the node.js memory limit to a higher level (if you have enough memory), currently the lowest low end hardware we have tested is an intel core 2 duo with 2 GB of RAM. In that case, the solution was to run the build by raising the memory limit to 1280 MB, like this:
 
 ```bash
-NODE_OPTIONS="--max-old-space-size=1280".
+NODE_OPTIONS="--max-old-space-size=1280" npm run build
 ```
 ---
 
