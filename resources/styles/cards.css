@@ -276,7 +276,9 @@
 }
 
 .magazine-card {
-    max-width: 700px;
+    /* This complicated calculation is to allow it to scale with small
+     * window sizes. */
+    width: min(700px, calc(100vw - 90px));
     padding: 24px;
     max-height: 160px;
     display: flex;
