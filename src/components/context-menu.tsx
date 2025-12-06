@@ -62,7 +62,7 @@ function getSearchItem(text: string): IContextualMenuItem {
     };
 }
 
-export function ContextMenu() {
+export function ContextMenu(): React.JSX.Element {
     const { type } = useAppSelector((state) => state.app.contextMenu);
 
     switch (type) {
@@ -83,7 +83,7 @@ export function ContextMenu() {
     }
 }
 
-function ItemContextMenu() {
+function ItemContextMenu(): React.JSX.Element {
     const dispatch = useAppDispatch();
     const viewConfigs = useAppSelector((state) => state.page.viewConfigs);
     const target = useAppSelector((state) => state.app.contextMenu.target);
@@ -270,7 +270,7 @@ function ItemContextMenu() {
     return <ContextMenuBase menuItems={menuItems} />;
 }
 
-function TextContextMenu() {
+function TextContextMenu(): React.JSX.Element {
     const target = useAppSelector((state) => state.app.contextMenu.target) as [
         string,
         string,
@@ -322,7 +322,7 @@ function TextContextMenu() {
     return <ContextMenuBase menuItems={menuItems} />;
 }
 
-function ImageContextMenu() {
+function ImageContextMenu(): React.JSX.Element {
     const menuItems: IContextualMenuItem[] = [
         {
             key: "openInBrowser",
@@ -366,7 +366,7 @@ function ImageContextMenu() {
     return <ContextMenuBase menuItems={menuItems} />;
 }
 
-function ViewContextMenu() {
+function ViewContextMenu(): React.JSX.Element {
     const dispatch = useAppDispatch();
     const viewType = useAppSelector((state) => state.page.viewType);
     const filter = useAppSelector((state) => state.page.filter.type);
@@ -508,7 +508,7 @@ function ViewContextMenu() {
     return <ContextMenuBase menuItems={menuItems} />;
 }
 
-function GroupContextMenu() {
+function GroupContextMenu(): React.JSX.Element {
     const dispatch = useAppDispatch();
     const sids = useAppSelector(
         (state) => state.app.contextMenu.target,
@@ -544,7 +544,7 @@ function GroupContextMenu() {
     return <ContextMenuBase menuItems={menuItems} />;
 }
 
-function MarkReadContextMenu() {
+function MarkReadContextMenu(): React.JSX.Element {
     const dispatch = useAppDispatch();
 
     const menuItems: IContextualMenuItem[] = [
