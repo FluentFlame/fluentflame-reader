@@ -2,14 +2,14 @@ import * as React from "react";
 import { RSSItem } from "../../scripts/models/item";
 import { FeedReduxProps } from "../../containers/feed-container";
 import { RSSFeed, FeedFilter } from "../../scripts/models/feed";
-import { ViewType, ViewConfigs } from "../../schema-types";
+import { ViewType, ViewConfig } from "../../schema-types";
 import CardsFeed from "./cards-feed";
 import ListFeed from "./list-feed";
 
 export type FeedProps = FeedReduxProps & {
     feed: RSSFeed;
     viewType: ViewType;
-    viewConfigs?: ViewConfigs;
+    viewConfig?: ViewConfig;
     items: RSSItem[];
     currentItem: number;
     sourceMap: Object;

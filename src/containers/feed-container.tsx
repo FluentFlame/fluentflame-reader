@@ -18,8 +18,7 @@ const getItems = (state: RootState) => state.items;
 const getFeed = (state: RootState, props: FeedContainerProps) =>
     state.feeds[props.feedId];
 const getFilter = (state: RootState) => state.page.filter;
-const getView = (_, props: FeedContainerProps) => props.viewType;
-const getViewConfigs = (state: RootState) => state.page.viewConfigs;
+const getViewConfig = (state: RootState) => state.page.viewConfig;
 const getCurrentItem = (state: RootState) => state.page.itemId;
 
 const makeMapStateToProps = () => {
@@ -28,18 +27,16 @@ const makeMapStateToProps = () => {
             getSources,
             getItems,
             getFeed,
-            getView,
             getFilter,
-            getViewConfigs,
+            getViewConfig,
             getCurrentItem,
         ],
-        (sources, items, feed, viewType, filter, viewConfigs, currentItem) => ({
+        (sources, items, feed, filter, viewConfig, currentItem) => ({
             feed: feed,
             items: feed.iids.map((iid) => items[iid]),
             sourceMap: sources,
             filter: filter,
-            viewType: viewType,
-            viewConfigs: viewConfigs,
+            viewConfig: viewConfig,
             currentItem: currentItem,
         }),
     );

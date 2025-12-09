@@ -4,7 +4,7 @@ import {
     ThemeSettings,
     SearchEngines,
     ServiceConfigs,
-    ViewConfigs,
+    ViewConfig,
     AnimationMotionPref,
     ThumbnailTypePref,
 } from "../schema-types";
@@ -36,13 +36,6 @@ const settingsBridge = {
     },
     setProxy: (address: string = null) => {
         ipcRenderer.invoke("set-proxy", address);
-    },
-
-    getDefaultView: (): ViewType => {
-        return ipcRenderer.sendSync("get-view");
-    },
-    setDefaultView: (viewType: ViewType) => {
-        ipcRenderer.invoke("set-view", viewType);
     },
 
     getThemeSettings: (): ThemeSettings => {
@@ -126,11 +119,11 @@ const settingsBridge = {
         ipcRenderer.invoke("set-filter-type", filterType);
     },
 
-    getViewConfigs: (view: ViewType): ViewConfigs => {
-        return ipcRenderer.sendSync("get-view-configs", view);
+    getViewConfig: (): ViewConfig => {
+        return ipcRenderer.sendSync("get-view-config");
     },
-    setViewConfigs: (view: ViewType, configs: ViewConfigs) => {
-        ipcRenderer.invoke("set-view-configs", view, configs);
+    setViewConfig: (configs: ViewConfig): void => {
+        ipcRenderer.invoke("set-view-config", configs);
     },
 
     getAll: () => {

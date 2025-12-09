@@ -8,7 +8,8 @@ import {
     SearchEngines,
     SyncService,
     ServiceConfigs,
-    ViewConfigs,
+    ListViewConfigs,
+    ViewConfig,
     ThumbnailTypePref,
 } from "../schema-types";
 import { ipcMain, session, nativeTheme, app } from "electron";
@@ -199,27 +200,14 @@ ipcMain.handle("set-filter-type", (_, filterType: number) => {
     store.set(FILTER_TYPE_STORE_KEY, filterType);
 });
 
-const LIST_CONFIGS_STORE_KEY = "listViewConfigs";
-ipcMain.on("get-view-configs", (event, view: ViewType) => {
-    switch (view) {
-        case ViewType.List:
-            event.returnValue = store.get(
-                LIST_CONFIGS_STORE_KEY,
-                ViewConfigs.ShowCover,
-            );
-            break;
-        default:
-            event.returnValue = undefined;
-            break;
-    }
+const VIEW_CONFIG_STORE_KEY = "viewConfigs";
+ipcMain.on("get-view-config", (event) => {
+    const default_view_config = {
+        currentView: ViewType.Cards,
+        listViewConfigs: ListViewConfigs.ShowCover,
+    };
+    event.returnValue = store.get(VIEW_CONFIG_STORE_KEY, default_view_config);
 });
-ipcMain.handle(
-    "set-view-configs",
-    (_, view: ViewType, configs: ViewConfigs) => {
-        switch (view) {
-            case ViewType.List:
-                store.set(LIST_CONFIGS_STORE_KEY, configs);
-                break;
-        }
-    },
-);
+ipcMain.handle("set-view-config", (_, config: ViewConfig) => {
+    store.set(VIEW_CONFIG_STORE_KEY, config);
+});

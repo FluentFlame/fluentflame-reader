@@ -33,10 +33,22 @@ export const enum ViewType {
     Customized,
 }
 
-export const enum ViewConfigs {
+export const enum ListViewConfigs {
     ShowCover = 1 << 0,
     ShowSnippet = 1 << 1,
     FadeRead = 1 << 2,
+}
+
+export interface ViewConfig {
+    currentView: ViewType;
+    listViewConfigs: ListViewConfigs;
+}
+
+export function defaultViewConfig(): ViewConfig {
+    return {
+        currentView: ViewType.Cards,
+        listViewConfigs: ListViewConfigs.ShowCover,
+    };
 }
 
 export const enum ThemeSettings {
@@ -120,6 +132,6 @@ export type SchemaTypes = {
     searchEngine: SearchEngines;
     serviceConfigs: ServiceConfigs;
     filterType: number;
-    listViewConfigs: ViewConfigs;
+    viewConfigs: ViewConfig;
     thumbnailTypePref: ThumbnailTypePref;
 };

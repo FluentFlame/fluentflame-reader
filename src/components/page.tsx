@@ -2,7 +2,7 @@ import * as React from "react";
 import { FeedContainer } from "../containers/feed-container";
 import { AnimationClassNames, Icon, FocusTrapZone } from "@fluentui/react";
 import ArticleContainer from "../containers/article-container";
-import { ViewType } from "../schema-types";
+import { ViewConfig, ViewType } from "../schema-types";
 import ArticleSearch from "./utils/article-search";
 
 type PageProps = {
@@ -12,7 +12,7 @@ type PageProps = {
     feeds: string[];
     itemId: number;
     itemFromFeed: boolean;
-    viewType: ViewType;
+    viewConfig: ViewConfig;
     dismissItem: () => void;
     offsetItem: (offset: number) => void;
 };
@@ -25,8 +25,9 @@ class Page extends React.Component<PageProps> {
     prevItem = (event: React.MouseEvent) => this.offsetItem(event, -1);
     nextItem = (event: React.MouseEvent) => this.offsetItem(event, 1);
 
-    render = () =>
-        this.props.viewType !== ViewType.List ? (
+    render = () => {
+        const viewType = this.props.viewConfig.currentView;
+        return viewType !== ViewType.List ? (
             <>
                 {this.props.settingsOn ? null : (
                     <div
@@ -37,9 +38,9 @@ class Page extends React.Component<PageProps> {
                         <ArticleSearch />
                         {this.props.feeds.map((fid) => (
                             <FeedContainer
-                                viewType={this.props.viewType}
+                                viewType={viewType}
                                 feedId={fid}
-                                key={fid + this.props.viewType}
+                                key={fid + viewType}
                             />
                         ))}
                     </div>
@@ -85,7 +86,7 @@ class Page extends React.Component<PageProps> {
                         <div className="list-feed-container">
                             {this.props.feeds.map((fid) => (
                                 <FeedContainer
-                                    viewType={this.props.viewType}
+                                    viewType={viewType}
                                     feedId={fid}
                                     key={fid}
                                 />
@@ -111,6 +112,7 @@ class Page extends React.Component<PageProps> {
                 )}
             </>
         );
+    };
 }
 
 export default Page;

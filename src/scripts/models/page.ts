@@ -12,11 +12,11 @@ import { getWindowBreakpoint, AppThunk, ActionStatus } from "../utils";
 import { RSSItem, markRead } from "./item";
 import { SourceActionTypes, DELETE_SOURCE } from "./source";
 import { toggleMenu } from "./app";
-import { ViewType, ViewConfigs } from "../../schema-types";
+import { ViewType, ViewConfig, defaultViewConfig } from "../../schema-types";
 
 export const SELECT_PAGE = "SELECT_PAGE";
 export const SWITCH_VIEW = "SWITCH_VIEW";
-export const SET_VIEW_CONFIGS = "SET_VIEW_CONFIGS";
+export const SET_VIEW_CONFIG = "SET_VIEW_CONFIG";
 export const SHOW_ITEM = "SHOW_ITEM";
 export const SHOW_OFFSET_ITEM = "SHOW_OFFSET_ITEM";
 export const DISMISS_ITEM = "DISMISS_ITEM";
@@ -45,9 +45,9 @@ interface SwitchViewAction {
     viewType: ViewType;
 }
 
-interface SetViewConfigsAction {
-    type: typeof SET_VIEW_CONFIGS;
-    configs: ViewConfigs;
+interface SetViewConfigAction {
+    type: typeof SET_VIEW_CONFIG;
+    config: ViewConfig;
 }
 
 interface ShowItemAction {
@@ -75,7 +75,7 @@ export type PageActionTypes =
     | DismissItemAction
     | ApplyFilterAction
     | ToggleSearchAction
-    | SetViewConfigsAction;
+    | SetViewConfigAction;
 
 export function selectAllArticles(init = false): AppThunk {
     return (dispatch, getState) => {
@@ -110,20 +110,27 @@ export function selectSources(
     };
 }
 
-export function switchView(viewType: ViewType): PageActionTypes {
-    return {
-        type: SWITCH_VIEW,
-        viewType: viewType,
-    };
+/**
+ * Generic way to set the settings view config and the state.
+ */
+export function setViewConfig(config: ViewConfig): AppThunk<void> {
+    return (dispatch, _getState) => {
+        window.settings.setViewConfig(config);
+        dispatch({
+            type: SET_VIEW_CONFIG,
+            config: config,
+        });
+    }
 }
 
-export function setViewConfigs(configs: ViewConfigs): AppThunk {
+/**
+ * Wrapper around setViewConfig to switch the view.
+ */
+export function switchView(view: ViewType): AppThunk {
     return (dispatch, getState) => {
-        window.settings.setViewConfigs(getState().page.viewType, configs);
-        dispatch({
-            type: "SET_VIEW_CONFIGS",
-            configs: configs,
-        });
+        const currentViewConfig = getState().page.viewConfig;
+        const newConfig = {...currentViewConfig, currentView: view};
+        dispatch(setViewConfig(newConfig));
     };
 }
 
@@ -271,12 +278,9 @@ export function performSearch(query: string): AppThunk {
 }
 
 export class PageState {
-    viewType = window.settings.getDefaultView();
-    viewConfigs = window.settings.getViewConfigs(
-        window.settings.getDefaultView(),
-    );
+    viewConfig: ViewConfig = defaultViewConfig();
     filter = new FeedFilter();
-    feedId = ALL;
+    feedId: string = ALL;
     itemId = null as number;
     itemFromFeed = true;
     searchOn = false;
@@ -286,6 +290,7 @@ export function pageReducer(
     state = new PageState(),
     action: PageActionTypes | SourceActionTypes | FeedActionTypes,
 ): PageState {
+    console.log("PageState", state);
     switch (action.type) {
         case SELECT_PAGE:
             switch (action.pageType) {
@@ -304,17 +309,11 @@ export function pageReducer(
                 default:
                     return state;
             }
-        case SWITCH_VIEW:
+        case SET_VIEW_CONFIG:
             return {
                 ...state,
-                viewType: action.viewType,
-                viewConfigs: window.settings.getViewConfigs(action.viewType),
+                viewConfig: action.config,
                 itemId: null,
-            };
-        case SET_VIEW_CONFIGS:
-            return {
-                ...state,
-                viewConfigs: action.configs,
             };
         case APPLY_FILTER:
             return {

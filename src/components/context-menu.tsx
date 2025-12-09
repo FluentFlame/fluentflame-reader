@@ -6,6 +6,7 @@ import {
     webSearch,
     getSearchEngineName,
     platformCtrl,
+    type AppDispatch,
 } from "../scripts/utils";
 import {
     ContextualMenu,
@@ -28,11 +29,16 @@ import {
     toggleHidden,
     toggleStarred,
 } from "../scripts/models/item";
-import { ViewType, ImageCallbackTypes, ViewConfigs } from "../schema-types";
+import { setViewConfig } from "../scripts/models/page";
+import {
+    ViewType,
+    ImageCallbackTypes,
+    ListViewConfigs,
+    ViewConfig,
+} from "../schema-types";
 import { FilterType } from "../scripts/models/feed";
 import { useAppDispatch, useAppSelector } from "../scripts/reducer";
 import {
-    setViewConfigs,
     showItem,
     switchFilter,
     switchView,
@@ -85,7 +91,7 @@ export function ContextMenu(): React.JSX.Element {
 
 function ItemContextMenu(): React.JSX.Element {
     const dispatch = useAppDispatch();
-    const viewConfigs = useAppSelector((state) => state.page.viewConfigs);
+    const viewConfig = useAppSelector((state) => state.page.viewConfig);
     const target = useAppSelector((state) => state.app.contextMenu.target);
     const item = target[0] as RSSItem;
     const feedId = target[1] as string;
@@ -205,69 +211,77 @@ function ItemContextMenu(): React.JSX.Element {
                 window.utils.writeClipboard(item.link);
             },
         },
-        ...(viewConfigs !== undefined
-            ? [
-                  {
-                      key: "divider_2",
-                      itemType: ContextualMenuItemType.Divider,
-                  },
-                  {
-                      key: "view",
-                      text: intl.get("context.view"),
-                      subMenuProps: {
-                          items: [
-                              {
-                                  key: "showCover",
-                                  text: intl.get("context.showCover"),
-                                  canCheck: true,
-                                  checked: Boolean(
-                                      viewConfigs & ViewConfigs.ShowCover,
-                                  ),
-                                  onClick: () =>
-                                      dispatch(
-                                          setViewConfigs(
-                                              viewConfigs ^
-                                                  ViewConfigs.ShowCover,
-                                          ),
-                                      ),
-                              },
-                              {
-                                  key: "showSnippet",
-                                  text: intl.get("context.showSnippet"),
-                                  canCheck: true,
-                                  checked: Boolean(
-                                      viewConfigs & ViewConfigs.ShowSnippet,
-                                  ),
-                                  onClick: () =>
-                                      dispatch(
-                                          setViewConfigs(
-                                              viewConfigs ^
-                                                  ViewConfigs.ShowSnippet,
-                                          ),
-                                      ),
-                              },
-                              {
-                                  key: "fadeRead",
-                                  text: intl.get("context.fadeRead"),
-                                  canCheck: true,
-                                  checked: Boolean(
-                                      viewConfigs & ViewConfigs.FadeRead,
-                                  ),
-                                  onClick: () =>
-                                      dispatch(
-                                          setViewConfigs(
-                                              viewConfigs ^
-                                                  ViewConfigs.FadeRead,
-                                          ),
-                                      ),
-                              },
-                          ],
-                      },
-                  },
-              ]
-            : []),
+        ...listViewMenuItems(dispatch, viewConfig),
     ];
     return <ContextMenuBase menuItems={menuItems} />;
+}
+
+function listViewMenuItems(dispatch: AppDispatch, curViewConfig: ViewConfig): IContextualMenuItem[] {
+    if (curViewConfig.currentView !== ViewType.List) {
+        return [];
+    }
+    const listViewConfigs = curViewConfig.listViewConfigs;
+    return [
+        {
+            key: "divider_2",
+            itemType: ContextualMenuItemType.Divider,
+        },
+        {
+            key: "view",
+            text: intl.get("context.view"),
+            subMenuProps: {
+                items: [
+                    {
+                        key: "showCover",
+                        text: intl.get("context.showCover"),
+                        canCheck: true,
+                        checked: Boolean(
+                            listViewConfigs & ListViewConfigs.ShowCover,
+                        ),
+                        onClick: () =>
+                            dispatch(
+                                setViewConfig({
+                                    ...curViewConfig,
+                                    listViewConfigs: listViewConfigs ^ ListViewConfigs.ShowCover
+                                }
+                                ),
+                            ),
+                    },
+                    {
+                        key: "showSnippet",
+                        text: intl.get("context.showSnippet"),
+                        canCheck: true,
+                        checked: Boolean(
+                            listViewConfigs & ListViewConfigs.ShowSnippet,
+                        ),
+                        onClick: () =>
+                            dispatch(
+                                setViewConfig({
+                                    ...curViewConfig,
+                                    listViewConfigs: listViewConfigs ^
+                                        ListViewConfigs.ShowSnippet,
+                                }),
+                            ),
+                    },
+                    {
+                        key: "fadeRead",
+                        text: intl.get("context.fadeRead"),
+                        canCheck: true,
+                        checked: Boolean(
+                            listViewConfigs & ListViewConfigs.FadeRead,
+                        ),
+                        onClick: () =>
+                            dispatch(
+                                setViewConfig({
+                                    ...curViewConfig,
+                                    listViewConfigs: listViewConfigs ^ ListViewConfigs.FadeRead,
+                                }),
+                            ),
+                    },
+                ],
+            },
+        },
+    ];
 }
 
 function TextContextMenu(): React.JSX.Element {
@@ -368,7 +382,7 @@ function ImageContextMenu(): React.JSX.Element {
 
 function ViewContextMenu(): React.JSX.Element {
     const dispatch = useAppDispatch();
-    const viewType = useAppSelector((state) => state.page.viewType);
+    const viewType = useAppSelector((state) => state.page.viewConfig.currentView);
     const filter = useAppSelector((state) => state.page.filter.type);
 
     const menuItems: IContextualMenuItem[] = [
