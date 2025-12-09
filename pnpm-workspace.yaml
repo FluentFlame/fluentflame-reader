@@ -1,0 +1,7 @@
+ignoredBuiltDependencies:
+  - electron-winstaller
+  - esbuild
+  - react-intl-universal
+
+onlyBuiltDependencies:
+  - electron

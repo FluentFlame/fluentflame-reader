@@ -10,6 +10,7 @@
   targetPkgs =
     pkgs:
     (with pkgs; [
+      # Most of these are for running electron.
       alsa-lib
       at-spi2-atk
       cairo
@@ -29,6 +30,9 @@
       nss
       pango
       udev
+      
+      # For pnpm packaging.
+      pnpm
 
       libxcrypt-legacy # For 'libcrypt.so.1' for deb packaging
       binutils # For ruby deb packaging, needs 'ar'

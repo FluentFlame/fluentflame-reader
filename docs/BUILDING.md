@@ -11,13 +11,18 @@ Next you have to clone our repository like this:
 git clone https://github.com/FluentFlame/fluentflame-reader.git
 ```
 
- if you use ssh, change the repo link to:
+or if you use ssh:
 
 ```bash
-git@github.com:FluentFlame/fluentflame-reader.git
+git clone git@github.com:FluentFlame/fluentflame-reader.git
 ```
 
 ---
+
+# NPM Instructions
+
+`npm` is the officially supported way to build Fluentflame Reader from source.
+
 ## Dependencies
 
 Go to the cloned directory and install the necessary dependencies with:
@@ -28,9 +33,7 @@ npm install
 
 This will install the packages that Fluentflame needs to build, don't worry, this will only install those dependencies to the cloned directory, not to your global system :)
 
----
-
-## Build ts & dependencies
+## Compile ts & run webpack
 
 Simply type this on your terminal:
 
@@ -40,9 +43,9 @@ npm run build
 
 With this command you will proceed to compile everything you need to run the app, keep in mind that depending on the hardware you use this can be fast or it can take time.
 
----
+This command generates the `dist/` directory, which acts as a staging ground for packaging.
 
-## Start the application and test run
+## Start the application & test run
 
 If you just want to test the app without packaging it, run this:
 
@@ -56,7 +59,19 @@ You can also do a simple test to check very basic things like this:
 npm run test
 ```
 
+# PNPM Instructions
+
+`pnpm` support is on a best-effort basis.
+
+Please see [pnpm_building.md](/docs/pnpm_building.md)
+for details.
+
 ---
+
+# Packaging
+
+*For all of these instructions, if you use `pnpm`, instead replace `npm` and `npx`
+with `pnpm` instead.*
 
 ## Package app for Windows
 
@@ -71,7 +86,6 @@ And you are now ready to make the Windows package:
 ```bash
 npm run package-win
 ```
----
 
 ## Linux packaging
 
@@ -95,8 +109,6 @@ npm run package-deb
 npm run package-tarball
 ```
 
----
-
 ## Package app for macOS
 
 To build the mac package the only option currently available is:
@@ -106,8 +118,6 @@ npm run package-universal-mac
 ```
 
 And that's it!
-
----
 
 # Debugging Common Build Problems
 
