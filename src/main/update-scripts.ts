@@ -1,11 +1,10 @@
-import { app } from "electron";
 import Store from "electron-store";
 import { SchemaTypes } from "../schema-types";
+import { version } from "../../package.json";
 
 export default function performUpdate(store: Store<SchemaTypes>) {
-    let version = store.get("version", null);
-    let currentVersion = app.getVersion();
-    if (version != currentVersion) {
-        store.set("version", currentVersion);
+    let curVersion = store.get("version", null);
+    if (version != curVersion) {
+        store.set("version", version);
     }
 }

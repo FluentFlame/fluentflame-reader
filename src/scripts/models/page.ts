@@ -278,7 +278,7 @@ export function performSearch(query: string): AppThunk {
 }
 
 export class PageState {
-    viewConfig: ViewConfig = defaultViewConfig();
+    viewConfig: ViewConfig = window.settings.getViewConfig() ?? defaultViewConfig();
     filter = new FeedFilter();
     feedId: string = ALL;
     itemId = null as number;
@@ -287,10 +287,9 @@ export class PageState {
 }
 
 export function pageReducer(
-    state = new PageState(),
+    state: PageState = new PageState(),
     action: PageActionTypes | SourceActionTypes | FeedActionTypes,
 ): PageState {
-    console.log("PageState", state);
     switch (action.type) {
         case SELECT_PAGE:
             switch (action.pageType) {

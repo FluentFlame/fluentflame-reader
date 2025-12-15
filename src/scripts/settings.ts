@@ -5,8 +5,10 @@ import * as db from "./db";
 import locales from "./i18n/_locales";
 import {
     AnimationMotionPref,
+    ListViewConfigs,
     ThemeSettings,
     ThumbnailTypePref,
+    ViewConfig,
 } from "../schema-types";
 import { SourceTextDirection } from "./models/source";
 
@@ -180,7 +182,8 @@ export interface FluentflameSettingConfig {
     filterType: number;
     menuOn: boolean;
     sourceGroups: any[];
-    view: number;
+    view?: number;  // Deprecated.
+    viewConfig: ViewConfig;
 }
 
 export async function exportAll() {
@@ -248,7 +251,10 @@ function migrateExport(input: any): FluentflameSettingConfig {
         filterType: input.filterType ?? 0,
         menuOn: input.menuOn ?? false,
         sourceGroups: input.sourceGroups ?? [],
-        view: input.view ?? 0,
+        viewConfig: {
+            listViewConfigs: ListViewConfigs.ShowCover,
+            currentView: input.view ?? 0,
+        }
     };
 }
 

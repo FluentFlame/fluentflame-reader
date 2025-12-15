@@ -122,7 +122,6 @@ export type SchemaTypes = {
     theme: ThemeSettings;
     pac: string;
     pacOn: boolean;
-    view: ViewType;
     locale: string;
     sourceGroups: SourceGroup[];
     fontSize: number;
@@ -132,6 +131,6 @@ export type SchemaTypes = {
     searchEngine: SearchEngines;
     serviceConfigs: ServiceConfigs;
     filterType: number;
-    viewConfigs: ViewConfig;
+    viewConfig: ViewConfig;
     thumbnailTypePref: ThumbnailTypePref;
 };

@@ -3,14 +3,13 @@ import {
     AnimationMotionPref,
     SchemaTypes,
     SourceGroup,
-    ViewType,
     ThemeSettings,
     SearchEngines,
     SyncService,
     ServiceConfigs,
-    ListViewConfigs,
     ViewConfig,
     ThumbnailTypePref,
+    defaultViewConfig,
 } from "../schema-types";
 import { ipcMain, session, nativeTheme, app } from "electron";
 import { WindowManager } from "./window";
@@ -68,14 +67,6 @@ ipcMain.on("get-proxy", (event) => {
 });
 ipcMain.handle("set-proxy", (_, address = null) => {
     setProxy(address);
-});
-
-const VIEW_STORE_KEY = "view";
-ipcMain.on("get-view", (event) => {
-    event.returnValue = store.get(VIEW_STORE_KEY, ViewType.Cards);
-});
-ipcMain.handle("set-view", (_, viewType: ViewType) => {
-    store.set(VIEW_STORE_KEY, viewType);
 });
 
 const THEME_STORE_KEY = "theme";
@@ -200,13 +191,9 @@ ipcMain.handle("set-filter-type", (_, filterType: number) => {
     store.set(FILTER_TYPE_STORE_KEY, filterType);
 });
 
-const VIEW_CONFIG_STORE_KEY = "viewConfigs";
+const VIEW_CONFIG_STORE_KEY = "viewConfig";
 ipcMain.on("get-view-config", (event) => {
-    const default_view_config = {
-        currentView: ViewType.Cards,
-        listViewConfigs: ListViewConfigs.ShowCover,
-    };
-    event.returnValue = store.get(VIEW_CONFIG_STORE_KEY, default_view_config);
+    event.returnValue = store.get(VIEW_CONFIG_STORE_KEY, defaultViewConfig());
 });
 ipcMain.handle("set-view-config", (_, config: ViewConfig) => {
     store.set(VIEW_CONFIG_STORE_KEY, config);
