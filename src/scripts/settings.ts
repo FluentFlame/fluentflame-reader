@@ -182,7 +182,7 @@ export interface FluentflameSettingConfig {
     filterType: number;
     menuOn: boolean;
     sourceGroups: any[];
-    view?: number;  // Deprecated.
+    view?: number; // Deprecated.
     viewConfig: ViewConfig;
 }
 
@@ -254,7 +254,7 @@ function migrateExport(input: any): FluentflameSettingConfig {
         viewConfig: {
             listViewConfigs: ListViewConfigs.ShowCover,
             currentView: input.view ?? 0,
-        }
+        },
     };
 }
 

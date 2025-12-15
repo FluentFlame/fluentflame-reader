@@ -19,7 +19,8 @@ const getSources = (state: RootState) => state.sources;
 const getGroups = (state: RootState) => state.groups;
 const getSearchOn = (state: RootState) => state.page.searchOn;
 const getItemOn = (state: RootState) =>
-    state.page.itemId !== null && state.page.viewConfig.currentView !== ViewType.List;
+    state.page.itemId !== null &&
+    state.page.viewConfig.currentView !== ViewType.List;
 
 const mapStateToProps = createSelector(
     [getApp, getSources, getGroups, getSearchOn, getItemOn],

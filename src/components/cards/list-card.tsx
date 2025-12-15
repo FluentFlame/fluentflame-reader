@@ -11,7 +11,10 @@ const className = (props: Card.Props) => {
     let cn = ["card", "list-card"];
     if (props.item.hidden) cn.push("hidden");
     if (props.selected) cn.push("selected");
-    if (props.viewConfig.listViewConfigs & ListViewConfigs.FadeRead && props.item.hasRead)
+    if (
+        props.viewConfig.listViewConfigs & ListViewConfigs.FadeRead &&
+        props.item.hasRead
+    )
         cn.push("read");
     if (props.source.textDir === SourceTextDirection.RTL) cn.push("rtl");
     return cn.join(" ");
@@ -26,7 +29,8 @@ function ListCard(props: Card.Props): React.JSX.Element {
             {...Card.bindEventsToProps(props)}
             data-iid={props.item.iid}
             data-is-focusable>
-            {hasThumbs && props.viewConfig.listViewConfigs & ListViewConfigs.ShowCover ? (
+            {hasThumbs &&
+            props.viewConfig.listViewConfigs & ListViewConfigs.ShowCover ? (
                 <div className="head">
                     <CardThumbnail item={props.item} />
                 </div>
@@ -36,7 +40,10 @@ function ListCard(props: Card.Props): React.JSX.Element {
                 <h3 className="title">
                     <Highlights text={title} filter={props.filter} title />
                 </h3>
-                {Boolean(props.viewConfig.listViewConfigs & ListViewConfigs.ShowSnippet) && (
+                {Boolean(
+                    props.viewConfig.listViewConfigs &
+                        ListViewConfigs.ShowSnippet,
+                ) && (
                     <p className="snippet">
                         <Highlights
                             text={props.item.snippet}

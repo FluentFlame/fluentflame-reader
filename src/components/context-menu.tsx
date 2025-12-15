@@ -216,7 +216,10 @@ function ItemContextMenu(): React.JSX.Element {
     return <ContextMenuBase menuItems={menuItems} />;
 }
 
-function listViewMenuItems(dispatch: AppDispatch, curViewConfig: ViewConfig): IContextualMenuItem[] {
+function listViewMenuItems(
+    dispatch: AppDispatch,
+    curViewConfig: ViewConfig,
+): IContextualMenuItem[] {
     if (curViewConfig.currentView !== ViewType.List) {
         return [];
     }
@@ -242,9 +245,10 @@ function listViewMenuItems(dispatch: AppDispatch, curViewConfig: ViewConfig): IC
                             dispatch(
                                 setViewConfig({
                                     ...curViewConfig,
-                                    listViewConfigs: listViewConfigs ^ ListViewConfigs.ShowCover
-                                }
-                                ),
+                                    listViewConfigs:
+                                        listViewConfigs ^
+                                        ListViewConfigs.ShowCover,
+                                }),
                             ),
                     },
                     {
@@ -258,7 +262,8 @@ function listViewMenuItems(dispatch: AppDispatch, curViewConfig: ViewConfig): IC
                             dispatch(
                                 setViewConfig({
                                     ...curViewConfig,
-                                    listViewConfigs: listViewConfigs ^
+                                    listViewConfigs:
+                                        listViewConfigs ^
                                         ListViewConfigs.ShowSnippet,
                                 }),
                             ),
@@ -274,7 +279,9 @@ function listViewMenuItems(dispatch: AppDispatch, curViewConfig: ViewConfig): IC
                             dispatch(
                                 setViewConfig({
                                     ...curViewConfig,
-                                    listViewConfigs: listViewConfigs ^ ListViewConfigs.FadeRead,
+                                    listViewConfigs:
+                                        listViewConfigs ^
+                                        ListViewConfigs.FadeRead,
                                 }),
                             ),
                     },
@@ -382,7 +389,9 @@ function ImageContextMenu(): React.JSX.Element {
 
 function ViewContextMenu(): React.JSX.Element {
     const dispatch = useAppDispatch();
-    const viewType = useAppSelector((state) => state.page.viewConfig.currentView);
+    const viewType = useAppSelector(
+        (state) => state.page.viewConfig.currentView,
+    );
     const filter = useAppSelector((state) => state.page.filter.type);
 
     const menuItems: IContextualMenuItem[] = [

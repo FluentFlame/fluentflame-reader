@@ -120,7 +120,7 @@ export function setViewConfig(config: ViewConfig): AppThunk<void> {
             type: SET_VIEW_CONFIG,
             config: config,
         });
-    }
+    };
 }
 
 /**
@@ -129,7 +129,7 @@ export function setViewConfig(config: ViewConfig): AppThunk<void> {
 export function switchView(view: ViewType): AppThunk {
     return (dispatch, getState) => {
         const currentViewConfig = getState().page.viewConfig;
-        const newConfig = {...currentViewConfig, currentView: view};
+        const newConfig = { ...currentViewConfig, currentView: view };
         dispatch(setViewConfig(newConfig));
     };
 }
@@ -278,7 +278,8 @@ export function performSearch(query: string): AppThunk {
 }
 
 export class PageState {
-    viewConfig: ViewConfig = window.settings.getViewConfig() ?? defaultViewConfig();
+    viewConfig: ViewConfig =
+        window.settings.getViewConfig() ?? defaultViewConfig();
     filter = new FeedFilter();
     feedId: string = ALL;
     itemId = null as number;
