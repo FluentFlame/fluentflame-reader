@@ -433,9 +433,9 @@ export function markRead(item: RSSItem): AppThunk {
 }
 
 export function markAllRead(
-    sids: number[] = null,
-    date: Date = null,
-    before = true,
+    sids: number[] | null = null,
+    date: Date | null = null,
+    before: boolean = true,
 ): AppThunk<Promise<void>> {
     return async (dispatch, getState) => {
         let state = getState();
@@ -452,25 +452,29 @@ export function markAllRead(
             await dispatch(action);
         }
         // NOTE: Uncertain if this requires an 'await'.
-        fluentDB.transaction("rw", fluentDB.items, async () => {
-            const items = await fluentDB.items
-                .where("sids")
-                .anyOf(sids)
-                .and((itemRow) => {
-                    if (itemRow.hasRead) {
-                        return false;
-                    }
-                    if (date && !dateCompare(itemRow.date, date, before)) {
-                        return false;
-                    }
-                    return true;
-                })
-                .toArray();
-            for (const item of items) {
-                item.hasRead = true;
-            }
-            await fluentDB.items.bulkPut(items);
-        });
+        fluentDB
+            .transaction("rw", fluentDB.items, async () => {
+                const items = await fluentDB.items
+                    .where("source")
+                    .anyOf(sids)
+                    .and((itemRow) => {
+                        if (itemRow.hasRead) {
+                            return false;
+                        }
+                        if (date && !dateCompare(itemRow.date, date, before)) {
+                            return false;
+                        }
+                        return true;
+                    })
+                    .toArray();
+                for (const item of items) {
+                    item.hasRead = true;
+                }
+                await fluentDB.items.bulkPut(items);
+            })
+            .catch((e) => {
+                console.error("Error conducting markAllRead transaction", e);
+            });
         if (date) {
             dispatch({
                 type: MARK_ALL_READ,
