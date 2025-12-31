@@ -29,15 +29,18 @@ jobs:
                 echo "version=${version}"
                 echo "version=${version}" >> "${GITHUB_OUTPUT}"
 
-            # For some reason, AppImage uses x86_64, tarball uses x64, and debian uses amd64 for arch?
-            - name: "Upload ARM64 DMG"
-              uses: "shogo82148/actions-upload-release-asset@v1.9.1"
-              with:
-                  upload_url: ${{ github.event.release.upload_url }}
-                  asset_path: bin/darwin/arm64/fluentflame-reader-mac-arm64-${{ steps.package-version.outputs.version }}.dmg
-
             - name: "Upload MacOS Universal Binary"
               uses: "shogo82148/actions-upload-release-asset@v1.9.1"
               with:
                   upload_url: ${{ github.event.release.upload_url }}
                   asset_path: bin/darwin/universal/fluentflame-reader-mac-universal-${{ steps.package-version.outputs.version }}.dmg
+            
+            # We've been told that the arm64 DMG for MacOS shows up as "corrupted", but the universal binary works fine. Don't
+            # distribute broken things until we can guarantee they work.
+
+            #- name: "Upload ARM64 DMG"
+            #  uses: "shogo82148/actions-upload-release-asset@v1.9.1"
+            #  with:
+            #      upload_url: ${{ github.event.release.upload_url }}
+            #      asset_path: bin/darwin/arm64/fluentflame-reader-mac-arm64-${{ steps.package-version.outputs.version }}.dmg
+
