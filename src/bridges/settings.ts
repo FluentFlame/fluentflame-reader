@@ -1,6 +1,5 @@
 import {
     SourceGroup,
-    ViewType,
     ThemeSettings,
     SearchEngines,
     ServiceConfigs,
@@ -130,7 +129,7 @@ const settingsBridge = {
         return ipcRenderer.sendSync("get-all-settings") as Object;
     },
 
-    setAll: (configs) => {
+    setAll: (configs: unknown) => {
         ipcRenderer.invoke("import-all-settings", configs);
     },
 };
