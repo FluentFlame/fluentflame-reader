@@ -1,14 +1,17 @@
-import windowStateKeeper = require("electron-window-state");
+import windowStateKeeper from "electron-window-state";
 import { BrowserWindow, nativeTheme, app } from "electron";
 import path = require("path");
 import { setThemeListener } from "./settings";
 import { setUtilsListeners } from "./utils";
+import { type CustomArgs } from "../general-types";
 
 export class WindowManager {
     mainWindow: BrowserWindow = null;
     private mainWindowState: windowStateKeeper.State;
+    args: CustomArgs;
 
-    constructor() {
+    constructor(args: CustomArgs) {
+        this.args = args;
         this.init();
     }
 
@@ -42,6 +45,8 @@ export class WindowManager {
 
     createWindow = () => {
         if (!this.hasWindow()) {
+            const useFrame =
+                process.platform === "darwin" || this.args.forceFrame;
             this.mainWindow = new BrowserWindow({
                 title: "Fluentflame Reader",
                 backgroundColor:
@@ -57,7 +62,7 @@ export class WindowManager {
                 height: this.mainWindowState.height,
                 minWidth: 450,
                 minHeight: 300,
-                frame: process.platform === "darwin",
+                frame: useFrame,
                 titleBarStyle: "hiddenInset",
                 fullscreenable: process.platform === "darwin",
                 show: false,

@@ -1,8 +1,15 @@
 import { app, ipcMain, Menu, nativeTheme } from "electron";
-import { ThemeSettings, SchemaTypes } from "./schema-types";
+import { ThemeSettings, type SchemaTypes } from "./schema-types";
 import { store } from "./main/settings";
 import performUpdate from "./main/update-scripts";
 import { WindowManager } from "./main/window";
+import { type CustomArgs } from "./general-types";
+
+// Custom Program Arguments -----------------------------------------------------------------------
+
+let CUSTOM_ARGS: CustomArgs;
+
+// Main Program -----------------------------------------------------------------------------------
 
 if (!process.mas) {
     const locked = app.requestSingleInstanceLock();
@@ -20,6 +27,13 @@ let restarting = false;
 function init() {
     performUpdate(store);
     nativeTheme.themeSource = store.get("theme", ThemeSettings.Default);
+
+    // Somewhat hacky arg parsing. Not a fan.
+    const allArgs = process.argv;
+    const customArgsRaw = allArgs.slice(2);
+    CUSTOM_ARGS = {
+        forceFrame: customArgsRaw.includes("--force-frame"),
+    };
 }
 
 init();
@@ -103,7 +117,7 @@ if (process.platform === "darwin") {
     Menu.setApplicationMenu(null);
 }
 
-const winManager = new WindowManager();
+const winManager = new WindowManager(CUSTOM_ARGS);
 
 app.on("window-all-closed", () => {
     if (winManager.hasWindow()) {

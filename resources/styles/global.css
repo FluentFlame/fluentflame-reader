@@ -212,7 +212,8 @@ nav.top-nav span.title {
 body.darwin nav.top-nav > nav span.title {
     max-width: 220px;
 }
-body.darwin .btn-group .seperator {
+body.show-window-frame .btn-group .seperator {
+    /* Don't show separator when we're hiding the window buttons. */
     display: none;
 }
 .btn-group {
@@ -316,6 +317,7 @@ nav.item-on .btn-group .btn.system {
 .btn-group .btn.inline-block-wide {
     display: none;
 }
-body.darwin .btn-group .btn.system {
+body.show-window-frame .btn-group .btn.system {
+    /* Don't show the window buttons when we are using native window frame. */
     display: none;
 }

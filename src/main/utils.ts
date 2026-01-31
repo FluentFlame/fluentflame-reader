@@ -327,4 +327,8 @@ export function setUtilsListeners(manager: WindowManager) {
     ipcMain.on("system-preferences-get-animation-settings", (event) => {
         event.returnValue = systemPreferences.getAnimationSettings();
     });
+
+    ipcMain.on("get-custom-args", (event) => {
+        event.returnValue = manager.args;
+    });
 }

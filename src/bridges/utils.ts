@@ -5,6 +5,7 @@ import {
     TouchBarTexts,
     WindowStateListenerType,
 } from "../schema-types";
+import { CustomArgs } from "../general-types";
 import { IObjectWithKey } from "@fluentui/react";
 
 const utilsBridge = {
@@ -183,6 +184,10 @@ const utilsBridge = {
         return ipcRenderer.sendSync(
             "system-preferences-get-animation-settings",
         );
+    },
+
+    getCustomArgs: (): CustomArgs => {
+        return ipcRenderer.sendSync("get-custom-args");
     },
 };
 

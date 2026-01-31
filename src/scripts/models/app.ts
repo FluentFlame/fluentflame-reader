@@ -15,6 +15,7 @@ import {
     AppThunk,
     getWindowBreakpoint,
     initTouchBarWithTexts,
+    hasWindowFrame,
 } from "../utils";
 import { INIT_FEEDS, FeedActionTypes, ALL, initFeeds } from "./feed";
 import {
@@ -410,6 +411,9 @@ export function initIntl(): AppThunk<Promise<void>> {
 export function initApp(): AppThunk {
     return (dispatch) => {
         document.body.classList.add(window.utils.platform);
+        if (hasWindowFrame()) {
+            document.body.classList.add("show-window-frame");
+        }
         dispatch(initIntl())
             .then(async () => {
                 if (window.utils.platform === "darwin") initTouchBarWithTexts();

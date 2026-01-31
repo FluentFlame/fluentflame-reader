@@ -256,6 +256,13 @@ export function platformCtrl(
     return window.utils.platform === "darwin" ? e.metaKey : e.ctrlKey;
 }
 
+export function hasWindowFrame() {
+    return (
+        window.utils.platform !== "darwin" &&
+        window.utils.getCustomArgs().forceFrame
+    );
+}
+
 export function initTouchBarWithTexts() {
     window.utils.initTouchBar({
         menu: intl.get("nav.menu"),
