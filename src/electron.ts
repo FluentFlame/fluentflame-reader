@@ -4,10 +4,23 @@ import { store } from "./main/settings";
 import performUpdate from "./main/update-scripts";
 import { WindowManager } from "./main/window";
 import { type CustomArgs } from "./general-types";
+import minimist from "minimist";
 
 // Custom Program Arguments -----------------------------------------------------------------------
 
 let CUSTOM_ARGS: CustomArgs;
+
+function parseArgs(): unknown {
+    // Somewhat hacky arg parsing.
+    const allArgs = process.argv;
+    let customArgsRaw: string[];
+    if (allArgs.length > 0 && allArgs[0].endsWith("electron")) {
+        customArgsRaw = allArgs.slice(2);
+    } else {
+        customArgsRaw = allArgs.slice(1);
+    }
+    return minimist(customArgsRaw);
+}
 
 // Main Program -----------------------------------------------------------------------------------
 
@@ -28,11 +41,9 @@ function init() {
     performUpdate(store);
     nativeTheme.themeSource = store.get("theme", ThemeSettings.Default);
 
-    // Somewhat hacky arg parsing. Not a fan.
-    const allArgs = process.argv;
-    const customArgsRaw = allArgs.slice(2);
+    const args = parseArgs();
     CUSTOM_ARGS = {
-        forceFrame: customArgsRaw.includes("--force-frame"),
+        forceFrame: args["force-frame"] != null,
     };
 }
 
