@@ -87,6 +87,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
+    "minimist": "^1.2.8",
     "node-polyfill-webpack-plugin": "^4.1.0"
   }
 }
