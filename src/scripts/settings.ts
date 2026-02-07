@@ -187,6 +187,7 @@ export interface FluentflameSettingConfig {
     database: DatabaseConfig;
     filterType: number;
     menuOn: boolean;
+    useNativeWindowFramePref: boolean;
     sourceGroups: any[];
     view?: number; // Deprecated.
     viewConfig: ViewConfig;
@@ -256,6 +257,7 @@ function migrateExport(input: any): FluentflameSettingConfig {
         },
         filterType: input.filterType ?? 0,
         menuOn: input.menuOn ?? false,
+        useNativeWindowFramePref: input.useNativeWindowFramePref ?? false,
         sourceGroups: input.sourceGroups ?? [],
         viewConfig: {
             listViewConfigs: ListViewConfigs.ShowCover,

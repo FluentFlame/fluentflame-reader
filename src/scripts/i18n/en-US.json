@@ -229,6 +229,7 @@
         "data": "Application Data",
         "backup": "Backup",
         "nativeWindowFrame": "Force native window frame (requires restart)",
+        "nativeWindowFrameNote": "This only has an effect on Windows and Linux",
         "reducedAnimations": "Reduce animations",
         "restore": "Restore",
         "frData": "Fluentflame Reader Data",

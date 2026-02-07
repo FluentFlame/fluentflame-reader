@@ -417,6 +417,9 @@ function NativeWindowFramePreference(): React.JSX.Element {
                     <Toggle checked={windowFrameProp} onChange={prefChange} />
                 </Stack.Item>
             </Stack>
+            <span className="settings-hint up">
+                {intl.get("app.nativeWindowFrameNote")}
+            </span>
         </>
     );
 }
