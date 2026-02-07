@@ -99,6 +99,12 @@ export function setAnimationMotionPref(pref: AnimationMotionPref) {
     window.settings.setAnimationMotionPref(pref);
     applyAnimationMotionPref();
 }
+export function getNativeWindowFramePref(): boolean {
+    return window.settings.getNativeWindowFramePref();
+}
+export function setNativeWindowFramePref(pref: boolean) {
+    return window.settings.setNativeWindowFramePref(pref);
+}
 export function applyAnimationMotionPref() {
     const pref = getAnimationMotionPref();
     let realisedPref = pref;

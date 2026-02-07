@@ -59,6 +59,13 @@ const settingsBridge = {
         ipcRenderer.invoke("set-animation-motion-pref", pref);
     },
 
+    getNativeWindowFramePref: (): boolean => {
+        return ipcRenderer.sendSync("get-window-native-frame-pref");
+    },
+    setNativeWindowFramePref: (pref: boolean) => {
+        ipcRenderer.invoke("set-window-native-frame-pref", pref);
+    },
+
     getThumbnailTypePref: (): ThumbnailTypePref => {
         return ipcRenderer.sendSync("get-thumbnail-type-pref");
     },

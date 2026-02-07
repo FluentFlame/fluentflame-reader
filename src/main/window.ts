@@ -1,7 +1,7 @@
 import windowStateKeeper from "electron-window-state";
 import { BrowserWindow, nativeTheme, app } from "electron";
 import path = require("path");
-import { setThemeListener } from "./settings";
+import { getNativeWindowFramePref, setThemeListener } from "./settings";
 import { setUtilsListeners } from "./utils";
 import { type CustomArgs } from "../general-types";
 
@@ -46,7 +46,9 @@ export class WindowManager {
     createWindow = () => {
         if (!this.hasWindow()) {
             const useFrame =
-                process.platform === "darwin" || this.args.forceFrame;
+                process.platform === "darwin" ||
+                this.args.forceFrame ||
+                getNativeWindowFramePref();
             this.mainWindow = new BrowserWindow({
                 title: "Fluentflame Reader",
                 backgroundColor:

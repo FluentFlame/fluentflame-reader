@@ -228,6 +228,7 @@
         "confirmImport": "Do you really want to import data from the backup file? All current data will be wiped.",
         "data": "Application Data",
         "backup": "Backup",
+        "nativeWindowFrame": "Force native window frame (requires restart)",
         "reducedAnimations": "Reduce animations",
         "restore": "Restore",
         "frData": "Fluentflame Reader Data",

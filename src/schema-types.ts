@@ -133,4 +133,5 @@ export type SchemaTypes = {
     filterType: number;
     viewConfig: ViewConfig;
     thumbnailTypePref: ThumbnailTypePref;
+    useNativeWindowFramePref: boolean;
 };

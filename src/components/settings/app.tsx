@@ -13,21 +13,23 @@ import {
     setThemeSettings,
     getAnimationMotionPref,
     setAnimationMotionPref,
+    getNativeWindowFramePref,
+    setNativeWindowFramePref,
     exportAll,
     getThumbnailTypePref,
     setThumbnailTypePref,
 } from "../../scripts/settings";
 import {
-    Stack,
-    Label,
-    Toggle,
-    TextField,
-    DefaultButton,
     ChoiceGroup,
-    IChoiceGroupOption,
+    DefaultButton,
     Dropdown,
+    IChoiceGroupOption,
     IDropdownOption,
+    Label,
     PrimaryButton,
+    Stack,
+    TextField,
+    Toggle,
 } from "@fluentui/react";
 import DangerButton from "../utils/danger-button";
 
@@ -183,6 +185,7 @@ class AppTab extends React.Component<AppTabProps, AppTabState> {
             />
             <AnimationPreferences />
             <ThumbnailTypePreferences />
+            <NativeWindowFramePreference />
             <Label>{intl.get("app.fetchInterval")}</Label>
             <Stack horizontal>
                 <Stack.Item>
@@ -347,7 +350,7 @@ function PacSettings() {
 /**
  * React component for animation preference dropdown.
  */
-function AnimationPreferences() {
+function AnimationPreferences(): React.JSX.Element {
     const [animationProp, setAnimationProp] = React.useState(
         getAnimationMotionPref(),
     );
@@ -387,6 +390,31 @@ function AnimationPreferences() {
                         onChange={prefChange}
                         style={{ width: 200 }}
                     />
+                </Stack.Item>
+            </Stack>
+        </>
+    );
+}
+
+/**
+ * React component for animation preference dropdown.
+ */
+function NativeWindowFramePreference(): React.JSX.Element {
+    const [windowFrameProp, setWindowFrameProp] = React.useState(
+        getNativeWindowFramePref(),
+    );
+    const prefChange = (_: any, state: boolean) => {
+        setNativeWindowFramePref(state);
+        setWindowFrameProp(state);
+    };
+    return (
+        <>
+            <Stack horizontal>
+                <Stack.Item grow>
+                    <Label>{intl.get("app.nativeWindowFrame")}</Label>
+                </Stack.Item>
+                <Stack.Item>
+                    <Toggle checked={windowFrameProp} onChange={prefChange} />
                 </Stack.Item>
             </Stack>
         </>

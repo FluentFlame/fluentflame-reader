@@ -103,6 +103,17 @@ ipcMain.handle("set-animation-motion-pref", (_, pref: AnimationMotionPref) => {
     store.set(ANIMATION_MOTION_PREF_KEY, pref);
 });
 
+const USE_NATIVE_WINDOW_FRAME_KEY = "useNativeWindowFramePref";
+export function getNativeWindowFramePref(): boolean {
+    return store.get(USE_NATIVE_WINDOW_FRAME_KEY, false);
+}
+ipcMain.on("get-window-native-frame-pref", (event) => {
+    event.returnValue = getNativeWindowFramePref();
+});
+ipcMain.handle("set-window-native-frame-pref", (_, pref: boolean) => {
+    store.set(USE_NATIVE_WINDOW_FRAME_KEY, pref);
+});
+
 const THUMBNAIL_TYPE_PREF = "thumbnailTypePref";
 ipcMain.on("get-thumbnail-type-pref", (event) => {
     event.returnValue = store.get(
