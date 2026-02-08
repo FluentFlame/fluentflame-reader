@@ -15,7 +15,6 @@ import {
     AppThunk,
     getWindowBreakpoint,
     initTouchBarWithTexts,
-    hasWindowFrame,
 } from "../utils";
 import { INIT_FEEDS, FeedActionTypes, ALL, initFeeds } from "./feed";
 import {
@@ -33,7 +32,11 @@ import {
     selectAllArticles,
     showItemFromId,
 } from "./page";
-import { getCurrentLocale, setThemeDefaultFont } from "../settings";
+import {
+    getCurrentLocale,
+    setThemeDefaultFont,
+    hasWindowFrame,
+} from "../settings";
 import locales from "../i18n/_locales";
 import { SYNC_SERVICE, ServiceActionTypes } from "./service";
 

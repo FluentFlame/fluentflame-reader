@@ -105,6 +105,13 @@ export function getNativeWindowFramePref(): boolean {
 export function setNativeWindowFramePref(pref: boolean) {
     return window.settings.setNativeWindowFramePref(pref);
 }
+export function hasWindowFrame() {
+    return (
+        window.utils.platform === "darwin" ||
+        window.utils.getCustomArgs().forceFrame ||
+        getNativeWindowFramePref()
+    );
+}
 export function applyAnimationMotionPref() {
     const pref = getAnimationMotionPref();
     let realisedPref = pref;
