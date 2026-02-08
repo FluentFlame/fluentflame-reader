@@ -159,10 +159,16 @@ i.ms-Nav-chevron {
 
 nav.top-nav {
     height: var(--navHeight);
+    /* https://www.electronjs.org/docs/latest/tutorial/custom-window-interactions#custom-draggable-regions */
     app-region: drag;
     user-select: none;
     overflow: hidden;
     display: flex;
+}
+.show-window-frame nav.top-nav {
+    /* Technically optional, but makes it clear we don't drag when window frame
+     * is shown. */
+    app-region: no-drag;
 }
 nav.top-nav .btn,
 nav.top-nav span {
