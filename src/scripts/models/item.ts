@@ -113,9 +113,18 @@ export class RSSItem {
         }
         item.thumbnails = [];
         if (parsed.link) {
-            const potentialThumbs = await fetchOpenGraphThumb(
-                new URL(parsed.link),
-            );
+            let potentialThumbs: ThumbnailAttributes[] | null = null;
+            try {
+                potentialThumbs = await fetchOpenGraphThumb(
+                    new URL(parsed.link),
+                );
+            } catch (e) {
+                // We don't need an OpenGraph thumbnail. Skip it if it fails.
+                console.warn(
+                    `Failed to fetch open graph thumb from ${parsed.link}`,
+                    e,
+                );
+            }
             if (potentialThumbs && potentialThumbs.length > 0) {
                 item.thumbnails.push(...potentialThumbs);
             }
