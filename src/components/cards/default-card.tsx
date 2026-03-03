@@ -20,6 +20,8 @@ const RESCALE_FACTOR = 2; // Should be at least 1.
 
 function DefaultCard(props: Card.Props): React.JSX.Element {
     const title = RSSItem.getTitle(props.item);
+    const hasThumbnail =
+        props.item.thumbnails.length > 0 || props.item.thumb != null;
     return (
         <div
             className={className(props)}
@@ -38,7 +40,7 @@ function DefaultCard(props: Card.Props): React.JSX.Element {
             <h3 className="title">
                 <Highlights text={title} filter={props.filter} title />
             </h3>
-            <p className={"snippet" + (props.item.thumb ? "" : " show")}>
+            <p className={"snippet" + (hasThumbnail ? "" : " show")}>
                 <Highlights text={props.item.snippet} filter={props.filter} />
             </p>
         </div>

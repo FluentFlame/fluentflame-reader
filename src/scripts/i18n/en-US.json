@@ -245,7 +245,7 @@
         "fetchInterval": "Automatic fetch interval",
         "never": "Never",
         "thumbnails": {
-            "prefLabel": "Preffered thumbnail source",
+            "prefLabel": "Preferred thumbnail source",
             "opengraph": "OpenGraph",
             "mediaThumbnail": "RSS media:thumbnail",
             "thumb": "RSS thumb",

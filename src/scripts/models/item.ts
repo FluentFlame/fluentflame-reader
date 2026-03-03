@@ -121,7 +121,7 @@ export class RSSItem {
             } catch (e) {
                 // We don't need an OpenGraph thumbnail. Skip it if it fails.
                 console.warn(
-                    `Failed to fetch open graph thumb from ${parsed.link}`,
+                    `Failed to fetch OpenGraph thumb from ${parsed.link}`,
                     e,
                 );
             }

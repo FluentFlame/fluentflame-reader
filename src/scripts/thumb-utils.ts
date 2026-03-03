@@ -61,7 +61,7 @@ async function makeOpenGraphThumbnail(
     return result;
 }
 
-const OPENGRAPH_REGEX = /og:(?:image|video)/gi;
+const OPENGRAPH_REGEX = /og:(?:image|video)/i;
 
 export async function fetchOpenGraphThumb(
     url: URL,
