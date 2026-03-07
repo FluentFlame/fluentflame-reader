@@ -57,7 +57,7 @@
     "@types/react-dom": "^16.9.8",
     "@types/react-redux": "^7.1.9",
     "chai": "^6.2.0",
-    "copy-webpack-plugin": "^13.0.1",
+    "copy-webpack-plugin": "^14.0.0",
     "dexie": "^4.0.11",
     "electron": "^38.0.0",
     "electron-builder": "^26.5.0",
@@ -68,7 +68,7 @@
     "html-webpack-plugin": "^5.5.3",
     "js-md5": "^0.7.3",
     "jsdom": "^27.0.0",
-    "mocha": ">=10.0.10 <11.4.0",
+    "mocha": ">=10.0.10 <11.7.6",
     "prettier": "^3.6.2",
     "qrcode.react": "^1.0.0",
     "react": "^16.13.1",
@@ -89,5 +89,10 @@
   "dependencies": {
     "minimist": "^1.2.8",
     "node-polyfill-webpack-plugin": "^4.1.0"
+  },
+  "overrides": {
+    "elliptic": "^6.6.1",
+    "minimatch": "^10.2.3",
+    "serialize-javascript": "^7.0.4"
   }
 }
