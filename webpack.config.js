@@ -1,6 +1,13 @@
 const CopyPlugin = require("copy-webpack-plugin")
 const HtmlWebpackPlugin = require("html-webpack-plugin")
-const NodePolyfillPlugin = require("node-polyfill-webpack-plugin")
+
+const fallbacks = {
+    "stream": require.resolve("stream-browserify"),
+    "http": require.resolve("stream-http"),
+    "https": require.resolve("https-browserify"),
+    "timers": require.resolve("timers-browserify"),
+    "url": require.resolve("url/"),
+};
 
 module.exports = [
     {
@@ -27,6 +34,9 @@ module.exports = [
         node: {
             __dirname: false,
         },
+        resolve: {
+            fallback: fallbacks,
+        },
     },
     {
         mode: "production",
@@ -47,6 +57,9 @@ module.exports = [
         output: {
             path: __dirname + "/dist",
             filename: "preload.js",
+        },
+        resolve: {
+            fallback: fallbacks,
         },
     },
     {
@@ -74,7 +87,6 @@ module.exports = [
             filename: "index.js",
         },
         plugins: [
-            new NodePolyfillPlugin(),
             new HtmlWebpackPlugin({
                 template: "./src/index.html",
             }),
@@ -88,5 +100,8 @@ module.exports = [
                 ],
             }),
         ],
+        resolve: {
+            fallback: fallbacks,
+        },
     },
 ]
