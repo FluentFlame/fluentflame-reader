@@ -129,7 +129,7 @@ function updateSources(
                 if (docs.length === 0) {
                     // Create a new source
                     forceSettings();
-                    const inserted = await dispatch(insertSource(s));
+                    const inserted = await insertSource(s);
                     inserted.unreadCount = 0;
                     dispatch(addSourceSuccess(inserted, true));
                     window.settings.saveGroups(getState().groups);

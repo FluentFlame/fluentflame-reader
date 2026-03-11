@@ -278,22 +278,24 @@ export function addSourceFailure(err, batch: boolean): SourceActionTypes {
 }
 
 let insertPromises = Promise.resolve();
-export function insertSource(source: RSSSource): AppThunk<Promise<RSSSource>> {
-    return (_, getState) => {
-        return new Promise((resolve, reject) => {
-            insertPromises = insertPromises.then(async () => {
-                let sids = Object.values(getState().sources).map((s) => s.sid);
-                source.sid = Math.max(...sids, -1) + 1;
-                try {
-                    await db.fluentDB.sources.add(source);
-                    resolve(source);
-                } catch (err) {
-                    if (err.code === 201) reject(intl.get("sources.exist"));
-                    else reject(err);
-                }
-            });
+export function insertSource(source: RSSSource): Promise<RSSSource> {
+    return new Promise((resolve, reject) => {
+        insertPromises = insertPromises.then(async () => {
+            const existingSources = await db.fluentDB.sources
+                .where("url")
+                .equals(source.url)
+                .toArray();
+            if (existingSources.length > 0) {
+                reject(intl.get("sources.exist"));
+            }
+            try {
+                await db.fluentDB.sources.add(source);
+                resolve(source);
+            } catch (err) {
+                reject(err);
+            }
         });
-    };
+    });
 }
 
 export function addSource(
@@ -308,7 +310,7 @@ export function addSource(
             const source = new RSSSource(url, name);
             try {
                 const feed = await RSSSource.fetchMetaData(source);
-                const inserted = await dispatch(insertSource(source));
+                const inserted = await insertSource(source);
                 inserted.unreadCount = feed.items.length;
                 dispatch(addSourceSuccess(inserted, batch));
                 window.settings.saveGroups(getState().groups);
