@@ -60,9 +60,17 @@ const HEADER_FIXTURE_4 = `
 `
 
 describe("getPotentialFavicons", () => {
+    const mocks: any = {};
+
     beforeEach(() => {
+        mocks.DOMParser = global.DOMParser;
         global.DOMParser = new JSDOM().window.DOMParser
-    })
+    });
+    
+    afterEach(() => {
+        global.DOMParser = mocks.DOMParser;
+    });
+
     it("can find single favicon", async () => {
         const dom = new DOMParser().parseFromString(
             HEADER_FIXTURE_1,
@@ -76,6 +84,7 @@ describe("getPotentialFavicons", () => {
             "http://example.test/favicon-32x32.png",
         )
     })
+
     it("returns empty array when none available", async () => {
         const dom = new DOMParser().parseFromString(
             HEADER_FIXTURE_2,
@@ -87,6 +96,7 @@ describe("getPotentialFavicons", () => {
         )
         expect(potentialFavicons.length).to.equal(0)
     })
+
     it("can find best favicon", async () => {
         const dom = new DOMParser().parseFromString(
             HEADER_FIXTURE_3,
@@ -100,6 +110,7 @@ describe("getPotentialFavicons", () => {
             "http://example.test/favicon-16x16.png",
         )
     })
+
     it("chooses full hostnamed-icon", async () => {
         const dom = new DOMParser().parseFromString(
             HEADER_FIXTURE_4,

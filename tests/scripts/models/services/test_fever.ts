@@ -1,14 +1,17 @@
 // Must come first before any db imports.
 import "fake-indexeddb/auto";
 
-import { expect } from "chai";
-import { JSDOM, window, document } from "jsdom";
+import { assert, expect } from "chai";
+import { JSDOM } from "jsdom";
 import { RSSSource } from "../../../../src/scripts/models/source";
 import { SyncService } from "../../../../src/schema-types";
 import {
     FeverConfigs,
     feverServiceHooks,
 } from "../../../../src/scripts/models/services/fever";
+import { syncWithService } from "../../../../src/scripts/models/service";
+
+// FIXTURES ---------------------------------------------------------------------------------------
 
 const FEVER_PHP_API = {
     request: {
@@ -28,7 +31,12 @@ const FEVER_PHP_UNREAD_ITEM_IDS = {
             "https://rss.example.net/api/fever.php?api&unread_item_ids",
         request_method: "POST",
     },
-    response: {},
+    response: {
+        api_version: 4,
+        auth: 1,
+        last_refreshed_on_time: 1773472029,
+        unread_item_ids: "",
+    },
 };
 
 const FEVER_PHP_FEEDS = {
@@ -105,6 +113,29 @@ const FEVER_PHP_GROUPS = {
     },
 };
 
+const FEVER_PHP_SAVED_ITEM_IDS = {
+    request: {
+        request_url: "https://rss.example.net/api/fever.php?api&saved_item_ids",
+        request_method: "POST",
+    },
+    response: {
+        api_version: 4,
+        auth: 1,
+        last_refreshed_on_time: 1773472029,
+        saved_item_ids: "",
+    },
+};
+
+const FEVER_PHP_ITEMS = {
+    response: {
+        api_version: 4,
+        auth: 1,
+        last_refreshed_on_time: 0,
+        // Might want to add some real items here, but this is sufficient for now.
+        items: [],
+    },
+};
+
 const FEVER_CONFIGS: FeverConfigs = {
     type: SyncService.Fever,
     endpoint: "https://rss.example.net/api/fever.php",
@@ -114,6 +145,8 @@ const FEVER_CONFIGS: FeverConfigs = {
     lastId: 0,
     useInt32: false,
 };
+
+// UTILS ------------------------------------------------------------------------------------------
 
 async function mockFetch(
     resource: string | URL | Request,
@@ -137,15 +170,42 @@ async function mockFetch(
     if (realResource === FEVER_PHP_GROUPS.request.request_url) {
         return new Response(JSON.stringify(FEVER_PHP_GROUPS.response));
     }
+    if (realResource === FEVER_PHP_SAVED_ITEM_IDS.request.request_url) {
+        return new Response(JSON.stringify(FEVER_PHP_SAVED_ITEM_IDS.response));
+    }
     if (realResource == FEVER_PHP_UNREAD_ITEM_IDS.request.request_url) {
         return new Response(JSON.stringify(FEVER_PHP_UNREAD_ITEM_IDS.response));
+    }
+    if (
+        realResource.startsWith(
+            "https://rss.example.net/api/fever.php?api&items",
+        )
+    ) {
+        return new Response(JSON.stringify(FEVER_PHP_ITEMS.response));
     }
     throw Error(`Not a valid resource: ${resource}`);
 }
 
+// TESTS ------------------------------------------------------------------------------------------
+
 describe("feverServiceHooks", () => {
+    const mocks: any = {};
+
     beforeEach(() => {
+        mocks.fetch = global.fetch;
         global.fetch = mockFetch;
+
+        const window = new JSDOM().window;
+        window["settings"] = {
+            saveGroups: (_x: any) => {},
+        } as any;
+        mocks.window = global.window;
+        global.window = window as any;
+    });
+
+    afterEach(() => {
+        global.fetch = mocks.fetch;
+        global.window = mocks.window;
     });
 
     it("can authenticate", async () => {
@@ -191,5 +251,39 @@ describe("feverServiceHooks", () => {
             );
             expect(result[0][i].url).to.equal(expectedFeeds[i].url);
         }
+    });
+
+    it("can sync with service", async () => {
+        const mockGetState: () => any = () => {
+            return {
+                app: {
+                    settings: {
+                        saving: false,
+                    },
+                },
+                service: FEVER_CONFIGS,
+                sources: {
+                    1: {
+                        sid: 1,
+                    },
+                    2: {
+                        sid: 2,
+                    },
+                },
+            };
+        };
+        function mockDispatch(d: any, _payload: any): any {
+            if (typeof d === "function") {
+                return d(mockDispatch, mockGetState);
+            }
+            return null;
+        }
+        assert.isTrue(
+            await syncWithService()(
+                mockDispatch as any,
+                mockGetState,
+                undefined,
+            ),
+        );
     });
 });
