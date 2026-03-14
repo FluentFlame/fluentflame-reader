@@ -3,8 +3,7 @@ import intl from "react-intl-universal";
 import type { MyParserItem } from "../utils";
 import {
     type ThumbnailAttributes,
-    fetchOpenGraphThumb,
-    urlToThumbnailAttributes,
+    generateThumbnailAttrList,
 } from "../thumb-utils";
 import {
     htmlDecode,
@@ -27,7 +26,6 @@ import {
     ServiceActionTypes,
     SYNC_LOCAL_ITEMS,
 } from "./service";
-import { ThumbnailTypePref } from "../../schema-types";
 
 export class RSSItem {
     iid: number;
@@ -45,7 +43,7 @@ export class RSSItem {
     starred: boolean;
     hidden: boolean;
     notify: boolean;
-    serviceRef?: string;
+    serviceRef: string;
 
     constructor(item: MyParserItem, source: RSSSource) {
         for (let field of ["title", "link", "creator"]) {
@@ -62,6 +60,7 @@ export class RSSItem {
         this.starred = false;
         this.hidden = false;
         this.notify = false;
+        this.serviceRef = source.serviceRef;
     }
 
     /**
@@ -111,116 +110,16 @@ export class RSSItem {
             item.content = parsed.content || "";
             item.snippet = htmlDecode(parsed.contentSnippet || "");
         }
-        item.thumbnails = [];
-        if (parsed.link) {
-            let potentialThumbs: ThumbnailAttributes[] | null = null;
-            try {
-                potentialThumbs = await fetchOpenGraphThumb(
-                    new URL(parsed.link),
-                );
-            } catch (e) {
-                // We don't need an OpenGraph thumbnail. Skip it if it fails.
-                console.warn(
-                    `Failed to fetch OpenGraph thumb from ${parsed.link}`,
-                    e,
-                );
-            }
-            if (potentialThumbs && potentialThumbs.length > 0) {
-                item.thumbnails.push(...potentialThumbs);
-            }
-        }
-        if (parsed.mediaThumbnails) {
-            const images = parsed.mediaThumbnails.filter((t) => t.$?.url);
-            for (const image of images)
-                item.thumbnails.push(
-                    await urlToThumbnailAttributes(
-                        image.$.url,
-                        "unknown",
-                        ThumbnailTypePref.MediaThumbnail,
-                    ),
-                );
-        }
-        if (parsed.thumb) {
-            item.thumbnails.push(
-                await urlToThumbnailAttributes(
-                    parsed.thumb,
-                    "unknown",
-                    ThumbnailTypePref.Thumb,
-                ),
-            );
-        }
-        if (parsed.image?.$?.url) {
-            item.thumbnails.push(
-                await urlToThumbnailAttributes(
-                    parsed.image.$.url,
-                    "image",
-                    ThumbnailTypePref.Other,
-                ),
-            );
-        }
-        if (parsed.image && typeof parsed.image === "string") {
-            item.thumbnails.push(
-                await urlToThumbnailAttributes(
-                    parsed.image,
-                    "image",
-                    ThumbnailTypePref.Other,
-                ),
-            );
-        }
-        if (parsed.mediaContent) {
-            let images = parsed.mediaContent.filter(
-                (c) =>
-                    c.$ &&
-                    (c.$.medium === "image" ||
-                        (typeof c.$.type === "string" &&
-                            c.$.type.startsWith("image/"))) &&
-                    c.$.url,
-            );
-            for (const image of images)
-                item.thumbnails.push(
-                    await urlToThumbnailAttributes(
-                        image.$.url,
-                        image.$.medium,
-                        ThumbnailTypePref.Other,
-                    ),
-                );
-        }
-        if (item.content) {
-            let dom = new DOMParser().parseFromString(
-                item.content,
-                "text/html",
-            );
-            let baseEl = dom.createElement("base");
-            baseEl.setAttribute(
-                "href",
-                item.link.split("/").slice(0, 3).join("/"),
-            );
-            dom.head.append(baseEl);
-            let img = dom.querySelector("img");
-            if (img && img.src)
-                item.thumbnails.push(
-                    await urlToThumbnailAttributes(
-                        img.src,
-                        "image",
-                        ThumbnailTypePref.Other,
-                    ),
-                );
-        }
-        item.thumbnails = item.thumbnails.map((t) => {
-            return {
-                medium: t.medium,
-                type: t.type,
-                url: new URL(t.url, item.link).toString(),
-            };
+        item.thumbnails = await generateThumbnailAttrList({
+            targetLink: item.link,
+            mediaThumbnails: parsed.mediaThumbnails,
+            mediaContent: parsed.mediaContent,
+            parsedThumb: parsed.thumb,
+            imageTag: parsed.image,
+            parsedImage: parsed.image,
+            content: parsed.content,
         });
-        item.thumb = item.thumbnails.at(0)?.url;
-        if (
-            item.thumb &&
-            !item.thumb.startsWith("https://") &&
-            !item.thumb.startsWith("http://")
-        ) {
-            delete item.thumb;
-        }
+        item.thumb = item.thumbnails?.at(0)?.url;
     }
 }
 
