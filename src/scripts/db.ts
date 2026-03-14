@@ -60,38 +60,14 @@ fluentDB.version(6).stores({
     items: `++iid, source, date, serviceRef`,
 });
 
-// Force serviceRef
+// Force serviceRef to exist, as it's an index.
 fluentDB
     .version(7)
     .stores({
         sources: `++sid, &url`,
         items: `++iid, source, date, serviceRef`,
     })
-    .upgrade(
-        async (
-            trans: Transaction & {
-                sources: Dexie.Table<SourceEntry, "sid">;
-                items: Dexie.Table<ItemEntry, "iid">;
-            },
-        ) => {
-            await trans
-                .table("sources")
-                .toCollection()
-                .modify((source) => {
-                    if (source.serviceRef === undefined) {
-                        source.serviceRef = "";
-                    }
-                });
-            return trans
-                .table("items")
-                .toCollection()
-                .modify((items) => {
-                    if (items.serviceRef === undefined) {
-                        items.serviceRef = "";
-                    }
-                });
-        },
-    );
+    .upgrade(migrateServiceRef);
 
 export async function calculateItemSize(): Promise<number> {
     await fluentDB.open();
@@ -222,7 +198,7 @@ async function migrateLovefieldItemsDB(dbName: string, version: number) {
     wrapRequest(indexedDB.deleteDatabase(dbName));
 }
 
-async function migrateThumbs(
+function migrateThumbs(
     trans: Transaction & { items: Dexie.Table<ItemEntry, "iid"> },
 ) {
     return trans.items.toCollection().modify((item) => {
@@ -241,6 +217,30 @@ async function migrateThumbs(
             delete item.thumb;
         }
     });
+}
+
+async function migrateServiceRef(
+    trans: Transaction & {
+        sources: Dexie.Table<SourceEntry, "sid">;
+        items: Dexie.Table<ItemEntry, "iid">;
+    },
+) {
+    await trans
+        .table("sources")
+        .toCollection()
+        .modify((source) => {
+            if (source.serviceRef === undefined) {
+                source.serviceRef = "";
+            }
+        });
+    return trans
+        .table("items")
+        .toCollection()
+        .modify((items) => {
+            if (items.serviceRef === undefined) {
+                items.serviceRef = "";
+            }
+        });
 }
 
 // ------------------------------------------------------------------------------------------------
