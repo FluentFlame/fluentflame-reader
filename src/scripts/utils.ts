@@ -26,7 +26,7 @@ export type AppDispatch = ThunkDispatch<RootState, undefined, AnyAction>;
  * renderer. You can treat it like Window.fetch.
  */
 export type FetchFunc = (
-    resource: string | URL,
+    resource: string | URL | Request,
     options?: RequestInit,
 ) => Promise<Response>;
 
