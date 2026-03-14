@@ -19,7 +19,7 @@
     "package-tarball": "electron-builder --linux tar.xz --x64 -p never",
     "package-appimage": "electron-builder --linux AppImage --x64 -p never",
     "package-deb": "electron-builder --linux deb --x64 -p never",
-    "test": "mocha $(find tests -regex '.*\\.ts')"
+    "test": "mocha --recursive --extension=\"ts\" tests"
   },
   "keywords": [
     "rss",
