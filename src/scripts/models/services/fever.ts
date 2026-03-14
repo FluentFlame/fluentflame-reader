@@ -1,4 +1,3 @@
-import intl from "react-intl-universal";
 import { ServiceHooks } from "../service";
 import { ServiceConfigs, SyncService } from "../../../schema-types";
 import { createSourceGroup } from "../group";
@@ -6,6 +5,9 @@ import { RSSSource } from "../source";
 import { htmlDecode, FetchFunc } from "../../utils";
 import { RSSItem } from "../item";
 import { SourceRule } from "../rule";
+import {
+    generateThumbnailAttrList,
+} from "../../thumb-utils";
 
 export interface FeverConfigs extends ServiceConfigs {
     type: SyncService.Fever;
@@ -45,7 +47,8 @@ async function markItem(configs: FeverConfigs, item: RSSItem, as: string) {
     }
 }
 
-const APIError = () => new Error(intl.get("service.failure"));
+const APIError = () =>
+    new Error("APIError: Failed to connect to FeverAPI service");
 
 export const feverServiceHooks: ServiceHooks = {
     authenticate: async (configs: FeverConfigs) => {
@@ -95,7 +98,7 @@ export const feverServiceHooks: ServiceHooks = {
         const items = new Array();
         configs.lastId = configs.lastId || 0;
         let min = configs.useInt32 ? 2147483647 : Number.MAX_SAFE_INTEGER;
-        let response;
+        let response: undefined | { items: Array<{ id: number }> };
         do {
             response = await fetchAPI(configs, `&items&max_id=${min}`);
             if (response.items === undefined) throw APIError();
@@ -108,7 +111,10 @@ export const feverServiceHooks: ServiceHooks = {
                 min = 2147483647;
                 response = undefined;
             } else {
-                min = response.items.reduce((m, n) => Math.min(m, n.id), min);
+                min = response.items.reduce(
+                    (m: number, n: { id: number }) => Math.min(m, n.id),
+                    min,
+                );
             }
         } while (
             min > configs.lastId &&
@@ -143,28 +149,6 @@ export const feverServiceHooks: ServiceHooks = {
                     notify: false,
                     serviceRef: String(i.id),
                 } as RSSItem;
-                // Try to get the thumbnail of the item
-                let dom = new DOMParser().parseFromString(
-                    item.content,
-                    "text/html",
-                );
-                let baseEl = dom.createElement("base");
-                baseEl.setAttribute(
-                    "href",
-                    item.link.split("/").slice(0, 3).join("/"),
-                );
-                dom.head.append(baseEl);
-                let img = dom.querySelector("img");
-                if (img && img.src) {
-                    item.thumb = img.src;
-                } else if (configs.useInt32) {
-                    // TTRSS Fever Plugin attachments
-                    let a = dom.querySelector(
-                        "body>ul>li:first-child>a",
-                    ) as HTMLAnchorElement;
-                    if (a && /, image\/generic$/.test(a.innerText) && a.href)
-                        item.thumb = a.href;
-                }
                 // Apply rules and sync back to the service
                 if (source.rules) SourceRule.applyAll(source.rules, item);
                 if (Boolean(i.is_read) !== item.hasRead)
@@ -173,6 +157,14 @@ export const feverServiceHooks: ServiceHooks = {
                     markItem(configs, item, item.starred ? "saved" : "unsaved");
                 return item;
             });
+            for (const item of parsedItems) {
+                // Try to get the thumbnail of the item
+                item.thumbnails = await generateThumbnailAttrList({
+                    targetLink: item.link,
+                    content: item.content,
+                });
+                item.thumb = item.thumbnails?.at(0)?.url;
+            }
             return [parsedItems, configs];
         } else {
             return [[], configs];

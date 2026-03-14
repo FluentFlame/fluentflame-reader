@@ -48,7 +48,8 @@ interface Entries {
     entries: Entry[];
 }
 
-const APIError = () => new Error(intl.get("service.failure"));
+const APIError = () =>
+    new Error("APIError: Failed to connect to miniflux service");
 
 // base endpoint, authorization with dedicated token or http basic user/pass pair
 async function fetchAPI(

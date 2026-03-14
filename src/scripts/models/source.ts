@@ -34,14 +34,18 @@ export const enum SourceTextDirection {
 }
 
 export class RSSSource {
+    // Source ID
     sid: number;
+    // URL to the feed.
     url: string;
+    // URL to the icon.
     iconurl?: string;
+    // Name of the feed.
     name: string;
     openTarget: SourceOpenTarget;
     unreadCount?: number;
     lastFetched: Date;
-    serviceRef?: string;
+    serviceRef: string;
     fetchFrequency: number; // in minutes
     rules?: SourceRule[];
     textDir: SourceTextDirection;

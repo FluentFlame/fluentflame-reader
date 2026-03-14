@@ -57,7 +57,8 @@ async function markItems(
     return await Promise.all(promises);
 }
 
-const APIError = () => new Error(intl.get("service.failure"));
+const APIError = () =>
+    new Error("APIError: Failed to connect to Nextcloud service");
 
 export const nextcloudServiceHooks: ServiceHooks = {
     authenticate: async (configs: NextcloudConfigs) => {

@@ -1,4 +1,3 @@
-import intl from "react-intl-universal";
 import { ServiceHooks } from "../service";
 import { ServiceConfigs, SyncService } from "../../../schema-types";
 import { createSourceGroup } from "../group";
@@ -92,7 +91,8 @@ function compactId(longId: string, useInt64: boolean) {
     return BigInt.asIntN(64, i).toString();
 }
 
-const APIError = () => new Error(intl.get("service.failure"));
+const APIError = () =>
+    new Error("APIError: Failed to connect to GReader service");
 
 export const gReaderServiceHooks: ServiceHooks = {
     authenticate: async (configs: GReaderConfigs) => {

@@ -1,4 +1,3 @@
-import intl from "react-intl-universal";
 import { getItemEntries } from "./service-utils";
 import { ServiceHooks } from "../service";
 import { ServiceConfigs, SyncService } from "../../../schema-types";
@@ -56,7 +55,8 @@ async function markItems(
     return await Promise.all(promises);
 }
 
-const APIError = () => new Error(intl.get("service.failure"));
+const APIError = () =>
+    new Error("APIError: Failed to connect to Feedbin service");
 
 export const feedbinServiceHooks: ServiceHooks = {
     authenticate: async (configs: FeedbinConfigs) => {

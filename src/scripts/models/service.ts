@@ -1,3 +1,4 @@
+import intl from "react-intl-universal";
 import * as db from "../db";
 import { SyncService, ServiceConfigs } from "../../schema-types";
 import { AppThunk, ActionStatus } from "../utils";
@@ -80,11 +81,16 @@ export function syncWithService(background = false): AppThunk<Promise<boolean>> 
                 });
                 return true;
             } catch (err) {
-                console.log(err);
+                console.error(err);
+                let newErr = err;
+                if (err.message.startsWith("APIError:")) {
+                    // This gets surfaced to the user (WHY IS IT AN ERROR TYPE???)
+                    newErr = new Error(intl.get("service.failure"));
+                }
                 dispatch({
                     type: SYNC_SERVICE,
                     status: ActionStatus.Failure,
-                    err: err,
+                    err: newErr,
                 });
                 return false;
             } finally {
@@ -188,7 +194,7 @@ function syncItems(hook: ServiceHooks["syncItems"]): AppThunk<Promise<void>> {
         const starredCopy = new Set(starredRefs);
         const rows = await db.fluentDB.items
             .where("serviceRef")
-            .notEqual(null)
+            .notEqual("")
             .and((item) => !item.hasRead || item.starred)
             .toArray();
         const updates = new Array<Promise<any>>();

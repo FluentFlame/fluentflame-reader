@@ -10,7 +10,7 @@ export interface SourceEntry {
     name: string;
     openTarget: number;
     lastFetched: Date;
-    serviceRef?: string;
+    serviceRef: string;
     fetchFrequency: number;
     rules?: SourceRule[];
     textDir: number;
@@ -33,7 +33,7 @@ export interface ItemEntry {
     starred: boolean;
     hidden: boolean;
     notify: boolean;
-    serviceRef?: string;
+    serviceRef: string;
 }
 
 export const fluentDB = new Dexie("MainDB") as Dexie & {
@@ -59,6 +59,39 @@ fluentDB.version(6).stores({
     sources: `++sid, &url`,
     items: `++iid, source, date, serviceRef`,
 });
+
+// Force serviceRef
+fluentDB
+    .version(7)
+    .stores({
+        sources: `++sid, &url`,
+        items: `++iid, source, date, serviceRef`,
+    })
+    .upgrade(
+        async (
+            trans: Transaction & {
+                sources: Dexie.Table<SourceEntry, "sid">;
+                items: Dexie.Table<ItemEntry, "iid">;
+            },
+        ) => {
+            await trans
+                .table("sources")
+                .toCollection()
+                .modify((source) => {
+                    if (source.serviceRef === undefined) {
+                        source.serviceRef = "";
+                    }
+                });
+            return trans
+                .table("items")
+                .toCollection()
+                .modify((items) => {
+                    if (items.serviceRef === undefined) {
+                        items.serviceRef = "";
+                    }
+                });
+        },
+    );
 
 export async function calculateItemSize(): Promise<number> {
     await fluentDB.open();
