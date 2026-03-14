@@ -20,9 +20,9 @@ in
 
 buildNpmPackage {
   inherit pname;
-  version = "2.0.1";
+  version = "2.1.0";
   src = ../.;
-  npmDepsHash = "sha256-F5FHJTt+FNP6IAHRZtzmbW57MkzYMrt/s5vMXjrCCpQ=";
+  npmDepsHash = "sha256-+tqzrG08Q2ygVPAz+zXW8RPv7fcz33wcTFDm9LKlXxo=";
   makeCacheWritable = true;
 
   env = {
