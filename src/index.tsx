@@ -8,9 +8,11 @@ import {
     applyThemeSettings,
 } from "./scripts/settings";
 import { initApp, openTextMenu } from "./scripts/models/app";
+import { startPool } from "./scripts/fetch-pool";
 import { rootStore } from "./scripts/reducer";
 import { initThemeUpdateListener } from "./scripts/settings";
 
+startPool();  // Start global fetch pool.
 initThemeUpdateListener();
 window.settings.setProxy();
 
