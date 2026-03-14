@@ -21,7 +21,7 @@ const RESCALE_FACTOR = 2; // Should be at least 1.
 function DefaultCard(props: Card.Props): React.JSX.Element {
     const title = RSSItem.getTitle(props.item);
     const hasThumbnail =
-        props.item.thumbnails.length > 0 || props.item.thumb != null;
+        props.item.thumbnails?.length > 0 || props.item.thumb != null;
     return (
         <div
             className={className(props)}
