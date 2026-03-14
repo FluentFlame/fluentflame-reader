@@ -2,12 +2,13 @@ import { ServiceHooks } from "../service";
 import { ServiceConfigs, SyncService } from "../../../schema-types";
 import { createSourceGroup } from "../group";
 import { RSSSource } from "../source";
-import { htmlDecode, FetchFunc } from "../../utils";
+import { htmlDecode, type FetchFunc } from "../../utils";
 import { RSSItem } from "../item";
 import { SourceRule } from "../rule";
 import {
     generateThumbnailAttrList,
 } from "../../thumb-utils";
+import { fetchPool } from "../../fetch-pool";
 
 export interface FeverConfigs extends ServiceConfigs {
     type: SyncService.Fever;
@@ -23,7 +24,7 @@ async function fetchAPI(
     configs: FeverConfigs,
     params: string = "",
     postparams: string = "",
-    fetchFunc: FetchFunc = fetch,
+    fetchFunc: FetchFunc = fetchPool,
 ) {
     const response = await fetchFunc(configs.endpoint + "?api" + params, {
         method: "POST",
@@ -47,8 +48,12 @@ async function markItem(configs: FeverConfigs, item: RSSItem, as: string) {
     }
 }
 
-const APIError = () =>
-    new Error("APIError: Failed to connect to FeverAPI service");
+const APIError = (msg?: string) => {
+    if (msg) {
+        return new Error(`APIError: Failed to connect to FeverAPI: ${msg}`);
+    }
+    return new Error("APIError: Failed to connect to FeverAPI service");
+};
 
 export const feverServiceHooks: ServiceHooks = {
     authenticate: async (configs: FeverConfigs) => {
@@ -64,13 +69,13 @@ export const feverServiceHooks: ServiceHooks = {
         const response = await fetchAPI(configs, "&feeds");
         const feeds: any[] = response.feeds;
         const feedGroups: any[] = response.feeds_groups;
-        if (feeds === undefined) throw APIError();
+        if (feeds === undefined) throw APIError("feeds is undefined");
         let groupsMap: Map<string, string>;
         if (configs.importGroups) {
             // Import groups on the first sync
             const groups: any[] = (await fetchAPI(configs, "&groups")).groups;
             if (groups === undefined || feedGroups === undefined)
-                throw APIError();
+                throw APIError("groups and/or feedGroups are undefined");
             const groupsIdMap = new Map<number, string>();
             for (let group of groups) {
                 const title = group.title.trim();
@@ -101,7 +106,7 @@ export const feverServiceHooks: ServiceHooks = {
         let response: undefined | { items: Array<{ id: number }> };
         do {
             response = await fetchAPI(configs, `&items&max_id=${min}`);
-            if (response.items === undefined) throw APIError();
+            if (response.items === undefined) throw APIError("items was undefined");
             items.push(...response.items.filter((i) => i.id > configs.lastId));
             if (
                 response.items.length === 0 &&
@@ -181,7 +186,7 @@ export const feverServiceHooks: ServiceHooks = {
             typeof unreadResponse.unread_item_ids !== "string" ||
             typeof starredResponse.saved_item_ids !== "string"
         ) {
-            throw APIError();
+            throw APIError("either unread_item_ids or saved_item_ids were not strings");
         }
         const unreadFids: string[] = unreadResponse.unread_item_ids.split(",");
         const starredFids: string[] = starredResponse.saved_item_ids.split(",");
