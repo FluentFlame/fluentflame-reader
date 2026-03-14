@@ -21,6 +21,15 @@ export type AppThunk<ReturnType = void> = ThunkAction<
 
 export type AppDispatch = ThunkDispatch<RootState, undefined, AnyAction>;
 
+/**
+ * Type that represents a fetch func. Used for mocking out fetch API requests in the
+ * renderer. You can treat it like Window.fetch.
+ */
+export type FetchFunc = (
+    resource: string | URL,
+    options?: RequestInit,
+) => Promise<Response>;
+
 const rssParser = new Parser({
     customFields: {
         item: [

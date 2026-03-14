@@ -15,7 +15,12 @@ import {
     applyItemReduction,
 } from "./item";
 import { ActionStatus, AppThunk, mergeSortedArrays } from "../utils";
-import { PageActionTypes, SELECT_PAGE, PageType, APPLY_FILTER } from "./page";
+import {
+    APPLY_FILTER,
+    SELECT_PAGE,
+    PageType,
+    type PageActionTypes,
+} from "./page-interface";
 
 export enum FilterType {
     None,

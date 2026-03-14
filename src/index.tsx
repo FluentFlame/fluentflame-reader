@@ -9,7 +9,9 @@ import {
 } from "./scripts/settings";
 import { initApp, openTextMenu } from "./scripts/models/app";
 import { rootStore } from "./scripts/reducer";
+import { initThemeUpdateListener } from "./scripts/settings";
 
+initThemeUpdateListener();
 window.settings.setProxy();
 
 applyAnimationMotionPref();

@@ -26,12 +26,14 @@ import {
     REORDER_SOURCE_GROUPS,
 } from "./group";
 import {
-    PageActionTypes,
+    showItemFromId,
+    selectAllArticles
+} from "./page";
+import {
     SELECT_PAGE,
     PageType,
-    selectAllArticles,
-    showItemFromId,
-} from "./page";
+    type PageActionTypes,
+} from "./page-interface";
 import {
     getCurrentLocale,
     setThemeDefaultFont,

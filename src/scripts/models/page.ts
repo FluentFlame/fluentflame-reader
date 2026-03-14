@@ -13,69 +13,16 @@ import { RSSItem, markRead } from "./item";
 import { SourceActionTypes, DELETE_SOURCE } from "./source";
 import { toggleMenu } from "./app";
 import { ViewType, ViewConfig, defaultViewConfig } from "../../schema-types";
-
-export const SELECT_PAGE = "SELECT_PAGE";
-export const SWITCH_VIEW = "SWITCH_VIEW";
-export const SET_VIEW_CONFIG = "SET_VIEW_CONFIG";
-export const SHOW_ITEM = "SHOW_ITEM";
-export const SHOW_OFFSET_ITEM = "SHOW_OFFSET_ITEM";
-export const DISMISS_ITEM = "DISMISS_ITEM";
-export const APPLY_FILTER = "APPLY_FILTER";
-export const TOGGLE_SEARCH = "TOGGLE_SEARCH";
-
-export enum PageType {
-    AllArticles,
-    Sources,
-    Page,
-}
-
-interface SelectPageAction {
-    type: typeof SELECT_PAGE;
-    pageType: PageType;
-    init: boolean;
-    keepMenu: boolean;
-    filter: FeedFilter;
-    sids?: number[];
-    menuKey?: string;
-    title?: string;
-}
-
-interface SwitchViewAction {
-    type: typeof SWITCH_VIEW;
-    viewType: ViewType;
-}
-
-interface SetViewConfigAction {
-    type: typeof SET_VIEW_CONFIG;
-    config: ViewConfig;
-}
-
-interface ShowItemAction {
-    type: typeof SHOW_ITEM;
-    feedId: string;
-    item: RSSItem;
-}
-
-interface ApplyFilterAction {
-    type: typeof APPLY_FILTER;
-    filter: FeedFilter;
-}
-
-interface DismissItemAction {
-    type: typeof DISMISS_ITEM;
-}
-interface ToggleSearchAction {
-    type: typeof TOGGLE_SEARCH;
-}
-
-export type PageActionTypes =
-    | SelectPageAction
-    | SwitchViewAction
-    | ShowItemAction
-    | DismissItemAction
-    | ApplyFilterAction
-    | ToggleSearchAction
-    | SetViewConfigAction;
+import {
+    APPLY_FILTER,
+    DISMISS_ITEM,
+    PageActionTypes,
+    PageType,
+    SELECT_PAGE,
+    SET_VIEW_CONFIG,
+    SHOW_ITEM,
+    TOGGLE_SEARCH,
+} from "./page-interface";
 
 export function selectAllArticles(init = false): AppThunk {
     return (dispatch, getState) => {

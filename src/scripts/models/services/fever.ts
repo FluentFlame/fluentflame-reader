@@ -3,7 +3,7 @@ import { ServiceHooks } from "../service";
 import { ServiceConfigs, SyncService } from "../../../schema-types";
 import { createSourceGroup } from "../group";
 import { RSSSource } from "../source";
-import { htmlDecode } from "../../utils";
+import { htmlDecode, FetchFunc } from "../../utils";
 import { RSSItem } from "../item";
 import { SourceRule } from "../rule";
 
@@ -17,8 +17,13 @@ export interface FeverConfigs extends ServiceConfigs {
     useInt32?: boolean;
 }
 
-async function fetchAPI(configs: FeverConfigs, params = "", postparams = "") {
-    const response = await fetch(configs.endpoint + "?api" + params, {
+async function fetchAPI(
+    configs: FeverConfigs,
+    params: string = "",
+    postparams: string = "",
+    fetchFunc: FetchFunc = fetch,
+) {
+    const response = await fetchFunc(configs.endpoint + "?api" + params, {
         method: "POST",
         headers: { "content-type": "application/x-www-form-urlencoded" },
         body: `api_key=${configs.apiKey}${postparams}`,

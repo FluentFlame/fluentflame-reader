@@ -12,7 +12,7 @@ import NextcloudConfigsTab from "./services/nextcloud";
 type ServiceTabProps = {
     configs: ServiceConfigs;
     save: (configs: ServiceConfigs) => void;
-    sync: () => Promise<void>;
+    sync: () => Promise<boolean>;
     remove: () => Promise<void>;
     blockActions: () => void;
     authenticate: (configs: ServiceConfigs) => Promise<boolean>;

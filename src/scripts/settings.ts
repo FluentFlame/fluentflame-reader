@@ -83,9 +83,14 @@ export function getThemeSettings(): ThemeSettings {
 export function applyThemeSettings() {
     loadTheme(window.settings.shouldUseDarkColors() ? darkTheme : lightTheme);
 }
-window.settings.addThemeUpdateListener((shouldDark) => {
-    loadTheme(shouldDark ? darkTheme : lightTheme);
-});
+
+/** Called during app start through the container. */
+export function initThemeUpdateListener() {
+    window.settings.addThemeUpdateListener((shouldDark) => {
+        loadTheme(shouldDark ? darkTheme : lightTheme);
+    });
+}
+
 export function getThumbnailTypePref(): ThumbnailTypePref {
     return window.settings.getThumbnailTypePref();
 }

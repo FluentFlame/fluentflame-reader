@@ -61,7 +61,7 @@ export function getServiceHooks(): AppThunk<ServiceHooks> {
     };
 }
 
-export function syncWithService(background = false): AppThunk<Promise<void>> {
+export function syncWithService(background = false): AppThunk<Promise<boolean>> {
     return async (dispatch, getState) => {
         const hooks = dispatch(getServiceHooks());
         if (hooks.updateSources && hooks.fetchItems && hooks.syncItems) {
@@ -78,6 +78,7 @@ export function syncWithService(background = false): AppThunk<Promise<void>> {
                     type: SYNC_SERVICE,
                     status: ActionStatus.Success,
                 });
+                return true;
             } catch (err) {
                 console.log(err);
                 dispatch({
@@ -85,6 +86,7 @@ export function syncWithService(background = false): AppThunk<Promise<void>> {
                     status: ActionStatus.Failure,
                     err: err,
                 });
+                return false;
             } finally {
                 if (getState().app.settings.saving) dispatch(saveSettings());
             }
