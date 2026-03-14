@@ -1,6 +1,6 @@
 {
   "name": "fluentflame-reader",
-  "version": "2.0.1",
+  "version": "2.0.0",
   "description": "A modern desktop RSS reader given new life",
   "main": "./dist/electron.js",
   "scripts": {
@@ -19,7 +19,7 @@
     "package-tarball": "electron-builder --linux tar.xz --x64 -p never",
     "package-appimage": "electron-builder --linux AppImage --x64 -p never",
     "package-deb": "electron-builder --linux deb --x64 -p never",
-    "test": "mocha tests/**/*.ts"
+    "test": "mocha $(find tests -regex '.*\\.ts')"
   },
   "keywords": [
     "rss",
@@ -64,6 +64,7 @@
     "electron-react-devtools": "^0.5.3",
     "electron-store": "^5.2.0",
     "electron-window-state": "^5.0.3",
+    "fake-indexeddb": "^6.2.5",
     "font-list": "^1.4.2",
     "html-webpack-plugin": "^5.5.3",
     "js-md5": "^0.7.3",
