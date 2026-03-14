@@ -10,6 +10,7 @@ import {
     feverServiceHooks,
 } from "../../../../src/scripts/models/services/fever";
 import { syncWithService } from "../../../../src/scripts/models/service";
+import { startPool, stopPool } from "../../../../src/scripts/fetch-pool";
 
 // FIXTURES ---------------------------------------------------------------------------------------
 
@@ -190,10 +191,12 @@ async function mockFetch(
 
 describe("feverServiceHooks", () => {
     const mocks: any = {};
+    let poolID: any;
 
     beforeEach(() => {
         mocks.fetch = global.fetch;
         global.fetch = mockFetch;
+        poolID = startPool();
 
         const window = new JSDOM().window;
         window["settings"] = {
@@ -206,6 +209,9 @@ describe("feverServiceHooks", () => {
     afterEach(() => {
         global.fetch = mocks.fetch;
         global.window = mocks.window;
+        if (poolID != null) {
+            stopPool(poolID);
+        }
     });
 
     it("can authenticate", async () => {
