@@ -60,14 +60,15 @@ export function setUtilsListeners(manager: WindowManager) {
     ipcMain.handle(
         "show-error-box",
         async (_, title, content, copy?: string) => {
+            const maxTitleLength = 256;
             if (manager.hasWindow() && copy != null) {
                 const response = await dialog.showMessageBox(
                     manager.mainWindow,
                     {
                         type: "error",
-                        title: title,
-                        message: title,
-                        detail: content,
+                        title: trimString(title, maxTitleLength),
+                        message: trimString(title, maxTitleLength),
+                        detail: trimContent(content),
                         buttons: ["OK", copy],
                         cancelId: 0,
                         defaultId: 0,
@@ -77,7 +78,10 @@ export function setUtilsListeners(manager: WindowManager) {
                     clipboard.writeText(`${title}: ${content}`);
                 }
             } else {
-                dialog.showErrorBox(title, content);
+                dialog.showErrorBox(
+                    trimString(title, maxTitleLength),
+                    trimContent(content),
+                );
             }
         },
     );
@@ -332,3 +336,35 @@ export function setUtilsListeners(manager: WindowManager) {
         event.returnValue = manager.args;
     });
 }
+
+/** Ensure we don't have too long of a message. */
+function trimContent(
+    s: string,
+    charLen: number = 512,
+    lineLen: number = 5,
+): string {
+    return limitLines(trimString(s, charLen), lineLen);
+}
+
+function limitLines(s: string, maxLength: number): string {
+    const splitLines = s.split("\n");
+    if (splitLines.length <= maxLength) {
+        return s;
+    }
+    const newLines = splitLines.slice(0, maxLength - 1);
+    newLines.push("…more lines…");
+    return newLines.join("\n");
+}
+
+function trimString(s: string, maxLength: number): string {
+    if (s.length <= maxLength) {
+        return s;
+    }
+    return s.substring(0, maxLength - 1) + "…";
+}
+
+export const exportedForTesting = {
+    trimContent: trimContent,
+    limitLines: limitLines,
+    trimString: trimString,
+};
