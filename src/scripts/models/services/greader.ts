@@ -6,6 +6,7 @@ import { RSSItem } from "../item";
 import { htmlDecode } from "../../utils";
 import { getItemEntries } from "./service-utils";
 import { SourceRule } from "../rule";
+import { generateThumbnailAttrList } from "../../thumb-utils";
 
 const ALL_TAG = "user/-/state/com.google/reading-list";
 const READ_TAG = "user/-/state/com.google/read";
@@ -237,81 +238,89 @@ export const gReaderServiceHooks: ServiceHooks = {
                 }
             }
             const parsedItems = new Array<RSSItem>();
-            items.map((i) => {
-                const source = fidMap.get(i.origin.streamId);
-                if (source === undefined) return;
-                const dom = new DOMParser().parseFromString(
-                    i.summary.content,
-                    "text/html",
-                );
-                if (
-                    configs.type == SyncService.Inoreader &&
-                    configs.removeInoreaderAd !== false
-                ) {
+            await Promise.all(
+                items.map(async (i) => {
+                    const source = fidMap.get(i.origin.streamId);
+                    if (source === undefined) return;
+                    const dom = new DOMParser().parseFromString(
+                        i.summary.content,
+                        "text/html",
+                    );
                     if (
-                        dom.documentElement.textContent
-                            .trim()
-                            .startsWith("Ads from Inoreader")
+                        configs.type == SyncService.Inoreader &&
+                        configs.removeInoreaderAd !== false
                     ) {
-                        dom.body.firstChild.remove();
+                        if (
+                            dom.documentElement.textContent
+                                .trim()
+                                .startsWith("Ads from Inoreader")
+                        ) {
+                            dom.body.firstChild.remove();
+                        }
                     }
-                }
-                const item = {
-                    source: source.sid,
-                    title: i.title,
-                    link: i.canonical[0].href,
-                    date: new Date(i.published * 1000),
-                    fetchedDate: new Date(parseInt(i.crawlTimeMsec)),
-                    content: dom.body.innerHTML,
-                    snippet: dom.documentElement.textContent.trim(),
-                    creator: i.author,
-                    hasRead: false,
-                    starred: false,
-                    hidden: false,
-                    notify: false,
-                    serviceRef: i.id,
-                } as RSSItem;
-                const baseEl = dom.createElement("base");
-                baseEl.setAttribute(
-                    "href",
-                    item.link.split("/").slice(0, 3).join("/"),
-                );
-                dom.head.append(baseEl);
-                let img = dom.querySelector("img");
-                if (img && img.src) item.thumb = img.src;
-                if (configs.type == SyncService.Inoreader)
-                    item.title = htmlDecode(item.title);
-                for (let c of i.categories) {
-                    if (!item.hasRead && c.endsWith("/state/com.google/read"))
-                        item.hasRead = true;
-                    else if (
-                        !item.starred &&
-                        c.endsWith("/state/com.google/starred")
-                    )
-                        item.starred = true;
-                }
-                // Apply rules and sync back to the service
-                if (source.rules) {
-                    const hasRead = item.hasRead;
-                    const starred = item.starred;
-                    SourceRule.applyAll(source.rules, item);
-                    if (item.hasRead !== hasRead)
-                        editTag(
-                            configs,
-                            item.serviceRef,
-                            READ_TAG,
-                            item.hasRead,
-                        );
-                    if (item.starred !== starred)
-                        editTag(
-                            configs,
-                            item.serviceRef,
-                            STAR_TAG,
-                            item.starred,
-                        );
-                }
-                parsedItems.push(item);
-            });
+                    const item = {
+                        source: source.sid,
+                        title: i.title,
+                        link: i.canonical[0].href,
+                        date: new Date(i.published * 1000),
+                        fetchedDate: new Date(parseInt(i.crawlTimeMsec)),
+                        content: dom.body.innerHTML,
+                        snippet: dom.documentElement.textContent.trim(),
+                        creator: i.author,
+                        hasRead: false,
+                        starred: false,
+                        hidden: false,
+                        notify: false,
+                        serviceRef: i.id,
+                    } as RSSItem;
+                    const baseEl = dom.createElement("base");
+                    baseEl.setAttribute(
+                        "href",
+                        item.link.split("/").slice(0, 3).join("/"),
+                    );
+                    dom.head.append(baseEl);
+                    const potentialThumbs = await generateThumbnailAttrList({
+                        targetLink: item.link,
+                        content: item.content,
+                    });
+                    item.thumbnails = potentialThumbs;
+                    if (configs.type == SyncService.Inoreader)
+                        item.title = htmlDecode(item.title);
+                    for (let c of i.categories) {
+                        if (
+                            !item.hasRead &&
+                            c.endsWith("/state/com.google/read")
+                        )
+                            item.hasRead = true;
+                        else if (
+                            !item.starred &&
+                            c.endsWith("/state/com.google/starred")
+                        )
+                            item.starred = true;
+                    }
+                    // Apply rules and sync back to the service
+                    if (source.rules) {
+                        const hasRead = item.hasRead;
+                        const starred = item.starred;
+                        SourceRule.applyAll(source.rules, item);
+                        if (item.hasRead !== hasRead)
+                            editTag(
+                                configs,
+                                item.serviceRef,
+                                READ_TAG,
+                                item.hasRead,
+                            );
+                        if (item.starred !== starred)
+                            editTag(
+                                configs,
+                                item.serviceRef,
+                                STAR_TAG,
+                                item.starred,
+                            );
+                    }
+                    parsedItems.push(item);
+                }),
+            );
             if (parsedItems.length > 0) {
                 configs.lastFetched = Math.round(
                     parsedItems[0].fetchedDate.getTime() / 1000,
