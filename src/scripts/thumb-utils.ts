@@ -58,7 +58,6 @@ async function makeOpenGraphThumbnail(
                 ),
             );
     }
-    console.log("Found:", result);
     return result;
 }
 
@@ -68,9 +67,7 @@ async function fetchOpenGraphThumb(
     url: URL,
 ): Promise<ThumbnailAttributes[] | null> {
     const head = await fetchHead(url);
-    console.log(head);
     if (OPENGRAPH_REGEX.test(head)) {
-        console.log("making opengraph thumbnail");
         return makeOpenGraphThumbnail(head);
     }
     return null;
@@ -130,9 +127,14 @@ export async function generateThumbnailAttrList(
 ): Promise<ThumbnailAttributes[]> {
     let output = [];
     if (opt.targetLink) {
-        if (!opt.targetLink.startsWith("http://") && !opt.targetLink.startsWith("https://")) {
+        if (
+            !opt.targetLink.startsWith("http://") &&
+            !opt.targetLink.startsWith("https://")
+        ) {
             // targetLink is invalid. Stop right here.
-            console.error(`targetLink of '${opt.targetLink}' is not an HTTP URL`)
+            console.error(
+                `targetLink of '${opt.targetLink}' is not an HTTP URL`,
+            );
             return [];
         }
 
@@ -226,13 +228,12 @@ export async function generateThumbnailAttrList(
                 ),
             );
     }
-    output = output
-        .map((t) => {
-            return {
-                medium: t.medium,
-                type: t.type,
-                url: new URL(t.url, opt.targetLink).toString(),
-            };
-        });
+    output = output.map((t) => {
+        return {
+            medium: t.medium,
+            type: t.type,
+            url: new URL(t.url, opt.targetLink).toString(),
+        };
+    });
     return output;
 }
