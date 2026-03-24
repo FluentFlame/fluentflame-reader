@@ -8,7 +8,11 @@ import CardThumbnail from "./thumbnail";
 
 const className = (props: Card.Props) => {
     let cn = ["card", "default-card"];
-    if (props.item.snippet && props.item.thumb) cn.push("transform");
+    if (
+        props.item.snippet &&
+        (props.item.thumbnails?.length > 0 || props.item.thumb)
+    )
+        cn.push("transform");
     if (props.item.hidden) cn.push("hidden");
     if (props.source.textDir === SourceTextDirection.RTL) cn.push("rtl");
     return cn.join(" ");
