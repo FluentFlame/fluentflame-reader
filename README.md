@@ -13,14 +13,18 @@
 
 ## About this fork
 
-Fluentflame Reader is a community fork of Fluent Reader with a maintained and constantly updated codebase and a number of new features that our contributors have added. We are a hard fork, we use the base left by Fluent Reader but we decide our own path even if that means having changes that make us very different from the original, we propose a different experience.
-
-However, we continue to offer a similar experience for the original users, we do not intend to simply abandon them.
+Fluentflame Reader is a community fork of Fluent Reader with a maintained
+codebase and new features. We are a hard fork of the original project and we
+use the base left by Fluent Reader. We plan to continue to offer a similar
+experience for the original users, but have taken the reader in a more
+user-friendly, customisable, and performant direction.
 
 ## Download
 
-> [!WARNING]
-> Currently we do not have any stable version! All our builds are testing and may contain bugs, however we have released them to the community to be able to expand our testing capacity and identify new bugs, if you find any bugs do not hesitate to report it!
+> [!WARNING] Currently we do not have any stable version! All our builds are
+> testing builds and may contain bugs. However, we have released them to the community
+> to be able to expand our testing capacity and identify new bugs, if you find
+> any bugs do not hesitate to report them!
 
 Download from the [Releases Page](https://github.com/FluentFlame/fluentflame-reader/releases)
 
