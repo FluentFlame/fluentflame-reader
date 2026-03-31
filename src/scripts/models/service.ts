@@ -62,7 +62,9 @@ export function getServiceHooks(): AppThunk<ServiceHooks> {
     };
 }
 
-export function syncWithService(background = false): AppThunk<Promise<boolean>> {
+export function syncWithService(
+    background = false,
+): AppThunk<Promise<boolean>> {
     return async (dispatch, getState) => {
         const hooks = dispatch(getServiceHooks());
         if (hooks.updateSources && hooks.fetchItems && hooks.syncItems) {

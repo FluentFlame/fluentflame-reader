@@ -5,9 +5,7 @@ import { RSSSource } from "../source";
 import { htmlDecode, type FetchFunc } from "../../utils";
 import { RSSItem } from "../item";
 import { SourceRule } from "../rule";
-import {
-    generateThumbnailAttrList,
-} from "../../thumb-utils";
+import { generateThumbnailAttrList } from "../../thumb-utils";
 import { fetchPool } from "../../fetch-pool";
 
 export interface FeverConfigs extends ServiceConfigs {
@@ -106,7 +104,8 @@ export const feverServiceHooks: ServiceHooks = {
         let response: undefined | { items: Array<{ id: number }> };
         do {
             response = await fetchAPI(configs, `&items&max_id=${min}`);
-            if (response.items === undefined) throw APIError("items was undefined");
+            if (response.items === undefined)
+                throw APIError("items was undefined");
             items.push(...response.items.filter((i) => i.id > configs.lastId));
             if (
                 response.items.length === 0 &&
@@ -186,7 +185,9 @@ export const feverServiceHooks: ServiceHooks = {
             typeof unreadResponse.unread_item_ids !== "string" ||
             typeof starredResponse.saved_item_ids !== "string"
         ) {
-            throw APIError("either unread_item_ids or saved_item_ids were not strings");
+            throw APIError(
+                "either unread_item_ids or saved_item_ids were not strings",
+            );
         }
         const unreadFids: string[] = unreadResponse.unread_item_ids.split(",");
         const starredFids: string[] = starredResponse.saved_item_ids.split(",");

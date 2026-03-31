@@ -25,15 +25,8 @@ import {
     REMOVE_SOURCE_FROM_GROUP,
     REORDER_SOURCE_GROUPS,
 } from "./group";
-import {
-    showItemFromId,
-    selectAllArticles
-} from "./page";
-import {
-    SELECT_PAGE,
-    PageType,
-    type PageActionTypes,
-} from "./page-interface";
+import { showItemFromId, selectAllArticles } from "./page";
+import { SELECT_PAGE, PageType, type PageActionTypes } from "./page-interface";
 import {
     getCurrentLocale,
     setThemeDefaultFont,

@@ -1,6 +1,4 @@
-import {
-    type FeedFilter,
-} from "./feed";
+import { type FeedFilter } from "./feed";
 import { ViewType, ViewConfig } from "../../schema-types";
 import { type RSSItem } from "./item";
 
@@ -67,4 +65,3 @@ export type PageActionTypes =
     | ApplyFilterAction
     | ToggleSearchAction
     | SetViewConfigAction;
-
