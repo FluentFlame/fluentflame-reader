@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+set -eu
+
+UPSTREAM="$1"
+DEFAULT_MAIN_BRANCH="${MAIN:-master}"
+
+NPX_PATH="$(which npx 2>/dev/null)"
+NPM_PATH="$(which npm 2>/dev/null)"
+PNPM_PATH="$(which pnpm 2>/dev/null)"
+PNPX_PATH="$(which pnpx 2>/dev/null)"
+
+if [[ -n "${PNPX_PATH}" ]]; then
+    X_PATH="${PNPX_PATH}"
+elif [[ -n "${NPX_PATH}" ]]; then
+    X_PATH="${NPX_PATH}"
+else
+    X_PATH=""
+fi
+
+if [[ -n "${PNPM_PATH}" ]]; then
+    M_PATH="${PNPM_PATH}"
+elif [[ -n "${NPM_PATH}" ]]; then
+    M_PATH="${NPM_PATH}"
+else
+    M_PATH=""
+fi
+
+formatter() {
+    if [[ -z "${X_PATH}" ]]; then
+        >&2 printf "[\\e[0;33mW\\e[0m] npx/pnpx not installed, can't check formatting\n"
+        echo "warn"
+        return
+    fi
+    local to_upload
+    changed_files="$(git diff --name-only "${UPSTREAM}/${DEFAULT_MAIN_BRANCH}" | grep -E '^src/')"
+    if "${X_PATH}" prettier --check ${changed_files} >/dev/null; then
+        >&2 printf "[\\e[0;32mP\\e[0m] src/ is formatted correctly\n"
+        echo "pass"
+    else
+        >&2 printf "[\\e[0;31mF\\e[0m] code in src/ not formatted. run 'prettier -w src/'\n"
+        echo "fail"
+    fi
+}
+
+tests() {
+    if [[ -z "${M_PATH}" ]]; then
+        >&2 printf "[\\e[0;33mW\\e[0m] npm/pnpm not installed, can't run tests\n"
+        echo "warn"
+        return
+    fi
+    if "${M_PATH}" run test >/dev/null; then
+        >&2 printf "[\\e[0;32mP\\e[0m] '%s run test' passed\n" "${M_PATH}"
+        echo "pass"
+    else
+        >&2 printf "[\\e[0;31mF\\e[0m] '%s run test' failed\n" "${M_PATH}"
+        echo "fail"
+    fi
+}
+
+printf "%s\n" "Running git hooks (skip with 'git push --no-verify')"
+formatter_result="$(formatter)"
+tests_result="$(tests)"
+
+for check in "${formatter_result}" "${tests_result}" ; do
+    if [[ "${check}" == "fail" ]]; then
+        exit 1
+    fi
+done
+
