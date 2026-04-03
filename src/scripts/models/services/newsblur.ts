@@ -55,7 +55,7 @@ async function fetchPostAPI(
 }
 
 function printErrors(response: NewsBlurResponse) {
-    if (response.errors === null) return;
+    if (response.errors) return;
     for (const error in response.errors) {
         console.error(
             `[service: NewsBlur] ${error}: ${response.errors[error]}`,
