@@ -21,7 +21,8 @@ user-friendly, customisable, and performant direction.
 
 ## Download
 
-> [!WARNING] Currently we do not have any stable version! All our builds are
+> [!WARNING]
+> Currently we do not have any stable version! All our builds are
 > testing builds and may contain bugs. However, we have released them to the community
 > to be able to expand our testing capacity and identify new bugs, if you find
 > any bugs do not hesitate to report them!
