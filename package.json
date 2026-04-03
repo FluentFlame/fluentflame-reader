@@ -60,7 +60,7 @@
     "chai": "^6.2.0",
     "copy-webpack-plugin": "^14.0.0",
     "dexie": "^4.0.11",
-    "electron": "^38.0.0",
+    "electron": "^41.1.1",
     "electron-builder": "^26.5.0",
     "electron-react-devtools": "^0.5.3",
     "electron-store": "^5.2.0",
