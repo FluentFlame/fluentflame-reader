@@ -17,6 +17,12 @@ or if you use ssh:
 git clone git@github.com:FluentFlame/fluentflame-reader.git
 ```
 
+We also recommend you set up the local git hooks to locally check your code before you upload. To do so, run:
+
+```bash
+git config --local core.hooksPath .githooks
+```
+
 ---
 
 # NPM Instructions
