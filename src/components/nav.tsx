@@ -92,33 +92,46 @@ function Nav() {
         return classNames.join(" ");
     };
 
-    const navShortcutsHandler = (e: KeyboardEvent | IObjectWithKey) => {
-        if (!state.settings.display) {
-            switch (e.key) {
-                case "F1":
-                    menu();
-                    return;
-                case "F2":
-                    search();
-                    return;
-                case "F5":
-                    feedFetch();
-                    return;
-                case "F6":
-                    markAllRead();
-                    return;
-                case "F7":
-                    if (!itemShown) logs();
-                    return;
-                case "F8":
-                    if (!itemShown) views();
-                    return;
-                case "F9":
-                    if (!itemShown) settings();
-                    return;
+    const navShortcutsHandler = React.useCallback(
+        (e: KeyboardEvent | IObjectWithKey) => {
+            if (!state.settings.display) {
+                switch (e.key) {
+                    case "F1":
+                        menu();
+                        return;
+                    case "F2":
+                        search();
+                        return;
+                    case "F5":
+                        feedFetch();
+                        return;
+                    case "F6":
+                        markAllRead();
+                        return;
+                    case "F7":
+                        if (!itemShown) logs();
+                        return;
+                    case "F8":
+                        if (!itemShown) views();
+                        return;
+                    case "F9":
+                        if (!itemShown) settings();
+                        return;
+                }
             }
-        }
-    };
+        },
+        [
+            itemShown,
+            state.settings.display,
+            menu,
+            search,
+            feedFetch,
+            markAllRead,
+            logs,
+            views,
+            settings,
+        ],
+    );
 
     const getProgress = () => {
         return state.fetchingTotal > 0
@@ -147,17 +160,20 @@ function Nav() {
             }
         };
         window.utils.addWindowStateListener(windowStateListener);
-
-        document.addEventListener("keydown", navShortcutsHandler);
-        if (window.utils.platform === "darwin")
-            window.utils.addTouchBarEventsListener(navShortcutsHandler);
     }, []);
+
+    React.useEffect(() => {
+        document.addEventListener("keydown", navShortcutsHandler);
+        if (window.utils.platform === "darwin") {
+            window.utils.addTouchBarEventsListener(navShortcutsHandler);
+        }
+    }, [navShortcutsHandler]);
 
     // componentWillUnmount replacement.
     React.useEffect(() => {
         return () =>
             document.removeEventListener("keydown", navShortcutsHandler);
-    }, []);
+    }, [navShortcutsHandler]);
 
     return (
         <nav className={getClassNames()}>
