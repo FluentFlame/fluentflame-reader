@@ -50,6 +50,13 @@
         "close": "Close menu",
         "subscriptions": "Subscriptions"
     },
+    "addSourceModal": {
+        "description": "You can add either link a feed directly, or Fluentflame can check the page for one",
+        "textField": "Feed URL",
+        "example": "Example: https://nature.com",
+        "analyzeSource": "Check for feeds",
+        "addSources": "Select feeds to add"
+    },
     "article": {
         "error": "Failed to load article.",
         "reload": "Reload?",

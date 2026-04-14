@@ -17,6 +17,8 @@ import {
     MARK_ALL_READ,
 } from "./item";
 import { saveSettings } from "./app";
+import { selectAllArticles } from "./page";
+import { initFeeds } from "./feed";
 import { SourceRule } from "./rule";
 import { fixBrokenGroups } from "./group";
 
@@ -281,8 +283,12 @@ export function addSourceFailure(err, batch: boolean): SourceActionTypes {
     };
 }
 
+export type InsertSourceResponse =
+    | { inserted: true; newSource: RSSSource }
+    | { inserted: false; existingSource: RSSSource };
+
 let insertPromises = Promise.resolve();
-export function insertSource(source: RSSSource): Promise<RSSSource> {
+export function insertSource(source: RSSSource): Promise<InsertSourceResponse> {
     return new Promise((resolve, reject) => {
         insertPromises = insertPromises.then(async () => {
             const existingSources = await db.fluentDB.sources
@@ -290,11 +296,11 @@ export function insertSource(source: RSSSource): Promise<RSSSource> {
                 .equals(source.url)
                 .toArray();
             if (existingSources.length > 0) {
-                reject(intl.get("sources.exist"));
+                resolve({inserted: false, existingSource: existingSources[0]});
             }
             try {
                 await db.fluentDB.sources.add(source);
-                resolve(source);
+                resolve({inserted: true, newSource: source});
             } catch (err) {
                 reject(err);
             }
@@ -306,6 +312,7 @@ export function addSource(
     url: string,
     name: string = null,
     batch = false,
+    ignoreDuplicates = false,
 ): AppThunk<Promise<number>> {
     return async (dispatch, getState) => {
         const app = getState().app;
@@ -314,14 +321,25 @@ export function addSource(
             const source = new RSSSource(url, name);
             try {
                 const feed = await RSSSource.fetchMetaData(source);
-                const inserted = await insertSource(source);
-                inserted.unreadCount = feed.items.length;
-                dispatch(addSourceSuccess(inserted, batch));
-                window.settings.saveGroups(getState().groups);
-                dispatch(updateFavicon([inserted.sid]));
-                const items = await RSSSource.checkItems(inserted, feed.items);
-                await insertItems(items);
-                return inserted.sid;
+                const insertedResp = await insertSource(source);
+                switch (insertedResp.inserted) {
+                    case true:
+                        const newSource = insertedResp.newSource;
+                        newSource.unreadCount = feed.items.length;
+                        dispatch(addSourceSuccess(newSource, batch));
+                        window.settings.saveGroups(getState().groups);
+                        dispatch(updateFavicon([newSource.sid]));
+                        const items = await RSSSource.checkItems(newSource, feed.items);
+                        await insertItems(items);
+                        return newSource.sid;
+                    case false:
+                        if (ignoreDuplicates) {
+                            const existingSource = insertedResp.existingSource;
+                            dispatch(addSourceFailure(intl.get("sources.exist"), batch));
+                            return existingSource.sid;
+                        }
+                        throw new Error(intl.get("sources.exist"));
+                }
             } catch (e) {
                 dispatch(addSourceFailure(e, batch));
                 if (!batch) {
@@ -335,6 +353,18 @@ export function addSource(
             }
         }
         throw new Error("Sources not initialized.");
+    };
+}
+
+export function addSourcesThenReInit(
+    newSources: string[],
+): AppThunk<Promise<void>> {
+    return async (dispatch, _) => {
+        dispatch(selectAllArticles(true));
+        for (const source of newSources) {
+            await dispatch(addSource(source, null, true, true));
+        }
+        await dispatch(initFeeds(true));
     };
 }
 

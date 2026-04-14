@@ -7,6 +7,7 @@ import { ProgressIndicator, IObjectWithKey } from "@fluentui/react";
 import {
     openMarkAllMenu,
     openViewMenu,
+    showAddSourceModal,
     toggleLogMenu,
     toggleMenu,
     toggleSettings,
@@ -94,7 +95,7 @@ function Nav() {
 
     const navShortcutsHandler = React.useCallback(
         (e: KeyboardEvent | IObjectWithKey) => {
-            if (!state.settings.display) {
+            if (!state.settings.display && !state.addSourceModal.display) {
                 switch (e.key) {
                     case "F1":
                         menu();
@@ -123,6 +124,7 @@ function Nav() {
         [
             itemShown,
             state.settings.display,
+            state.addSourceModal.display,
             menu,
             search,
             feedFetch,
@@ -193,6 +195,12 @@ function Nav() {
             </div>
             <span className="title hide-on-tiny">{state.title}</span>
             <div className="btn-group corner-btn-group">
+                <a
+                    className={"btn"}
+                    onClick={() => dispatch(showAddSourceModal())}
+                    title={intl.get("sources.add")}>
+                    <Icon iconName="Add" />
+                </a>
                 <a
                     className={"btn" + fetching()}
                     onClick={feedFetch}

@@ -139,12 +139,18 @@ function updateSources(
                 if (docs.length === 0) {
                     // Create a new source
                     forceSettings();
-                    const inserted = await insertSource(s);
-                    inserted.unreadCount = 0;
-                    dispatch(addSourceSuccess(inserted, true));
-                    window.settings.saveGroups(getState().groups);
-                    dispatch(updateFavicon([inserted.sid]));
-                    return inserted;
+                    const insertedResp = await insertSource(s);
+                    switch (insertedResp.inserted) {
+                        case true:
+                            const newSource = insertedResp.newSource;
+                            newSource.unreadCount = 0;
+                            dispatch(addSourceSuccess(newSource, true));
+                            window.settings.saveGroups(getState().groups);
+                            dispatch(updateFavicon([newSource.sid]));
+                            return newSource;
+                        case false:
+                            throw new Error(intl.get("sources.exist"));
+                    }
                 } else if (docs[0].serviceRef !== s.serviceRef) {
                     // Mark an existing source as remote and remove all items
                     const doc = docs[0];

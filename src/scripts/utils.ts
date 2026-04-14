@@ -1,6 +1,9 @@
+// Content-Security-Policy: require-trusted-types-for 'script'; trusted-types sanitized-html;
+
 import intl from "react-intl-universal";
 import { ThunkAction, ThunkDispatch } from "redux-thunk";
 import { AnyAction } from "redux";
+import DOMPurify from "dompurify";
 import { RootState } from "./reducer";
 import Parser from "rss-parser";
 import { SearchEngines } from "../schema-types";
@@ -30,6 +33,24 @@ export type FetchFunc = (
     options?: RequestInit,
 ) => Promise<Response>;
 
+let _sanitizer: { createHTML: (s: string) => TrustedHTML } | undefined =
+    undefined;
+function htmlSanitizePolicy(): { createHTML: (s: string) => TrustedHTML } {
+    if (_sanitizer != null) {
+        return _sanitizer;
+    }
+    const sanitizer = window.trustedTypes.createPolicy("sanitized-html", {
+        createHTML: (input: string) =>
+            DOMPurify.sanitize(input, {
+                WHOLE_DOCUMENT: true,
+                ADD_TAGS: ["link"],
+                ADD_ATTR: ["rel", "title", "type"],
+            }),
+    });
+    _sanitizer = sanitizer;
+    return _sanitizer;
+}
+
 const rssParser = new Parser({
     customFields: {
         item: [
@@ -53,10 +74,15 @@ export async function decodeFetchResponse(response: Response, isHTML = false) {
         response.headers.get("content-type");
     let charset =
         ctype && CHARSET_RE.test(ctype) ? CHARSET_RE.exec(ctype)[1] : undefined;
+    charset = charset === "" ? undefined : charset;
     let content = new TextDecoder(charset).decode(buffer);
     if (charset === undefined) {
         if (isHTML) {
-            const dom = new DOMParser().parseFromString(content, "text/html");
+            let policy = htmlSanitizePolicy();
+            const dom = new DOMParser().parseFromString(
+                policy.createHTML(content).toString(),
+                "text/html",
+            );
             charset = dom
                 .querySelector("meta[charset]")
                 ?.getAttribute("charset")
@@ -82,24 +108,122 @@ export async function decodeFetchResponse(response: Response, isHTML = false) {
     return content;
 }
 
+/** Combination of a confirmed feed URL and its parsed data.
+ * Convert to parsed info using `parsedFoundFeed`.
+ */
+export type FoundFeed = {
+    // URL where it was found.
+    url: URL;
+    // Parsed data, (if available).
+    parsed?: Parser.Output<any>;
+};
+
+class FindRSSFeedsError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "FindRSSFeedsError";
+    }
+}
+
+export async function findRSSFeeds(urlStr: string): Promise<FoundFeed[]> {
+    const url = new URL(urlStr);
+    const decoded = await internalFetchDecode(url);
+    const isFeed = checkIfFeed(url, decoded);
+    const isWebpage = checkIfWebpage(url, decoded);
+    return await Promise.any([isFeed, isWebpage]).catch((e) => {
+        switch (e.name) {
+            case "AggregateError":
+                if (
+                    e.errors.every(
+                        (internalErr: any) =>
+                            internalErr.name === "FindRSSFeedsError",
+                    )
+                ) {
+                    // If everything worked out fine, yet there were no feeds,
+                    // just return an empty list.
+                    return [];
+                }
+            // Intentional fallthru
+            default:
+                throw e;
+        }
+    });
+}
+
+async function checkIfWebpage(url: URL, decoded: string): Promise<FoundFeed[]> {
+    const policy = htmlSanitizePolicy();
+    const parsedDom = new DOMParser().parseFromString(
+        policy.createHTML(decoded).toString(),
+        "text/html",
+    );
+    const alternates = parsedDom.querySelectorAll(
+        `link[rel="alternate"][type][href]`,
+    );
+    const output: FoundFeed[] = Array.from(alternates)
+        .filter((elem) => {
+            const type = elem.getAttribute("type");
+            return (
+                type === "application/atom+xml" ||
+                type === "application/rss+xml"
+            );
+        })
+        .map((elem) => {
+            return { url: new URL(elem.getAttribute("href"), url) };
+        });
+    if (output.length > 0) {
+        return output;
+    }
+    throw new FindRSSFeedsError(`No feeds found in webpage: '${url}'`);
+}
+
+async function checkIfFeed(url: URL, decoded: string): Promise<FoundFeed[]> {
+    try {
+        const parsed = await rssParser.parseString(decoded);
+        return [{ url: url, parsed: parsed }];
+    } catch (e) {
+        throw new FindRSSFeedsError(`Feed did not parse: '${url}': ${e}`);
+    }
+}
+
+export async function parseFoundFeed(
+    foundFeed: FoundFeed,
+): Promise<Parser.Output<any>> {
+    // Unpack to prevent async changes to foundFeed contents.
+    const { url, parsed } = foundFeed;
+    if (parsed != null) {
+        return parsed;
+    }
+    const decoded = await internalFetchDecode(url);
+    return await rssParser.parseString(decoded);
+}
+
+/**
+ * @deprecated Use findRSSFeeds instead.
+ */
 export async function parseRSS(url: string) {
+    const decoded = await internalFetchDecode(new URL(url));
+    return await rssParser.parseString(decoded);
+}
+
+async function internalFetchDecode(url: URL): Promise<string> {
     let result: Response;
     try {
         result = await fetch(url, { credentials: "omit" });
-    } catch {
-        throw new Error(intl.get("log.networkError"));
+    } catch (e) {
+        throw new Error(`${intl.get("log.networkError")}: ${e}`);
     }
-    if (result && result.ok) {
-        try {
-            return await rssParser.parseString(
-                await decodeFetchResponse(result),
-            );
-        } catch {
-            throw new Error(intl.get("log.parseError"));
-        }
-    } else {
-        throw new Error(result.status + " " + result.statusText);
+    if (!result || !result.ok) {
+        throw new Error(
+            "Networking error: " + result.status + " " + result.statusText,
+        );
     }
+    let decoded: string;
+    try {
+        decoded = await decodeFetchResponse(result);
+    } catch (e) {
+        throw new Error(`${intl.get("log.parseError")}: ${e}`);
+    }
+    return decoded;
 }
 
 export async function fetchFavicon(urlString: string): Promise<string | null> {
