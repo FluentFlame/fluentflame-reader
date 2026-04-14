@@ -85,6 +85,9 @@ export class AppState {
     menu = getWindowBreakpoint() && window.settings.getDefaultMenu();
     menuKey = ALL;
     title = "";
+    addSourceModal = {
+        display: false,
+    };
     settings = {
         display: false,
         changed: false,
@@ -214,6 +217,28 @@ export type SettingsActionTypes =
     | SetSettingsTabAction
     | SaveSettingsAction
     | FreeMemoryAction;
+
+const SHOW_ADD_SOURCE_MODAL = "SHOW_ADD_SOURCE_MODAL";
+const HIDE_ADD_SOURCE_MODAL = "HIDE_ADD_SOURCE_MODAL";
+
+interface ShowAddSourceModalAction {
+    type: typeof SHOW_ADD_SOURCE_MODAL;
+}
+interface HideAddSourceModalAction {
+    type: typeof HIDE_ADD_SOURCE_MODAL;
+}
+
+export type AddSourceModalActionTypes =
+    | ShowAddSourceModalAction
+    | HideAddSourceModalAction;
+
+export function showAddSourceModal(): ShowAddSourceModalAction {
+    return { type: SHOW_ADD_SOURCE_MODAL };
+}
+
+export function hideAddSourceModal(): HideAddSourceModalAction {
+    return { type: HIDE_ADD_SOURCE_MODAL };
+}
 
 export function closeContextMenu(): AppThunk {
     return (dispatch, getState) => {
@@ -431,6 +456,7 @@ export function initApp(): AppThunk {
 export function appReducer(
     state = new AppState(),
     action:
+        | AddSourceModalActionTypes
         | SourceActionTypes
         | ItemActionTypes
         | ContextMenuActionTypes
@@ -459,6 +485,19 @@ export function appReducer(
                 default:
                     return state;
             }
+        case SHOW_ADD_SOURCE_MODAL:
+            return {
+                ...state,
+                addSourceModal: {
+                    display: true,
+                },
+                settings: {
+                    ...state.settings,
+                    display: false,
+                },
+            };
+        case HIDE_ADD_SOURCE_MODAL:
+            return { ...state, addSourceModal: { display: false } };
         case ADD_SOURCE:
             switch (action.status) {
                 case ActionStatus.Request:

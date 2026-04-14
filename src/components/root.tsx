@@ -3,10 +3,11 @@ import { connect } from "react-redux";
 import { closeContextMenu } from "../scripts/models/app";
 import PageContainer from "../containers/page-container";
 import MenuContainer from "../containers/menu-container";
-import Nav from "../components/nav";
+import Nav from "./nav";
 import SettingsContainer from "../containers/settings-container";
 import { RootState } from "../scripts/reducer";
 import { ContextMenu } from "./context-menu";
+import AddSourceModal from "./add-source-modal";
 import LogMenu from "./log-menu";
 
 const Root = ({ locale, dispatch }) =>
@@ -20,6 +21,7 @@ const Root = ({ locale, dispatch }) =>
             <LogMenu />
             <MenuContainer />
             <SettingsContainer />
+            <AddSourceModal />
             <ContextMenu />
         </div>
     );

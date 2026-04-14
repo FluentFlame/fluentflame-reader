@@ -17,6 +17,8 @@ import {
     MARK_ALL_READ,
 } from "./item";
 import { saveSettings } from "./app";
+import { selectAllArticles } from "./page";
+import { initFeeds } from "./feed";
 import { SourceRule } from "./rule";
 import { fixBrokenGroups } from "./group";
 
@@ -335,6 +337,18 @@ export function addSource(
             }
         }
         throw new Error("Sources not initialized.");
+    };
+}
+
+export function addSourcesThenReInit(
+    newSources: string[],
+): AppThunk<Promise<void>> {
+    return async (dispatch, _) => {
+        dispatch(selectAllArticles(true));
+        for (const source of newSources) {
+            await dispatch(addSource(source));
+        }
+        await dispatch(initFeeds(true));
     };
 }
 
