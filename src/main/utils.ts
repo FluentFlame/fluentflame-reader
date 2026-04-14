@@ -9,10 +9,10 @@ import {
 } from "electron";
 import { version } from "../../package.json";
 import { WindowManager } from "./window";
-import fs = require("fs");
+import * as fs from "fs";
 import { ImageCallbackTypes, TouchBarTexts } from "../schema-types";
 import { initMainTouchBar } from "./touchbar";
-import fontList = require("font-list");
+import * as fontList from "font-list";
 
 export function setUtilsListeners(manager: WindowManager) {
     async function openExternal(url: string, background = false) {

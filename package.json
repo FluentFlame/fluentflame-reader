@@ -48,6 +48,12 @@
     }
   ],
   "license": "BSD-3-Clause",
+  "sideEffects": [
+    "*.css",
+    "./src/scripts/reducer.ts",
+    "./src/scripts/db.ts",
+    "./src/scripts/preload.ts"
+  ],
   "repository": "github:FluentFlame/fluentflame-reader",
   "devDependencies": {
     "@fluentui/react": "^8.123.6",
