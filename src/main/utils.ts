@@ -9,10 +9,10 @@ import {
 } from "electron";
 import { version } from "../../package.json";
 import { WindowManager } from "./window";
-import * as fs from "fs";
+import { promises, writeFile } from "fs";
 import { ImageCallbackTypes, TouchBarTexts } from "../schema-types";
 import { initMainTouchBar } from "./touchbar";
-import * as fontList from "font-list";
+import { getFonts } from "font-list";
 
 export function setUtilsListeners(manager: WindowManager) {
     async function openExternal(url: string, background = false) {
@@ -122,7 +122,7 @@ export function setUtilsListeners(manager: WindowManager) {
                     ipcMain.handleOnce(
                         "write-save-result",
                         (_, result, errmsg) => {
-                            fs.writeFile(response.filePath, result, (err) => {
+                            writeFile(response.filePath, result, (err) => {
                                 if (err)
                                     dialog.showErrorBox(errmsg, String(err));
                             });
@@ -145,7 +145,7 @@ export function setUtilsListeners(manager: WindowManager) {
                 });
                 if (!response.canceled) {
                     try {
-                        return await fs.promises.readFile(
+                        return await promises.readFile(
                             response.filePaths[0],
                             "utf-8",
                         );
@@ -323,7 +323,7 @@ export function setUtilsListeners(manager: WindowManager) {
     });
 
     ipcMain.handle("init-font-list", () => {
-        return fontList.getFonts({
+        return getFonts({
             disableQuoting: true,
         });
     });
