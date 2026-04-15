@@ -3,12 +3,12 @@
 
   appimage-run,
   fluentflame-reader,
-  nodePackages,
+  prettier,
 }:
 
 mkShell {
   packages = [
-    nodePackages.prettier
+    prettier
     appimage-run
   ];
   inputsFrom = [
