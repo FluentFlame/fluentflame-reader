@@ -98,7 +98,6 @@ function safeSetAuthCookie(headers: Headers, configs: NewsBlurConfig) {
 export async function newsblurFetchItems(configs: NewsBlurConfig) {
     const response = await fetchGetAPI(configs, "/reader/feeds", {});
     // parse response
-    console.log(response);
     const json: NewsBlurResponse = await response.json();
     // errors
     printErrors(json);

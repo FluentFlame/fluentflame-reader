@@ -194,7 +194,8 @@ describe("newsblurServiceHooks", () => {
     let configs: NewsBlurConfig = CONFIGS;
 
     it("auth correct", async () => {
-        configs._test = () => {
+        configs._test = (url) => {
+            expect(url.toString()).to.equal("https://newsblur.com/api/login");
             return JSON.stringify(NEWSBLUR_LOGIN_RESPONSE_OK);
         };
         const result = await newsblurServiceHooks.authenticate(configs);
@@ -202,7 +203,8 @@ describe("newsblurServiceHooks", () => {
     });
 
     it("auth incorrect", async () => {
-        configs._test = () => {
+        configs._test = (url) => {
+            expect(url.toString()).to.equal("https://newsblur.com/api/login");
             return JSON.stringify(NEWSBLUR_LOGIN_RESPONSE_WRONG);
         };
         const result = await newsblurServiceHooks.authenticate(configs);
@@ -210,7 +212,10 @@ describe("newsblurServiceHooks", () => {
     });
 
     it("fetchesFeeds", async () => {
-        configs._test = () => {
+        configs._test = (url) => {
+            expect(url.toString()).to.equal(
+                "https://newsblur.com/reader/feeds",
+            );
             return JSON.stringify(NEWSBLUR_FEEDS_RESPONSE);
         };
         const response: NewsBlurResponse = await newsblurFetchItems(configs);
