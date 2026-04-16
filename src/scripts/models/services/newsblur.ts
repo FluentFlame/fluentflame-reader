@@ -7,12 +7,17 @@ export interface NewsBlurConfig extends ServiceConfigs {
     endpoint: string; // url
     username: string;
     password: string;
-    // fetchLimit: number;
-    lastId?: number;
     _cookie?: string;
-    _minWaitSeconds?: number;
     _lastRefresh?: Date;
+    /** false by default,
+     * a function that impersonates the default fetch function */
+    _test: false | testFetchFunction;
 }
+
+export type testFetchFunction = (url: URL, options: RequestInit) => string;
+
+// According to newblur documentation
+const MIN_WAIT_SECONDS = 60;
 
 async function fetchGetAPI(
     configs: NewsBlurConfig,
@@ -23,17 +28,21 @@ async function fetchGetAPI(
     const paramsSearch = new URLSearchParams(params);
     // set url
     while (path.startsWith("/")) path = path.substring(1); // remove leading slash
-    console.log(configs.endpoint + path);
     const url = new URL(configs.endpoint + path);
     url.search = paramsSearch.toString();
     // set headers
     const headers = new Headers();
-    // if, in node, add cookies
-    if (process !== undefined) {
-        headers.set("Cookie", configs._cookie.split(";")[0]);
+    // options
+    const options: RequestInit = { headers, credentials: "include" };
+    // if _test, early return, fake response
+    if (configs._test) {
+        return new Response(configs._test(url, options), {
+            status: 200,
+            statusText: "this is a test",
+        });
     }
     // send
-    const response = await fetch(url, { headers, credentials: "include" });
+    const response = await fetch(url, options);
     // return
     return response;
 }
@@ -51,13 +60,22 @@ async function fetchPostAPI(
     headers.set("Content-Type", "application/x-www-form-urlencoded");
     // set body & encode params
     const body = new URLSearchParams(params);
-    // send
-    const response = await fetch(url, {
+    // options
+    const options: RequestInit = {
         method: "POST",
         headers: headers,
         body: body,
         credentials: "include",
-    });
+    };
+    // if _test, early return, fake response
+    if (configs._test) {
+        return new Response(configs._test(url, options), {
+            status: 200,
+            statusText: "this is a test",
+        });
+    }
+    // send
+    const response = await fetch(url);
     return response;
 }
 
@@ -80,6 +98,7 @@ function safeSetAuthCookie(headers: Headers, configs: NewsBlurConfig) {
 export async function newsblurFetchItems(configs: NewsBlurConfig) {
     const response = await fetchGetAPI(configs, "/reader/feeds", {});
     // parse response
+    console.log(response);
     const json: NewsBlurResponse = await response.json();
     // errors
     printErrors(json);
@@ -93,6 +112,7 @@ export interface NewsBlurResponse {
     result: "ok";
     authenticated: boolean;
     user_id: number;
+    feeds?: any[];
 }
 
 // Hooks (the api)
@@ -122,7 +142,6 @@ export const newsblurServiceHooks: ServiceHooks = {
             // save auth cookie
             safeSetAuthCookie(response.headers, /*&*/ configs);
             // minTime to avoid overwhelming the server
-            configs._minWaitSeconds = 60;
             configs._lastRefresh = new Date(Date.now() + 60 * 1000);
             // correct?
             return json.authenticated === true;

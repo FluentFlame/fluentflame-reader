@@ -1,0 +1,9 @@
+{
+  "project_name": "Fluentflame Reader",
+  "languages": {
+    "TypeScript": {
+      "language_servers": ["vtsls"]
+    }
+  },
+  "tab_size": 4
+}
