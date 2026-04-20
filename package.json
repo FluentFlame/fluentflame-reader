@@ -95,6 +95,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
+    "dompurify": "^3.4.0",
     "https-browserify": "^1.0.0",
     "minimist": "^1.2.8",
     "stream-browserify": "^3.0.0",
