@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Icon } from "@fluentui/react/lib/Icon";
+import { SharedColors } from "@fluentui/theme";
 import { AnimationClassNames } from "@fluentui/react/lib/Styling";
 import intl from "react-intl-universal";
 import { useDispatch, useSelector } from "react-redux";
@@ -30,7 +31,7 @@ const TEXT_FIELD_ID = "addSourceModal-textField";
 type ModalState =
     | { type: "ANALYZE" }
     | { type: "ADD"; sources: { feed: FoundFeed; selected: boolean }[] }
-    | { type: "NO_FEED"; source: string };
+    | { type: "FEED_ERROR"; errorMsg: string };
 
 /** Modal dialogue to add a new RSS/Atom feed */
 export default function AddSourceModal(): React.JSX.Element {
@@ -77,8 +78,8 @@ export default function AddSourceModal(): React.JSX.Element {
             const feeds = await findRSSFeeds(newSourceUrl);
             if (feeds.length <= 0) {
                 setModalState({
-                    type: "NO_FEED",
-                    source: newSourceUrl,
+                    type: "FEED_ERROR",
+                    errorMsg: `No feeds at ${newSourceUrl}`,
                 });
                 return;
             }
@@ -90,11 +91,11 @@ export default function AddSourceModal(): React.JSX.Element {
                     return { selected: true, feed: f };
                 }),
             });
-        } catch(e) {
-            console.error("Error while finding RSS feeds", e);
+        } catch (e) {
+            console.error(`Error while finding RSS feed ${newSourceUrl}`, e);
             setModalState({
-                type: "NO_FEED",
-                source: newSourceUrl,
+                type: "FEED_ERROR",
+                errorMsg: e.toString(),
             });
         } finally {
             setLoading(false);
@@ -112,6 +113,13 @@ export default function AddSourceModal(): React.JSX.Element {
                 .filter((s) => s.selected)
                 .map((s) => s.feed.url.toString());
             await dispatch(addSourcesThenReInit(asSourceStrings));
+        } catch (e) {
+            console.error("Error while adding RSS feeds", e);
+            setModalState({
+                type: "FEED_ERROR",
+                errorMsg: e.toString(),
+            });
+            return;
         } finally {
             setLoading(false);
         }
@@ -238,9 +246,14 @@ export default function AddSourceModal(): React.JSX.Element {
                         />
                     </>
                 );
-            case "NO_FEED":
+            case "FEED_ERROR":
                 return (
-                    <span>{`${modalState.source}: ${intl.get("sources.errorAdd")}`}</span>
+                    <>
+                        <p>{intl.get("sources.errorAdd")}</p>
+                        <p style={{ color: SharedColors.red20 }}>
+                            {modalState.errorMsg}
+                        </p>
+                    </>
                 );
             default:
                 return (
