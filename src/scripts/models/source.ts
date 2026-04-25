@@ -296,11 +296,14 @@ export function insertSource(source: RSSSource): Promise<InsertSourceResponse> {
                 .equals(source.url)
                 .toArray();
             if (existingSources.length > 0) {
-                resolve({inserted: false, existingSource: existingSources[0]});
+                resolve({
+                    inserted: false,
+                    existingSource: existingSources[0],
+                });
             }
             try {
                 await db.fluentDB.sources.add(source);
-                resolve({inserted: true, newSource: source});
+                resolve({ inserted: true, newSource: source });
             } catch (err) {
                 reject(err);
             }
@@ -329,13 +332,21 @@ export function addSource(
                         dispatch(addSourceSuccess(newSource, batch));
                         window.settings.saveGroups(getState().groups);
                         dispatch(updateFavicon([newSource.sid]));
-                        const items = await RSSSource.checkItems(newSource, feed.items);
+                        const items = await RSSSource.checkItems(
+                            newSource,
+                            feed.items,
+                        );
                         await insertItems(items);
                         return newSource.sid;
                     case false:
                         if (ignoreDuplicates) {
                             const existingSource = insertedResp.existingSource;
-                            dispatch(addSourceFailure(intl.get("sources.exist"), batch));
+                            dispatch(
+                                addSourceFailure(
+                                    intl.get("sources.exist"),
+                                    batch,
+                                ),
+                            );
                             return existingSource.sid;
                         }
                         throw new Error(intl.get("sources.exist"));
