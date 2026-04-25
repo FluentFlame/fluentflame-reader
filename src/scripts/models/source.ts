@@ -361,10 +361,17 @@ export function addSourcesThenReInit(
 ): AppThunk<Promise<void>> {
     return async (dispatch, _) => {
         dispatch(selectAllArticles(true));
-        for (const source of newSources) {
-            await dispatch(addSource(source, null, true, true));
+        try {
+            for (const source of newSources) {
+                await dispatch(addSource(source, null, true, true));
+            }
+        } finally {
+            // Always re-init, because even if addSource fails,
+            // we need to refresh the display and initFeeds does this.
+            // It's inefficient, and we should change this. But that's
+            // for later.
+            await dispatch(initFeeds(true));
         }
-        await dispatch(initFeeds(true));
     };
 }
 

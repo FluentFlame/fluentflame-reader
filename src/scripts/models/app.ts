@@ -729,6 +729,10 @@ export function appReducer(
         case TOGGLE_SETTINGS:
             return {
                 ...state,
+                addSourceModal: {
+                    ...state.addSourceModal,
+                    display: false,
+                },
                 settings: {
                     ...state.settings,
                     display: action.open,
