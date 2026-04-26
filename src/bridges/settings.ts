@@ -132,6 +132,13 @@ const settingsBridge = {
         ipcRenderer.invoke("set-view-config", configs);
     },
 
+    getUnreadSourcesOnly: (): boolean => {
+        return ipcRenderer.sendSync("get-unread-sources-only");
+    },
+    setUnreadSourcesOnly: (flag: boolean) => {
+        ipcRenderer.invoke("set-unread-sources-only", flag);
+    },
+
     getAll: () => {
         return ipcRenderer.sendSync("get-all-settings") as Object;
     },

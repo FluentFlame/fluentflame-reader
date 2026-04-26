@@ -209,3 +209,11 @@ ipcMain.on("get-view-config", (event) => {
 ipcMain.handle("set-view-config", (_, config: ViewConfig) => {
     store.set(VIEW_CONFIG_STORE_KEY, config);
 });
+
+const UNREAD_SOURCES_ONLY_STORE_KEY = "menuUnreadSourcesOnly";
+ipcMain.on("get-unread-sources-only", (event) => {
+    event.returnValue = store.get(UNREAD_SOURCES_ONLY_STORE_KEY, false);
+});
+ipcMain.handle("set-unread-sources-only", (_: any, flag: boolean) => {
+    store.set(UNREAD_SOURCES_ONLY_STORE_KEY, flag);
+});
