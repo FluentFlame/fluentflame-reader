@@ -34,7 +34,7 @@ function setBodyFullscreenState(fullscreen: boolean) {
 
 // TODO: Selectors should be defined inside slice files rather than
 // near components, see https://redux.js.org/usage/deriving-data-selectors
-function selectAppState(state: RootState) {
+function useAppState(state: RootState) {
     return state.app;
 }
 
@@ -52,7 +52,7 @@ function Nav() {
     const [maximized, setMaximized] = React.useState(
         window.utils.isMaximized(),
     );
-    const state = useSelector(selectAppState);
+    const state = useSelector(useAppState);
     const itemShown = useSelector(selectItemShown);
 
     const menu = () => dispatch(toggleMenu());
