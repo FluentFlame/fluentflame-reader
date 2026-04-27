@@ -118,13 +118,15 @@ export default function Menu(): React.JSX.Element {
                     .filter((g) => g.sids.length > 0)
                     .map((g) => {
                         if (g.isMultiple) {
-                            let sources = g.sids.map((sid) => sources[sid]);
+                            let groupedSources = g.sids.map(
+                                (sid) => sources[sid],
+                            );
                             return {
                                 name: g.name,
                                 ariaLabel:
                                     g.name +
                                     countOverflow(
-                                        sources
+                                        groupedSources
                                             .map((s) => s.unreadCount)
                                             .reduce((a, b) => a + b, 0),
                                     ),
@@ -133,7 +135,7 @@ export default function Menu(): React.JSX.Element {
                                 isExpanded: g.expanded,
                                 onClick: () =>
                                     selectSourceGroup(g, "g-" + g.index),
-                                links: sources.map(getSource),
+                                links: groupedSources.map(getSource),
                             };
                         } else {
                             return getSource(sources[g.sids[0]]);
