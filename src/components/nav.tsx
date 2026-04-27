@@ -1,5 +1,4 @@
 import * as React from "react";
-import { useSelector, useDispatch } from "react-redux";
 import intl from "react-intl-universal";
 import { Icon } from "@fluentui/react/lib/Icon";
 import { ProgressIndicator, IObjectWithKey } from "@fluentui/react";
@@ -12,7 +11,7 @@ import {
     toggleMenu,
     toggleSettings,
 } from "../scripts/models/app";
-import { RootState } from "../scripts/reducer";
+import { RootState, useAppDispatch, useAppSelector } from "../scripts/reducer";
 import { ViewType } from "../schema-types";
 import { WindowStateListenerType } from "../schema-types";
 import { fetchItems } from "../scripts/models/item";
@@ -48,12 +47,12 @@ function selectItemShown(state: RootState) {
 
 /** The top navigation bar, containing buttons */
 function Nav() {
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     const [maximized, setMaximized] = React.useState(
         window.utils.isMaximized(),
     );
-    const state = useSelector(useAppState);
-    const itemShown = useSelector(selectItemShown);
+    const state = useAppSelector(useAppState);
+    const itemShown = useAppSelector(selectItemShown);
 
     const menu = () => dispatch(toggleMenu());
     const search = () => dispatch(toggleSearch());
