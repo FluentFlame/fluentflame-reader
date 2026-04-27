@@ -272,6 +272,7 @@ img.favicon.dropdown {
     left: 36px;
     width: 100%;
     max-width: calc(100% - 484px);
+    min-width: 150px;
     margin: 4px 16px;
     border: none;
     -webkit-app-region: none;
