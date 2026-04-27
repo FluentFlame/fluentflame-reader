@@ -31,6 +31,8 @@ if (!process.mas) {
     }
 }
 
+// Critical for WM Class identification
+app.setName("fluentflame-reader");
 if (!app.isPackaged) app.setAppUserModelId(process.execPath);
 else if (process.platform === "win32")
     app.setAppUserModelId("org.fluentflame.fluentflamereader");

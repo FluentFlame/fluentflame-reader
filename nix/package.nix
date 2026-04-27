@@ -13,8 +13,10 @@ let
     name = pname;
     exec = pname;
     desktopName = "Fluentflame Reader";
-    categories = [ "Utility" ];
+    categories = [ "Network" "Feed" ];
+    comment = "A modern desktop RSS reader given new life";
     icon = pname;
+    startupWMClass = pname;
   };
 in
 

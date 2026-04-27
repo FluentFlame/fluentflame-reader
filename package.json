@@ -1,5 +1,7 @@
 {
   "name": "fluentflame-reader",
+  "productName": "Fluentflame Reader",
+  "desktopName": "fluentflame-reader.desktop",
   "version": "2.1.0",
   "description": "A modern desktop RSS reader given new life",
   "main": "./dist/electron.js",
