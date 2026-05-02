@@ -31,13 +31,20 @@ if (!process.mas) {
     }
 }
 
-if (!app.isPackaged) {
-    // Critical for WM Class identification
-    app.setName("fluentflame-reader");
+if (app.isPackaged) {
+    // Force the userData path to use the proper internal name. This will vary for electron-builder
+    // applications depending on what the proposed "name" or "productName" will be, but we want
+    // this to be consistent for the packaged application.
+    const appDataPath = app.getPath("appData");
+    const internalAppName = "fluentflame-reader";
+    app.setPath("userData", `${appDataPath}/${internalAppName}`);
+    if (process.platform === "win32") {
+        app.setAppUserModelId("org.fluentflame.fluentflamereader");
+    }
+} else {
+    // Persist to using "Electron" for userData in development.
     app.setAppUserModelId(process.execPath);
 }
-else if (process.platform === "win32")
-    app.setAppUserModelId("org.fluentflame.fluentflamereader");
 
 let restarting = false;
 
