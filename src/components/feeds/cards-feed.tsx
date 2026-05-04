@@ -54,6 +54,7 @@ class CardsFeed extends React.Component<FeedProps> {
         item ? (
             <DefaultCard
                 feedId={this.props.feed.iid}
+                defaultOpenTarget={this.props.defaultOpenTarget}
                 key={item.iid}
                 item={item}
                 source={this.props.sourceMap[item.source]}

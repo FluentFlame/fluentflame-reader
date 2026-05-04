@@ -8,6 +8,7 @@ import { SourceOpenTarget, ViewConfig } from "../../schema-types";
 export namespace Card {
     export type Props = {
         feedId: string;
+        defaultOpenTarget: SourceOpenTarget;
         item: RSSItem;
         source: RSSSource;
         filter: FeedFilter;
@@ -33,17 +34,16 @@ export namespace Card {
     const onClick = (props: Props, e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        switch (props.source.openTarget) {
-            case SourceOpenTarget.External: {
-                openInBrowser(props, e);
-                break;
-            }
-            default: {
-                props.markRead(props.item);
-                props.showItem(props.feedId, props.item);
-                break;
-            }
+        if (
+            props.source.openTarget === SourceOpenTarget.External ||
+            (props.source.openTarget === SourceOpenTarget.DeferToGlobal &&
+                props.defaultOpenTarget === SourceOpenTarget.External)
+        ) {
+            openInBrowser(props, e);
+            return;
         }
+        props.markRead(props.item);
+        props.showItem(props.feedId, props.item);
     };
 
     const onMouseUp = (props: Props, e: React.MouseEvent) => {

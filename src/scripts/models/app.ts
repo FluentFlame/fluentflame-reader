@@ -33,9 +33,7 @@ import {
 } from "../settings";
 import locales from "../i18n/_locales";
 import { SYNC_SERVICE, ServiceActionTypes } from "./service";
-import {
-    SourceOpenTarget
-} from "../../schema-types";
+import { SourceOpenTarget } from "../../schema-types";
 
 export const enum ContextMenuType {
     Hidden,
@@ -449,8 +447,12 @@ export function initApp(): AppThunk {
         dispatch(initIntl())
             .then(async () => {
                 if (window.utils.platform === "darwin") initTouchBarWithTexts();
-                const defaultOpenTarget = await window.settings.getDefaultOpenTargetPref();
-                dispatch({ type: SET_DEFAULT_OPEN_TARGET, value: defaultOpenTarget });
+                const defaultOpenTarget =
+                    await window.settings.getDefaultOpenTargetPref();
+                dispatch({
+                    type: SET_DEFAULT_OPEN_TARGET,
+                    value: defaultOpenTarget,
+                });
                 await dispatch(initSources());
             })
             .then(() => dispatch(initFeeds()))

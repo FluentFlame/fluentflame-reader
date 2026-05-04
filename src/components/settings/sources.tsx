@@ -161,6 +161,10 @@ class SourcesTab extends React.Component<SourcesTabProps, SourcesTabState> {
 
     sourceOpenTargetChoices = (): IChoiceGroupOption[] => [
         {
+            key: String(SourceOpenTarget.DeferToGlobal),
+            text: intl.get("default"),
+        },
+        {
             key: String(SourceOpenTarget.Local),
             text: intl.get("sources.rssText"),
         },

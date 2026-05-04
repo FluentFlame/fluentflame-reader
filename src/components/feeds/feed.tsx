@@ -8,6 +8,7 @@ import ListFeed from "./list-feed";
 
 export type FeedProps = FeedReduxProps & {
     feed: RSSFeed;
+    defaultOpenTarget: SourceOpenTarget;
     viewType: ViewType;
     viewConfig?: ViewConfig;
     items: RSSItem[];

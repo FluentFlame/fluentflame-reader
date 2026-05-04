@@ -3,9 +3,15 @@ import * as db from "../../scripts/db";
 import intl from "react-intl-universal";
 import { urlTest, byteToMB, getSearchEngineName } from "../../scripts/utils";
 import {
+    RootState,
+    useAppDispatch,
+    useAppSelector,
+} from "../../scripts/reducer";
+import {
     AnimationMotionPref,
     ThemeSettings,
     SearchEngines,
+    SourceOpenTarget,
     ThumbnailTypePref,
 } from "../../schema-types";
 import {
@@ -13,12 +19,14 @@ import {
     setThemeSettings,
     getAnimationMotionPref,
     setAnimationMotionPref,
+    setDefaultOpenTargetPref,
     getNativeWindowFramePref,
     setNativeWindowFramePref,
     exportAll,
     getThumbnailTypePref,
     setThumbnailTypePref,
 } from "../../scripts/settings";
+import { SET_DEFAULT_OPEN_TARGET } from "../../scripts/models/app";
 import {
     ChoiceGroup,
     DefaultButton,
@@ -49,7 +57,13 @@ async function getItemSize() {
     return byteToMB(size);
 }
 
+function useDefaultOpenTarget(state: RootState) {
+    return state.app.defaultOpenTarget;
+}
+
 export default function AppTab(props: AppTabProps): React.JSX.Element {
+    const dispatch = useAppDispatch();
+
     const [themeSettingState, setThemeSettingState] =
         React.useState(getThemeSettings());
     const [itemSizeLabel, setItemSizeLabel] = React.useState<string | null>(
@@ -59,6 +73,7 @@ export default function AppTab(props: AppTabProps): React.JSX.Element {
         null,
     );
     const [deleteIndex, setDeleteIndex] = React.useState<string | null>(null);
+    const defaultOpenTarget = useAppSelector(useDefaultOpenTarget);
 
     React.useEffect(() => {
         getItemSize().then((sizeLabel) => setItemSizeLabel(sizeLabel));
@@ -153,6 +168,25 @@ export default function AppTab(props: AppTabProps): React.JSX.Element {
         setThemeSettingState(option.key as ThemeSettings);
     };
 
+    const defaultOpenTargetOptions = [
+        { key: SourceOpenTarget.Local, text: intl.get("sources.rssText") },
+        {
+            key: SourceOpenTarget.FullContent,
+            text: intl.get("article.loadFull"),
+        },
+        {
+            key: SourceOpenTarget.Webpage,
+            text: intl.get("sources.loadWebpage"),
+        },
+        { key: SourceOpenTarget.External, text: intl.get("openExternal") },
+    ];
+
+    const onDefaultOpenTargetChange = (_: any, option: IDropdownOption) => {
+        const optionKey = option.key as SourceOpenTarget;
+        setDefaultOpenTargetPref(optionKey);
+        dispatch({ type: SET_DEFAULT_OPEN_TARGET, value: optionKey });
+    };
+
     return (
         <div className="tab-body">
             <Label>{intl.get("app.language")}</Label>
@@ -178,6 +212,17 @@ export default function AppTab(props: AppTabProps): React.JSX.Element {
             <AnimationPreferences />
             <ThumbnailTypePreferences />
             <NativeWindowFramePreference />
+            <Label>{intl.get("app.defaultOpenTarget")}</Label>
+            <Stack horizontal>
+                <Stack.Item>
+                    <Dropdown
+                        defaultSelectedKey={defaultOpenTarget}
+                        options={defaultOpenTargetOptions}
+                        onChange={onDefaultOpenTargetChange}
+                        style={{ width: 200 }}
+                    />
+                </Stack.Item>
+            </Stack>
             <Label>{intl.get("app.fetchInterval")}</Label>
             <Stack horizontal>
                 <Stack.Item>
