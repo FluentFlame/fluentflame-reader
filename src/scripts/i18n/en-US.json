@@ -48,7 +48,8 @@
     },
     "menu": {
         "close": "Close menu",
-        "subscriptions": "Subscriptions"
+        "subscriptions": "Subscriptions",
+        "subscriptionsHidden": "Subscriptions (unread)"
     },
     "addSourceModal": {
         "description": "You can add either link a feed directly, or Fluentflame can check the page for one",

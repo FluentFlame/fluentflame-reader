@@ -55,6 +55,7 @@ export default function Menu(): React.JSX.Element {
             s.page.itemId !== null &&
             s.page.viewConfig.currentView !== ViewType.List,
     );
+    const showUnreadSources = false;
 
     const toggle = () => dispatch(toggleMenu());
     const allArticles = (init: boolean = false) => {
@@ -84,6 +85,11 @@ export default function Menu(): React.JSX.Element {
     };
 
     const getLinkGroups = (): INavLinkGroup[] => {
+        const subscriptionsTitle = showUnreadSources
+            ? intl.get("menu.subscriptions")
+            : intl
+                  .get("menu.subscriptionsHidden")
+                  .d(intl.get("menu.subscriptions"));
         return [
             {
                 links: [
@@ -113,9 +119,19 @@ export default function Menu(): React.JSX.Element {
                 ],
             },
             {
-                name: intl.get("menu.subscriptions"),
+                name: subscriptionsTitle,
                 links: groups
-                    .filter((g) => g.sids.length > 0)
+                    .filter((g) => {
+                        if (g.sids.length === 0) {
+                            return false;
+                        }
+                        if (!showUnreadSources) {
+                            return g.sids.some(
+                                (sid) => (sources[sid]?.unreadCount ?? 0) > 0,
+                            );
+                        }
+                        return true;
+                    })
                     .map((g) => {
                         if (g.isMultiple) {
                             let groupedSources = g.sids.map(

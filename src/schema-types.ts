@@ -127,6 +127,7 @@ export type SchemaTypes = {
     fontSize: number;
     fontFamily: string;
     menuOn: boolean;
+    menuUnreadSourcesOnly: boolean;
     fetchInterval: number;
     searchEngine: SearchEngines;
     serviceConfigs: ServiceConfigs;
