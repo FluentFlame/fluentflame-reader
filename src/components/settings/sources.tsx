@@ -18,11 +18,8 @@ import {
     MessageBarType,
     Toggle,
 } from "@fluentui/react";
-import {
-    SourceState,
-    RSSSource,
-    SourceOpenTarget,
-} from "../../scripts/models/source";
+import { SourceState, RSSSource } from "../../scripts/models/source";
+import { SourceOpenTarget } from "../../schema-types";
 import { urlTest } from "../../scripts/utils";
 import DangerButton from "../utils/danger-button";
 

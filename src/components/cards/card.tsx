@@ -1,9 +1,9 @@
 import * as React from "react";
-import { RSSSource, SourceOpenTarget } from "../../scripts/models/source";
+import { RSSSource } from "../../scripts/models/source";
 import { RSSItem } from "../../scripts/models/item";
 import { platformCtrl } from "../../scripts/utils";
 import { FeedFilter } from "../../scripts/models/feed";
-import { ViewConfig } from "../../schema-types";
+import { SourceOpenTarget, ViewConfig } from "../../schema-types";
 
 export namespace Card {
     export type Props = {

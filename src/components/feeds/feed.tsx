@@ -2,7 +2,7 @@ import * as React from "react";
 import { RSSItem } from "../../scripts/models/item";
 import { FeedReduxProps } from "../../containers/feed-container";
 import { RSSFeed, FeedFilter } from "../../scripts/models/feed";
-import { ViewType, ViewConfig } from "../../schema-types";
+import { SourceOpenTarget, ViewType, ViewConfig } from "../../schema-types";
 import CardsFeed from "./cards-feed";
 import ListFeed from "./list-feed";
 

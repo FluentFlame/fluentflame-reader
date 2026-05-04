@@ -12,14 +12,11 @@ import {
     Icon,
     Link,
 } from "@fluentui/react";
-import {
-    RSSSource,
-    SourceOpenTarget,
-    SourceTextDirection,
-} from "../scripts/models/source";
+import { RSSSource, SourceTextDirection } from "../scripts/models/source";
 import { shareSubmenu } from "./context-menu";
 import { platformCtrl, decodeFetchResponse } from "../scripts/utils";
 import { getAnimationMotionPref } from "../scripts/settings";
+import { SourceOpenTarget } from "../schema-types";
 
 const FONT_SIZE_OPTIONS = [12, 13, 14, 15, 16, 17, 18, 19, 20];
 

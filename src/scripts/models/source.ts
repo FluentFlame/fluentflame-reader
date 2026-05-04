@@ -21,13 +21,7 @@ import { selectAllArticles } from "./page";
 import { initFeeds } from "./feed";
 import { SourceRule } from "./rule";
 import { fixBrokenGroups } from "./group";
-
-export const enum SourceOpenTarget {
-    Local,
-    Webpage,
-    External,
-    FullContent,
-}
+import { SourceOpenTarget } from "../../schema-types";
 
 export const enum SourceTextDirection {
     LTR,

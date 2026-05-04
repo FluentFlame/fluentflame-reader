@@ -71,6 +71,14 @@ export enum ThumbnailTypePref {
     Other = "other",
 }
 
+export const enum SourceOpenTarget {
+    Local = 0,
+    Webpage = 1,
+    External = 2,
+    FullContent = 3,
+    DeferToGlobal = 255,
+}
+
 export const enum SearchEngines {
     Google,
     Bing,
@@ -127,6 +135,7 @@ export type SchemaTypes = {
     fontSize: number;
     fontFamily: string;
     menuOn: boolean;
+    defaultOpenTarget: SourceOpenTarget;
     fetchInterval: number;
     searchEngine: SearchEngines;
     serviceConfigs: ServiceConfigs;
