@@ -12,19 +12,17 @@ import {
     Icon,
     Link,
 } from "@fluentui/react";
-import {
-    RSSSource,
-    SourceOpenTarget,
-    SourceTextDirection,
-} from "../scripts/models/source";
+import { RSSSource, SourceTextDirection } from "../scripts/models/source";
 import { shareSubmenu } from "./context-menu";
 import { platformCtrl, decodeFetchResponse } from "../scripts/utils";
 import { getAnimationMotionPref } from "../scripts/settings";
+import { SourceOpenTarget } from "../schema-types";
 
 const FONT_SIZE_OPTIONS = [12, 13, 14, 15, 16, 17, 18, 19, 20];
 
 type ArticleProps = {
     item: RSSItem;
+    defaultOpenTarget: SourceOpenTarget;
     source: RSSSource;
     locale: string;
     shortcuts: (item: RSSItem, e: KeyboardEvent) => void;
@@ -53,16 +51,25 @@ type ArticleState = {
     errorDescription: string;
 };
 
+function shouldLoad(props: ArticleProps, target: SourceOpenTarget) {
+    return (
+        props.source.openTarget === target ||
+        (props.source.openTarget === SourceOpenTarget.DeferToGlobal &&
+            props.defaultOpenTarget === target)
+    );
+}
+
 class Article extends React.Component<ArticleProps, ArticleState> {
     webview: Electron.WebviewTag;
 
     constructor(props: ArticleProps) {
         super(props);
+        const loadFull = shouldLoad(props, SourceOpenTarget.FullContent);
         this.state = {
             fontFamily: window.settings.getFont(),
             fontSize: window.settings.getFontSize(),
-            loadWebpage: props.source.openTarget === SourceOpenTarget.Webpage,
-            loadFull: props.source.openTarget === SourceOpenTarget.FullContent,
+            loadWebpage: shouldLoad(props, SourceOpenTarget.Webpage),
+            loadFull: loadFull,
             fullContent: "",
             loaded: false,
             error: false,
@@ -71,8 +78,7 @@ class Article extends React.Component<ArticleProps, ArticleState> {
         window.utils.addWebviewContextListener(this.contextMenuHandler);
         window.utils.addWebviewKeydownListener(this.keyDownHandler);
         window.utils.addWebviewErrorListener(this.webviewError);
-        if (props.source.openTarget === SourceOpenTarget.FullContent)
-            this.loadFull();
+        if (loadFull) this.loadFull();
     }
 
     setFontSize = (size: number) => {
@@ -288,15 +294,15 @@ class Article extends React.Component<ArticleProps, ArticleState> {
     };
     componentDidUpdate = (prevProps: ArticleProps) => {
         if (prevProps.item.iid != this.props.item.iid) {
+            const loadFull = shouldLoad(
+                this.props,
+                SourceOpenTarget.FullContent,
+            );
             this.setState({
-                loadWebpage:
-                    this.props.source.openTarget === SourceOpenTarget.Webpage,
-                loadFull:
-                    this.props.source.openTarget ===
-                    SourceOpenTarget.FullContent,
+                loadWebpage: shouldLoad(this.props, SourceOpenTarget.Webpage),
+                loadFull: loadFull,
             });
-            if (this.props.source.openTarget === SourceOpenTarget.FullContent)
-                this.loadFull();
+            if (loadFull) this.loadFull();
         }
         this.componentDidMount();
     };

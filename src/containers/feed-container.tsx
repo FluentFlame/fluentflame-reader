@@ -20,6 +20,7 @@ const getFeed = (state: RootState, props: FeedContainerProps) =>
 const getFilter = (state: RootState) => state.page.filter;
 const getViewConfig = (state: RootState) => state.page.viewConfig;
 const getCurrentItem = (state: RootState) => state.page.itemId;
+const getDefaultOpenTarget = (state: RootState) => state.app.defaultOpenTarget;
 
 const makeMapStateToProps = () => {
     return createSelector(
@@ -30,8 +31,18 @@ const makeMapStateToProps = () => {
             getFilter,
             getViewConfig,
             getCurrentItem,
+            getDefaultOpenTarget,
         ],
-        (sources, items, feed, filter, viewConfig, currentItem) => ({
+        (
+            sources,
+            items,
+            feed,
+            filter,
+            viewConfig,
+            currentItem,
+            defaultOpenTarget,
+        ) => ({
+            defaultOpenTarget: defaultOpenTarget,
             feed: feed,
             items: feed.iids.map((iid) => items[iid]),
             sourceMap: sources,

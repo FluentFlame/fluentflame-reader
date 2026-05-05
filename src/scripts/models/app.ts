@@ -6,7 +6,6 @@ import {
     UPDATE_SOURCE,
     DELETE_SOURCE,
     initSources,
-    SourceOpenTarget,
     updateFavicon,
 } from "./source";
 import { RSSItem, ItemActionTypes, FETCH_ITEMS, fetchItems } from "./item";
@@ -34,6 +33,7 @@ import {
 } from "../settings";
 import locales from "../i18n/_locales";
 import { SYNC_SERVICE, ServiceActionTypes } from "./service";
+import { SourceOpenTarget } from "../../schema-types";
 
 export const enum ContextMenuType {
     Hidden,
@@ -85,6 +85,7 @@ export class AppState {
     menu = getWindowBreakpoint() && window.settings.getDefaultMenu();
     menuKey = ALL;
     title = "";
+    defaultOpenTarget = SourceOpenTarget.Local;
     addSourceModal = {
         display: false,
     };
@@ -194,6 +195,7 @@ export const TOGGLE_SETTINGS = "TOGGLE_SETTINGS";
 export const SET_SETTINGS_TAB = "SET_SETTINGS_TAB";
 export const SAVE_SETTINGS = "SAVE_SETTINGS";
 export const FREE_MEMORY = "FREE_MEMORY";
+export const SET_DEFAULT_OPEN_TARGET = "SET_DEFAULT_OPEN_TARGET";
 
 interface ToggleSettingsAction {
     type: typeof TOGGLE_SETTINGS;
@@ -212,8 +214,13 @@ interface FreeMemoryAction {
     type: typeof FREE_MEMORY;
     iids: Set<number>;
 }
+interface SetDefaultOpenTargetAction {
+    type: typeof SET_DEFAULT_OPEN_TARGET;
+    value: SourceOpenTarget;
+}
 export type SettingsActionTypes =
     | ToggleSettingsAction
+    | SetDefaultOpenTargetAction
     | SetSettingsTabAction
     | SaveSettingsAction
     | FreeMemoryAction;
@@ -440,6 +447,12 @@ export function initApp(): AppThunk {
         dispatch(initIntl())
             .then(async () => {
                 if (window.utils.platform === "darwin") initTouchBarWithTexts();
+                const defaultOpenTarget =
+                    await window.settings.getDefaultOpenTargetPref();
+                dispatch({
+                    type: SET_DEFAULT_OPEN_TARGET,
+                    value: defaultOpenTarget,
+                });
                 await dispatch(initSources());
             })
             .then(() => dispatch(initFeeds()))
@@ -748,6 +761,15 @@ export function appReducer(
                     ...state.settings,
                     tab: action.tab,
                 },
+            };
+        case SET_DEFAULT_OPEN_TARGET:
+            if (action.value === SourceOpenTarget.DeferToGlobal) {
+                // This is invalid, this _IS_ the global state.
+                return state;
+            }
+            return {
+                ...state,
+                defaultOpenTarget: action.value,
             };
         case TOGGLE_LOGS:
             return {

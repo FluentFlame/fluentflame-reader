@@ -21,13 +21,7 @@ import { selectAllArticles } from "./page";
 import { initFeeds } from "./feed";
 import { SourceRule } from "./rule";
 import { fixBrokenGroups } from "./group";
-
-export const enum SourceOpenTarget {
-    Local,
-    Webpage,
-    External,
-    FullContent,
-}
+import { SourceOpenTarget } from "../../schema-types";
 
 export const enum SourceTextDirection {
     LTR,
@@ -56,7 +50,7 @@ export class RSSSource {
     constructor(url: string, name: string = null) {
         this.url = url;
         this.name = name;
-        this.openTarget = SourceOpenTarget.Local;
+        this.openTarget = SourceOpenTarget.DeferToGlobal;
         this.lastFetched = new Date();
         this.fetchFrequency = 0;
         this.textDir = SourceTextDirection.LTR;

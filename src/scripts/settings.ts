@@ -6,6 +6,7 @@ import locales from "./i18n/_locales";
 import {
     AnimationMotionPref,
     ListViewConfigs,
+    SourceOpenTarget,
     ThemeSettings,
     ThumbnailTypePref,
     ViewConfig,
@@ -110,6 +111,12 @@ export function getNativeWindowFramePref(): boolean {
 export function setNativeWindowFramePref(pref: boolean) {
     return window.settings.setNativeWindowFramePref(pref);
 }
+export function getDefaultOpenTargetPref(): Promise<SourceOpenTarget> {
+    return window.settings.getDefaultOpenTargetPref();
+}
+export function setDefaultOpenTargetPref(pref: SourceOpenTarget) {
+    window.settings.setDefaultOpenTargetPref(pref);
+}
 export function hasWindowFrame() {
     return (
         window.utils.platform === "darwin" ||
@@ -199,6 +206,7 @@ export interface FluentflameSettingConfig {
     database: DatabaseConfig;
     filterType: number;
     menuOn: boolean;
+    defaultOpenTarget: SourceOpenTarget;
     useNativeWindowFramePref: boolean;
     sourceGroups: any[];
     view?: number; // Deprecated.
@@ -269,6 +277,7 @@ function migrateExport(input: any): FluentflameSettingConfig {
         },
         filterType: input.filterType ?? 0,
         menuOn: input.menuOn ?? false,
+        defaultOpenTarget: input.defaultOpenTarget ?? SourceOpenTarget.Local,
         useNativeWindowFramePref: input.useNativeWindowFramePref ?? false,
         sourceGroups: input.sourceGroups ?? [],
         viewConfig: {

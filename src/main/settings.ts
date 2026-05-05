@@ -7,6 +7,7 @@ import {
     SearchEngines,
     SyncService,
     ServiceConfigs,
+    SourceOpenTarget,
     ViewConfig,
     ThumbnailTypePref,
     defaultViewConfig,
@@ -164,6 +165,17 @@ ipcMain.on("get-all-settings", (event) => {
     }
     event.returnValue = output;
 });
+
+const DEFAULT_OPEN_TARGET_STORE_KEY = "defaultOpenTarget";
+ipcMain.handle("get-default-open-target-pref", () => {
+    return store.get(DEFAULT_OPEN_TARGET_STORE_KEY, SourceOpenTarget.Local);
+});
+ipcMain.handle(
+    "set-default-open-target-pref",
+    (_, openTarget: SourceOpenTarget) => {
+        store.set(DEFAULT_OPEN_TARGET_STORE_KEY, openTarget);
+    },
+);
 
 const FETCH_INTEVAL_STORE_KEY = "fetchInterval";
 ipcMain.on("get-fetch-interval", (event) => {

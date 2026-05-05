@@ -18,11 +18,8 @@ import {
     MessageBarType,
     Toggle,
 } from "@fluentui/react";
-import {
-    SourceState,
-    RSSSource,
-    SourceOpenTarget,
-} from "../../scripts/models/source";
+import { SourceState, RSSSource } from "../../scripts/models/source";
+import { SourceOpenTarget } from "../../schema-types";
 import { urlTest } from "../../scripts/utils";
 import DangerButton from "../utils/danger-button";
 
@@ -163,6 +160,10 @@ class SourcesTab extends React.Component<SourcesTabProps, SourcesTabState> {
     };
 
     sourceOpenTargetChoices = (): IChoiceGroupOption[] => [
+        {
+            key: String(SourceOpenTarget.DeferToGlobal),
+            text: intl.get("default"),
+        },
         {
             key: String(SourceOpenTarget.Local),
             text: intl.get("sources.rssText"),
