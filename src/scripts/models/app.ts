@@ -763,6 +763,10 @@ export function appReducer(
                 },
             };
         case SET_DEFAULT_OPEN_TARGET:
+            if (action.value === SourceOpenTarget.DeferToGlobal) {
+                // This is invalid, this _IS_ the global state.
+                return state;
+            }
             return {
                 ...state,
                 defaultOpenTarget: action.value,
