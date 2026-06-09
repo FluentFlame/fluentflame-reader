@@ -10,6 +10,7 @@ import {
 import {
     RSSItem,
     insertItems,
+    attachToThumbnailJobs,
     ItemActionTypes,
     FETCH_ITEMS,
     MARK_READ,
@@ -331,6 +332,11 @@ export function addSource(
                             feed.items,
                         );
                         await insertItems(items);
+                        for (const item of items) {
+                            // Don't await on these, these could take some
+                            // time and they can dispatch independently.
+                            dispatch(attachToThumbnailJobs(item));
+                        }
                         return newSource.sid;
                     case false:
                         if (ignoreDuplicates) {

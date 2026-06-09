@@ -163,10 +163,15 @@ export const feverServiceHooks: ServiceHooks = {
             });
             for (const item of parsedItems) {
                 // Try to get the thumbnail of the item
-                item.thumbnails = await generateThumbnailAttrList({
-                    targetLink: item.link,
-                    content: item.content,
-                });
+                const potentialThumbs = (
+                    await Promise.all(
+                        generateThumbnailAttrList({
+                            targetLink: item.link,
+                            content: item.content,
+                        }),
+                    )
+                ).flat();
+                item.thumbnails = potentialThumbs;
                 item.thumb = item.thumbnails?.at(0)?.url;
             }
             return [parsedItems, configs];

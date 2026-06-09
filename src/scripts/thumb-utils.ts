@@ -122,10 +122,11 @@ export type ThumbnailOptions = {
  * This function is very complex because there's so many different ways to try to infer what
  * the thumbnail should be.
  */
-export async function generateThumbnailAttrList(
+export function generateThumbnailAttrList(
     opt: ThumbnailOptions,
-): Promise<ThumbnailAttributes[]> {
-    let output = [];
+): Promise<ThumbnailAttributes[]>[] {
+    let output: Promise<ThumbnailAttributes[]>[] = [];
+    const wrapSingle = (x: any) => [x];
     if (opt.targetLink) {
         if (
             !opt.targetLink.startsWith("http://") &&
@@ -138,58 +139,60 @@ export async function generateThumbnailAttrList(
             return [];
         }
 
-        let potentialThumbs: ThumbnailAttributes[] | null = null;
-        try {
-            potentialThumbs = await fetchOpenGraphThumb(
-                new URL(opt.targetLink),
-            );
-        } catch (e) {
-            // We don't need an OpenGraph thumbnail. Skip it if it fails.
-            console.warn(
-                `Failed to fetch OpenGraph thumb from ${opt.targetLink}`,
-                e,
-            );
-        }
-        if (potentialThumbs && potentialThumbs.length > 0) {
-            output.push(...potentialThumbs);
-        }
+        const targetLinkJob = async () => {
+            let potentialThumbs: ThumbnailAttributes[] | null = null;
+            try {
+                potentialThumbs = await fetchOpenGraphThumb(
+                    new URL(opt.targetLink),
+                );
+            } catch (e) {
+                // We don't need an OpenGraph thumbnail. Skip it if it fails.
+                console.warn(
+                    `Failed to fetch OpenGraph thumb from ${opt.targetLink}`,
+                    e,
+                );
+            }
+            return potentialThumbs ?? [];
+        };
+
+        output.push(targetLinkJob());
     }
     if (opt.mediaThumbnails) {
         const images = opt.mediaThumbnails.filter((t) => t.$?.url);
         for (const image of images)
             output.push(
-                await urlToThumbnailAttributes(
+                urlToThumbnailAttributes(
                     image.$.url,
                     "unknown",
                     ThumbnailTypePref.MediaThumbnail,
-                ),
+                ).then(wrapSingle),
             );
     }
     if (opt.parsedThumb) {
         output.push(
-            await urlToThumbnailAttributes(
+            urlToThumbnailAttributes(
                 opt.parsedThumb,
                 "unknown",
                 ThumbnailTypePref.Thumb,
-            ),
+            ).then(wrapSingle),
         );
     }
     if (opt.imageTag?.$?.url) {
         output.push(
-            await urlToThumbnailAttributes(
+            urlToThumbnailAttributes(
                 opt.imageTag.$.url,
                 "image",
                 ThumbnailTypePref.Other,
-            ),
+            ).then(wrapSingle),
         );
     }
     if (opt.parsedImage && typeof opt.parsedImage === "string") {
         output.push(
-            await urlToThumbnailAttributes(
+            urlToThumbnailAttributes(
                 opt.parsedImage as string,
                 "image",
                 ThumbnailTypePref.Other,
-            ),
+            ).then(wrapSingle),
         );
     }
     if (opt.mediaContent) {
@@ -203,11 +206,11 @@ export async function generateThumbnailAttrList(
         );
         for (const image of images)
             output.push(
-                await urlToThumbnailAttributes(
+                urlToThumbnailAttributes(
                     image.$.url,
                     image.$.medium,
                     ThumbnailTypePref.Other,
-                ),
+                ).then(wrapSingle),
             );
     }
     if (opt.content && opt.targetLink != null) {
@@ -221,19 +224,20 @@ export async function generateThumbnailAttrList(
         let img = dom.querySelector("img");
         if (img && img.src)
             output.push(
-                await urlToThumbnailAttributes(
+                urlToThumbnailAttributes(
                     img.src,
                     "image",
                     ThumbnailTypePref.Other,
-                ),
+                ).then(wrapSingle),
             );
     }
-    output = output.map((t) => {
-        return {
-            medium: t.medium,
-            type: t.type,
-            url: new URL(t.url, opt.targetLink).toString(),
-        };
-    });
+
+    // Remap the url to be re-rooted to the targetLink, fixing relative URLs.
+    const reRootTarget = (xs: ThumbnailAttributes[]): ThumbnailAttributes[] => {
+        return xs.map((x: ThumbnailAttributes) => {
+            return { ...x, url: new URL(x.url, opt.targetLink).toString() };
+        });
+    };
+    output = output.map((t) => t.then(reRootTarget));
     return output;
 }
