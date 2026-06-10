@@ -415,11 +415,13 @@ export function dateCompare(itemDate: Date, limitDate: Date, before = false) {
  * Create a promise that resolves with the result after the given
  * milliseconds.
  */
-export function timeoutPromise<T>(ms: number, result: T = undefined): Promise<T> {
+export function timeoutPromise<T>(
+    ms: number,
+    result: T = undefined,
+): Promise<T> {
     return new Promise((res) => setTimeout(() => res(result), ms));
 }
 
 export const exportedForTesting = {
     getPotentialFavicons,
 };
-

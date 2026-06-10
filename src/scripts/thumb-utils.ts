@@ -1,4 +1,17 @@
 import { ThumbnailTypePref } from "../schema-types";
+import { Pool, startPool, fetchPool } from "./fetch-pool";
+
+const THUMBNAIL_FETCH_POOLS = new Map<String, Pool>();
+
+function getPool(url: URL): Pool {
+    if (THUMBNAIL_FETCH_POOLS.has(url.hostname)) {
+        return THUMBNAIL_FETCH_POOLS.get(url.hostname);
+    }
+    const pool = new Pool(20, 10, 20);
+    startPool(pool);
+    THUMBNAIL_FETCH_POOLS.set(url.hostname, pool);
+    return pool;
+}
 
 export interface ThumbnailAttributes {
     medium: "image" | "video";
@@ -11,7 +24,13 @@ export interface ThumbnailAttributes {
  */
 async function fetchHead(url: URL): Promise<string> {
     const controller = new AbortController();
-    const response = await fetch(url, { signal: controller.signal });
+    let pool = getPool(url);
+    const response = await fetchPool(
+        url,
+        { signal: controller.signal },
+        undefined,
+        pool,
+    );
     let result = "";
     if (!response.ok || !response.body) return result;
     const stream = response.body.pipeThrough(new TextDecoderStream());
@@ -85,7 +104,14 @@ async function urlToThumbnailAttributes(
             type,
         };
     }
-    const response = await fetch(url, { method: "HEAD" });
+    const realURL = new URL(url);
+    let pool = getPool(realURL);
+    const response = await fetchPool(
+        realURL,
+        { method: "HEAD" },
+        undefined,
+        pool,
+    );
     if (!response.ok)
         return {
             url,

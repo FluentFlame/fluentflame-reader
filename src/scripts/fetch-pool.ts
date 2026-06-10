@@ -1,35 +1,50 @@
-export type Pool = {
+/** PoolTimeout type to use for stopPool. */
+export type PoolTimeout = {};
+
+export class Pool {
     total: number;
     refill_rate: number;
     __started: boolean;
     __available: number;
-};
+    __timeout?: PoolTimeout;
 
-export const GLOBAL_FETCH_POOL: Pool = {
-    total: 30, // Per second.
-    refill_rate: 30, // Per second.
-    __started: false,
-    __available: 30,
-};
+    constructor(total: number, refill_rate: number, available: number = 0) {
+        this.total = total;
+        this.refill_rate = refill_rate;
+        this.__started = false;
+        this.__available = Math.min(available, total);
+    }
+}
 
-/** PoolTimeout type to use for stopPool. */
-export type PoolTimeout = {};
+export const GLOBAL_FETCH_POOL = new Pool(30, 30, 30);
 
 /** Start a pool filling interval. */
-export function startPool(pool: Pool = GLOBAL_FETCH_POOL): PoolTimeout {
+export function startPool(
+    pool: Pool = GLOBAL_FETCH_POOL,
+    startAmnt: number | undefined = undefined,
+): Pool {
+    if (pool.__started) {
+        return pool;
+    }
     pool.__started = true;
+    if (startAmnt !== undefined) {
+        pool.__available = Math.min(startAmnt, pool.total);
+    }
     const internal = () => {
         pool.__available = Math.min(
-            pool.__available + pool.refill_rate / 4,
+            pool.__available + pool.refill_rate / 2,
             pool.total,
         );
     };
-    return setInterval(internal, 1000 / 4) as unknown as PoolTimeout;
+    const timeout = setInterval(internal, 1000 / 2) as unknown as PoolTimeout;
+    pool.__timeout = timeout;
+    return pool;
 }
 
 /** Stop the pool filling. */
-export function stopPool(poolTimeout: PoolTimeout) {
-    return clearInterval(poolTimeout as unknown as any);
+export function stopPool(pool: Pool) {
+    pool.__started = false;
+    return clearInterval(pool.__timeout as unknown as any);
 }
 
 function uncheckedFetch(
