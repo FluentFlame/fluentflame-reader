@@ -70,7 +70,7 @@ export class RSSSource {
     private static async checkItem(
         source: RSSSource,
         item: MyParserItem,
-    ): Promise<RSSItem> {
+    ): Promise<RSSItem | null> {
         let i = new RSSItem(item, source);
         const items = await db.fluentDB.items
             .where("date")
@@ -87,23 +87,13 @@ export class RSSSource {
         }
     }
 
-    static checkItems(
+    static async checkItems(
         source: RSSSource,
         items: MyParserItem[],
     ): Promise<RSSItem[]> {
-        return new Promise<RSSItem[]>((resolve, reject) => {
-            let p = new Array<Promise<RSSItem>>();
-            for (let item of items) {
-                p.push(this.checkItem(source, item));
-            }
-            Promise.all(p)
-                .then((values) => {
-                    resolve(values.filter((v) => v != null));
-                })
-                .catch((e) => {
-                    reject(e);
-                });
-        });
+        let p = items.map((item) => this.checkItem(source, item));
+        const results = await Promise.all(p);
+        return results.filter((v) => v != null);
     }
 
     static async fetchItems(source: RSSSource) {
@@ -331,8 +321,8 @@ export function addSource(
                             newSource,
                             feed.items,
                         );
-                        await insertItems(items);
-                        for (const item of items) {
+                        const inserted = await insertItems(items);
+                        for (const item of inserted) {
                             // Don't await on these, these could take some
                             // time and they can dispatch independently.
                             dispatch(attachToThumbnailJobs(item));
