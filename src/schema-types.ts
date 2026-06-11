@@ -5,7 +5,7 @@ export class SourceGroup {
     expanded?: boolean;
     index?: number; // available only from menu or groups tab container
 
-    constructor(sids: number[], name: string = null) {
+    constructor(sids: number[], name?: string) {
         name = (name && name.trim()) || "Source group";
         if (sids.length == 1) {
             this.isMultiple = false;
