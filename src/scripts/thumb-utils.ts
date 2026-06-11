@@ -1,5 +1,5 @@
 import { ThumbnailTypePref } from "../schema-types";
-import { Pool, startPool, fetchPool } from "./fetch-pool";
+import { Pool, startPool } from "./fetch-pool";
 
 const THUMBNAIL_FETCH_POOLS = new Map<String, Pool>();
 
@@ -25,12 +25,7 @@ export interface ThumbnailAttributes {
 async function fetchHead(url: URL): Promise<string> {
     const controller = new AbortController();
     let pool = getPool(url);
-    const response = await fetchPool(
-        url,
-        { signal: controller.signal },
-        undefined,
-        pool,
-    );
+    const response = await pool.fetch(url, { signal: controller.signal });
     let result = "";
     if (!response.ok || !response.body) return result;
     const stream = response.body.pipeThrough(new TextDecoderStream());
@@ -106,12 +101,7 @@ async function urlToThumbnailAttributes(
     }
     const realURL = new URL(url);
     let pool = getPool(realURL);
-    const response = await fetchPool(
-        realURL,
-        { method: "HEAD" },
-        undefined,
-        pool,
-    );
+    const response = await pool.fetch(realURL, { method: "HEAD" });
     if (!response.ok)
         return {
             url,

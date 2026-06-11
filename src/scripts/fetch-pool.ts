@@ -14,6 +14,29 @@ export class Pool {
         this.__started = false;
         this.__available = Math.min(available, total);
     }
+
+    /** Fetch from this pool. Used for rate limiting.
+     *
+     * @param resource: Resource path to gather.
+     * @param init: RequestInit to forward to fetch.
+     * @param timeout: Timeout after which to kill the fetch attempt.
+     * @param pool: Pool to pull from (defaults to global fetch pool).
+     */
+    async fetch(
+        resource: string | URL | Request,
+        init?: RequestInit,
+        timeout?: number,
+    ): Promise<Response> {
+        if (!this.__started) {
+            throw new Error("Pool not started, did you run `startPool` first?");
+        }
+        if (this.__available >= 1) {
+            return uncheckedFetch(resource, init, this);
+        } else {
+            await pollAvailable(this, timeout);
+            return uncheckedFetch(resource, init, this);
+        }
+    }
 }
 
 export const GLOBAL_FETCH_POOL = new Pool(30, 30, 30);
@@ -74,28 +97,4 @@ function pollAvailable(pool: Pool = GLOBAL_FETCH_POOL, timeout?: number) {
     return new Promise<void>((resolve, reject) => {
         internal(resolve, reject);
     });
-}
-
-/** Fetch from a given pool. Used for rate limiting.
- *
- * @param resource: Resource path to gather.
- * @param init: RequestInit to forward to fetch.
- * @param timeout: Timeout after which to kill the fetch attempt.
- * @param pool: Pool to pull from (defaults to global fetch pool).
- */
-export async function fetchPool(
-    resource: string | URL | Request,
-    init: RequestInit,
-    timeout?: number,
-    pool: Pool = GLOBAL_FETCH_POOL,
-): Promise<Response> {
-    if (!pool.__started) {
-        throw new Error("Pool not started, did you run `startPool` first?");
-    }
-    if (pool.__available >= 1) {
-        return uncheckedFetch(resource, init, pool);
-    } else {
-        await pollAvailable(pool, timeout);
-        return uncheckedFetch(resource, init, pool);
-    }
 }

@@ -16,37 +16,25 @@ describe("fetchPool", () => {
     });
 
     it("can fetch", () => {
-        const pool: fetchPool.Pool = {
-            total: 2,
-            refill_rate: 0,
-            __available: 2,
-            __started: true,
-        };
-        return fetchPool.fetchPool("https://a.url.here", undefined, 0, pool);
+        const pool = new fetchPool.Pool(2, 0, 2);
+        pool.__started = true;
+        return pool.fetch("https://a.url.here");
     });
 
     it("can fetch twice", async () => {
-        const pool: fetchPool.Pool = {
-            total: 2,
-            refill_rate: 0,
-            __available: 2,
-            __started: true,
-        };
-        await fetchPool.fetchPool("https://a.url.here", undefined, 0, pool);
-        return fetchPool.fetchPool("https://a.url.here", undefined, 0, pool);
+        const pool = new fetchPool.Pool(2, 0, 2);
+        pool.__started = true;
+        await pool.fetch("https://a.url.here");
+        return pool.fetch("https://a.url.here");
     });
 
     it("can't fetch thrice", async () => {
-        const pool: fetchPool.Pool = {
-            total: 2,
-            refill_rate: 0,
-            __available: 2,
-            __started: true,
-        };
-        await fetchPool.fetchPool("https://a.url.here", undefined, 0, pool);
-        await fetchPool.fetchPool("https://a.url.here", undefined, 0, pool);
+        const pool = new fetchPool.Pool(2, 0, 2);
+        pool.__started = true;
+        await pool.fetch("https://a.url.here");
+        await pool.fetch("https://a.url.here");
         try {
-            await fetchPool.fetchPool("hello", undefined, 10, pool);
+            await pool.fetch("hello", undefined, 10);
         } catch (e) {
             expect(e.message).contains("fetchPool: Timeout");
             return;
@@ -55,19 +43,10 @@ describe("fetchPool", () => {
     });
 
     it("can't fetch with none available", async () => {
-        const pool: fetchPool.Pool = {
-            total: 1,
-            refill_rate: 0,
-            __available: 0,
-            __started: true,
-        };
+        const pool: fetchPool.Pool = new fetchPool.Pool(1, 0, 0);
+        pool.__started = true;
         try {
-            await fetchPool.fetchPool(
-                "https://a.url.here",
-                undefined,
-                50,
-                pool,
-            );
+            await pool.fetch("https://a.url.here", undefined, 50);
         } catch (e) {
             expect(e.message).contains("fetchPool: Timeout");
             return;
@@ -76,14 +55,9 @@ describe("fetchPool", () => {
     });
 
     it("can refill", async () => {
-        const pool: fetchPool.Pool = {
-            total: 1,
-            refill_rate: 1000,
-            __available: 0,
-            __started: false,
-        };
-        const timeout = fetchPool.startPool(pool);
-        await fetchPool.fetchPool("https://a.url.here", undefined, 0, pool);
-        fetchPool.stopPool(timeout);
+        const pool = new fetchPool.Pool(1, 1000, 0);
+        fetchPool.startPool(pool);
+        await pool.fetch("https://a.url.here");
+        fetchPool.stopPool(pool);
     });
 });

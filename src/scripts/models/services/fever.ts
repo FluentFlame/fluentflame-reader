@@ -6,7 +6,7 @@ import { htmlDecode, type FetchFunc } from "../../utils";
 import { RSSItem } from "../item";
 import { SourceRule } from "../rule";
 import { generateThumbnailAttrList } from "../../thumb-utils";
-import { fetchPool } from "../../fetch-pool";
+import { GLOBAL_FETCH_POOL } from "../../fetch-pool";
 
 export interface FeverConfigs extends ServiceConfigs {
     type: SyncService.Fever;
@@ -18,11 +18,16 @@ export interface FeverConfigs extends ServiceConfigs {
     useInt32?: boolean;
 }
 
+const defaultFetchFunc: FetchFunc = (
+    resource: string | URL | Request,
+    options?: RequestInit,
+) => GLOBAL_FETCH_POOL.fetch(resource, options);
+
 async function fetchAPI(
     configs: FeverConfigs,
     params: string = "",
     postparams: string = "",
-    fetchFunc: FetchFunc = fetchPool,
+    fetchFunc: FetchFunc = defaultFetchFunc,
 ) {
     const response = await fetchFunc(configs.endpoint + "?api" + params, {
         method: "POST",
