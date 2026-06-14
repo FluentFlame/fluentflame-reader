@@ -32,6 +32,7 @@ class CachedImg extends React.Component<ImgProps> {
     private _requestVideoFrameCallback: number | null = null;
     private _maxCanvasWidth: number;
     private _maxCanvasHeight: number;
+    private _failed: boolean = false;
 
     constructor(props: ImgProps) {
         super(props);
@@ -70,8 +71,8 @@ class CachedImg extends React.Component<ImgProps> {
                 }
             }
             return frames;
-        } catch {
-            console.log(`Failed to fetch ${url}`);
+        } catch (e) {
+            console.warn(`Failed to fetch ${url} for thumb load`, e);
             return null;
         }
     }
@@ -188,21 +189,31 @@ class CachedImg extends React.Component<ImgProps> {
                     this._imgSource = this.createImage(this.props.src);
                 } catch (e) {
                     this._imgSource = null;
+                    this._failed = true;
                     console.warn(
-                        `Error while rendering image from ${this.props.src}:`,
+                        `Failed to create image element from ${this.props.src}:`,
                         e,
                     );
+                    this.forceUpdate();
+                    return;
                 }
             }
             CachedImg._cache.set(this.props.src, this._imgSource);
         }
-        if (this._imgSource !== null) {
+        if (this._imgSource !== null && !this._failed) {
             if (this._imgSource instanceof HTMLImageElement) {
                 try {
                     await this._imgSource.decode();
                     this.draw(this._imgSource);
-                } catch {
+                } catch (e) {
+                    this._imgSource = null;
+                    this._failed = true;
+                    console.warn(
+                        `Failed to decode image from ${this.props.src}:`,
+                        e,
+                    );
                     this.forceUpdate();
+                    return;
                 }
             } else if (this._imgSource instanceof HTMLVideoElement) {
                 const video = this._imgSource;
@@ -266,6 +277,11 @@ class CachedImg extends React.Component<ImgProps> {
     }
 
     render(): React.ReactNode {
+        if (this._failed) {
+            // If we failed somewhere during a previous render,
+            // give up immediately.
+            return null;
+        }
         const canvas = (
             <canvas
                 className={this.props.className}
