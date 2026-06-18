@@ -1,7 +1,7 @@
 import { app, ipcMain, Menu, nativeTheme } from "electron";
 import { ThemeSettings, type SchemaTypes } from "./schema-types";
-import { store } from "./main/settings";
-import performUpdate from "./main/update-scripts";
+import { getStore } from "./main/settings";
+import { performUpdate, maybeRenameOldConfig } from "./main/update-scripts";
 import { WindowManager } from "./main/window";
 import { type CustomArgs } from "./general-types";
 import minimist from "minimist";
@@ -24,31 +24,38 @@ function parseArgs(): unknown {
 
 // Main Program -----------------------------------------------------------------------------------
 
-if (!process.mas) {
-    const locked = app.requestSingleInstanceLock();
-    if (!locked) {
-        app.quit();
-    }
-}
-
-if (app.isPackaged) {
-    // Force the userData path to use the proper internal name. This will vary for electron-builder
-    // applications depending on what the proposed "name" or "productName" will be, but we want
-    // this to be consistent for the packaged application.
-    const appDataPath = app.getPath("appData");
-    const internalAppName = "fluentflame-reader";
-    app.setPath("userData", `${appDataPath}/${internalAppName}`);
-    if (process.platform === "win32") {
-        app.setAppUserModelId("org.fluentflame.fluentflamereader");
-    }
-} else {
-    // Persist to using "Electron" for userData in development.
-    app.setAppUserModelId(process.execPath);
-}
-
 let restarting = false;
 
 function init() {
+    // We MUST have path correction before any other app calls, as they can be stateful and those calls
+    // may create directories or files based on these paths.
+    if (app.isPackaged) {
+        // Force the userData path to use the proper internal name. This will vary for electron-builder
+        // applications depending on what the proposed "name" or "productName" will be, but we want
+        // this to be consistent for the packaged application.
+        const appDataPath = app.getPath("appData");
+        const internalAppName = "fluentflame-reader";
+        maybeRenameOldConfig(
+            `${appDataPath}/Fluentflame Reader`,
+            `${appDataPath}/${internalAppName}`,
+        );
+        app.setPath("userData", `${appDataPath}/${internalAppName}`);
+        if (process.platform === "win32") {
+            app.setAppUserModelId("org.fluentflame.fluentflamereader");
+        }
+    } else {
+        // Persist to using "Electron" for userData in development.
+        app.setAppUserModelId(process.execPath);
+    }
+
+    if (!process.mas) {
+        const locked = app.requestSingleInstanceLock();
+        if (!locked) {
+            app.quit();
+        }
+    }
+
+    const store = getStore();
     performUpdate(store);
     nativeTheme.themeSource = store.get("theme", ThemeSettings.Default);
 
@@ -157,6 +164,7 @@ app.on("window-all-closed", () => {
 });
 
 ipcMain.handle("import-all-settings", (_, configs: SchemaTypes) => {
+    const store = getStore();
     restarting = true;
     store.clear();
     for (let [key, value] of Object.entries(configs)) {
