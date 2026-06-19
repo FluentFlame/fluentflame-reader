@@ -1,0 +1,63 @@
+app-id: "org.fluentflame.fluentflamereader"
+runtime: "org.freedesktop.Platform"
+runtime-version: "25.08"
+
+sdk: "org.freedesktop.Sdk"
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.node24
+
+base: "org.electronjs.Electron2.BaseApp"
+base-version: "25.08"
+
+command: run.sh
+separate-locales: false
+
+build-options:
+  append-path: /usr/lib/sdk/node24/bin
+  env:
+    NPM_CONFIG_LOGLEVEL: info
+
+modules:
+  - name: fluentflame-reader
+    buildsystem: simple
+    build-options:
+      env:
+        XDG_CACHE_HOME: /run/build/fluentflame-reader/flatpak-node/cache
+        npm_config_cache: /run/build/fluentflame-reader/flatpak-node/npm-cache
+        npm_config_nodedir: /usr/lib/sdk/node24
+        npm_config_offline: 'true'
+    build-commands:
+      # Install npm dependencies
+      - "npm install --offline"
+      # Bundle with webpack.
+      - "npm run build"
+      # Run electron-builder directly here, just to ensure full control of
+      # the acceptable output.
+      - "npx electron-builder -p never --linux --dir"
+      # Bundle app and dependencies
+      - "cp -a dist/linux*unpacked /app/main"
+      # Install app wrapper
+      - "install -Dm755 -t /app/bin/ ../run.sh"
+    subdir: main
+    sources:
+      # Generate this file with flatpak-node-generator
+      - flatpak/generated-sources.json
+      - type: "archive"
+        url: "https://github.com/FluentFlame/fluentflame-reader/archive/refs/tags/v2.1.0-dev.2.tar.gz"
+        sha256: "d4b5f8305c26a3bc2e6001348e0eba871a5250a80af7a5e6adb1ccc5ccac758b"
+        dest: main
+      - type: script
+        dest-filename: run.sh
+        commands:
+          - zypak-wrapper.sh /app/fluentflame-reader "$@"
+
+finish-args:
+  - "--socket=wayland"
+  - "--socket=x11"
+  - "--share=ipc"
+  - "--device=dri"
+  - "--socket=pulseaudio"
+  - "--filesystem=home"
+  - "--share=network"
+  - "--env=ELECTRON_TRASH=gio"
+
