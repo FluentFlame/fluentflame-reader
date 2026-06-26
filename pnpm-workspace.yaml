@@ -1,3 +1,9 @@
+allowBuilds:
+  electron: true
+  electron-winstaller: true
+  esbuild: true
+  react-intl-universal: true
+
 ignoredBuiltDependencies:
   - electron-winstaller
   - esbuild

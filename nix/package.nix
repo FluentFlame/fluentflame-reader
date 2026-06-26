@@ -22,9 +22,9 @@ in
 
 buildNpmPackage {
   inherit pname;
-  version = "2.1.1";
+  version = "2.2.0-dev.0";
   src = ../.;
-  npmDepsHash = "sha256-IXGxRnMVrUSovpvfJxfQwo9otpp94ptakScW11CFEfI=";
+  npmDepsHash = "sha256-1zPbHFK8Vgejij8hN0l7MPzFqxwAKPKPgCpUE98Bf7w=";
   makeCacheWritable = true;
 
   env = {
