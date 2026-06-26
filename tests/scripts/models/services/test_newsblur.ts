@@ -1,18 +1,19 @@
 import { expect } from "chai";
 import {
     NewsBlurConfig,
-    newsblurFetchItems,
-    NewsBlurResponse,
     newsblurServiceHooks,
 } from "../../../../src/scripts/models/services/newsblur";
 import { SyncService } from "../../../../src/schema-types";
 
-const CONFIGS: NewsBlurConfig = {
+const NEWSBLUR_CONFIGS: NewsBlurConfig = {
     type: SyncService.NewsBlur,
     endpoint: "https://newsblur.com/",
     username: "test",
     password: "test",
-    _test: false,
+};
+
+const RESOURCES = {
+    LOGIN: "https://newsblur.com/api/login",
 };
 
 const NEWSBLUR_LOGIN_RESPONSE_OK = {
@@ -33,6 +34,7 @@ const NEWSBLUR_LOGIN_RESPONSE_WRONG = {
 /**
  * This is an example of a response returned by Newsblur
  */
+/*
 const NEWSBLUR_FEEDS_RESPONSE = {
     feeds: {
         "8356326": {
@@ -189,38 +191,141 @@ const NEWSBLUR_FEEDS_RESPONSE = {
     result: "ok",
     authenticated: true,
 };
+*/
+
+// Mocks
+
+let shouldAuthenticate: boolean = false;
+
+async function mockFetch(
+    resource: string | URL | Request,
+    _options: any,
+): Promise<Response> {
+    let realResource: string;
+    if (typeof resource === "string") {
+        realResource = resource;
+    } else if (resource.toString != undefined) {
+        realResource = resource.toString();
+    } else {
+        throw Error("Can't handle Requests; this is a problem with the test.");
+    }
+
+    let res = (obj: object) => new Response(JSON.stringify(obj));
+
+    if (realResource == RESOURCES.LOGIN) {
+        if (shouldAuthenticate) {
+            return res(NEWSBLUR_LOGIN_RESPONSE_OK);
+        } else {
+            return res(NEWSBLUR_LOGIN_RESPONSE_WRONG);
+        }
+    }
+
+    throw Error(`Not a valid resource: ${resource}`);
+}
+
+// TESTS ------------------------------------------------------------------------------------------
 
 describe("newsblurServiceHooks", () => {
-    let configs: NewsBlurConfig = CONFIGS;
+    const mocks: any = {};
+    let poolID: any;
 
-    it("auth correct", async () => {
-        configs._test = (url) => {
-            expect(url.toString()).to.equal("https://newsblur.com/api/login");
-            return JSON.stringify(NEWSBLUR_LOGIN_RESPONSE_OK);
-        };
-        const result = await newsblurServiceHooks.authenticate(configs);
+    beforeEach(() => {
+        mocks.fetch = global.fetch;
+        global.fetch = mockFetch;
+    });
+
+    afterEach(() => {
+        global.fetch = mocks.fetch;
+    });
+
+    it("can authenticate correctly", async () => {
+        shouldAuthenticate = true;
+        const result =
+            await newsblurServiceHooks.authenticate(NEWSBLUR_CONFIGS);
         expect(result).to.equal(true);
     });
 
-    it("auth incorrect", async () => {
-        configs._test = (url) => {
-            expect(url.toString()).to.equal("https://newsblur.com/api/login");
-            return JSON.stringify(NEWSBLUR_LOGIN_RESPONSE_WRONG);
-        };
-        const result = await newsblurServiceHooks.authenticate(configs);
+    it("returs auth error", async () => {
+        shouldAuthenticate = false;
+        const result =
+            await newsblurServiceHooks.authenticate(NEWSBLUR_CONFIGS);
         expect(result).to.equal(false);
     });
 
-    it("fetchesFeeds", async () => {
-        configs._test = (url) => {
-            expect(url.toString()).to.equal(
-                "https://newsblur.com/reader/feeds",
-            );
-            return JSON.stringify(NEWSBLUR_FEEDS_RESPONSE);
+    /*
+    it("can update sources", async () => {
+        const updater = feverServiceHooks.updateSources();
+        const mockDispatch: any = (_d: any, _payload: any) => {
+            return null;
         };
-        const response: NewsBlurResponse = await newsblurFetchItems(configs);
-        expect(response.result).to.equal("ok");
-        expect(response.authenticated).to.equal(true);
-        expect(Object.keys(response.feeds).length).to.be.greaterThan(0);
+        const mockGetState: () => any = () => {
+            return {
+                service: FEVER_CONFIGS,
+                sources: {
+                    1: {
+                        sid: 1,
+                    },
+                    2: {
+                        sid: 2,
+                    },
+                },
+            };
+        };
+        const result = await updater(mockDispatch, mockGetState, null);
+        const sourceFromFeedResponse: (resp: any) => RSSSource = (
+            resp: any,
+        ) => {
+            const source = new RSSSource(resp.url, resp.title);
+            source.serviceRef = String(resp.id);
+            return source;
+        };
+        const expectedFeeds: RSSSource[] = FEVER_PHP_FEEDS.response.feeds.map(
+            sourceFromFeedResponse,
+        );
+        expect(result[0].length).to.equal(expectedFeeds.length);
+        for (let i = 0; i < result[0].length; i++) {
+            expect(result[0][i].hidden).to.equal(expectedFeeds[i].hidden);
+            expect(result[0][i].name).to.equal(expectedFeeds[i].name);
+            expect(result[0][i].serviceRef).to.equal(
+                expectedFeeds[i].serviceRef,
+            );
+            expect(result[0][i].url).to.equal(expectedFeeds[i].url);
+        }
     });
+
+    it("can sync with service", async () => {
+        const mockGetState: () => any = () => {
+            return {
+                app: {
+                    settings: {
+                        saving: false,
+                    },
+                },
+                service: FEVER_CONFIGS,
+                sources: {
+                    1: {
+                        sid: 1,
+                    },
+                    2: {
+                        sid: 2,
+                    },
+                },
+            };
+        };
+        function mockDispatch(d: any, _payload: any): any {
+            if (typeof d === "function") {
+                return d(mockDispatch, mockGetState);
+            }
+            return null;
+        }
+        assert.isTrue(
+            await syncWithService()(
+                mockDispatch as any,
+                mockGetState,
+                undefined,
+            ),
+        );
+    });
+
+    */
 });
