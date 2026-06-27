@@ -7,8 +7,9 @@ import {
     clipboard,
     systemPreferences,
 } from "electron";
-import { version } from "../../package.json";
+import pkg from "../../package.json";
 import { WindowManager } from "./window";
+import { trimContent, trimString } from "./pure-utils";
 import { promises, writeFile } from "fs";
 import { ImageCallbackTypes, TouchBarTexts } from "../schema-types";
 import { initMainTouchBar } from "./touchbar";
@@ -50,7 +51,7 @@ export function setUtilsListeners(manager: WindowManager) {
     });
 
     ipcMain.on("get-version", (event) => {
-        event.returnValue = version;
+        event.returnValue = pkg.version;
     });
 
     ipcMain.handle("open-external", (_, url: string, background: boolean) => {
@@ -336,35 +337,3 @@ export function setUtilsListeners(manager: WindowManager) {
         event.returnValue = manager.args;
     });
 }
-
-/** Ensure we don't have too long of a message. */
-function trimContent(
-    s: string,
-    charLen: number = 512,
-    lineLen: number = 5,
-): string {
-    return limitLines(trimString(s, charLen), lineLen);
-}
-
-function limitLines(s: string, maxLength: number): string {
-    const splitLines = s.split("\n");
-    if (splitLines.length <= maxLength) {
-        return s;
-    }
-    const newLines = splitLines.slice(0, maxLength - 1);
-    newLines.push("…more lines…");
-    return newLines.join("\n");
-}
-
-function trimString(s: string, maxLength: number): string {
-    if (s.length <= maxLength) {
-        return s;
-    }
-    return s.substring(0, maxLength - 1) + "…";
-}
-
-export const exportedForTesting = {
-    trimContent: trimContent,
-    limitLines: limitLines,
-    trimString: trimString,
-};
