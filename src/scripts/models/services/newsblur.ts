@@ -9,7 +9,6 @@ export interface NewsBlurConfig extends ServiceConfigs {
     endpoint: string; // url
     username: string;
     password: string;
-    _cookie?: string;
     _lastRefresh?: Date;
 }
 
@@ -64,12 +63,21 @@ async function fetchPostAPI(
     return response;
 }
 
+function APIError(msg?: string) {
+    if (msg) {
+        return new Error(`APIError: Failed to connect to NewsblurAPI: ${msg}`);
+    } else {
+        return new Error("APIError: Failed to connect to NewsblurAPI service");
+    }
+}
+
 function printErrors(response: NewsBlurResponse) {
-    if (response.errors) return;
-    for (const error in response.errors) {
-        console.error(
-            `[service: NewsBlur] ${error}: ${response.errors[error]}`,
-        );
+    if (response.errors) {
+        for (const error in response.errors) {
+            console.error(
+                `[service: NewsBlur] ${error}: ${response.errors[error]}`,
+            );
+        }
     }
 }
 
@@ -83,6 +91,15 @@ export async function newsblurFetchItems(configs: NewsBlurConfig) {
     return json;
 }
 
+function pathParams(path: string, params: Record<string, string>) {
+    let finalPath = path;
+    for (const param in params) {
+        const value = params[param];
+        finalPath = finalPath.replace(`:${param}`, encodeURIComponent(value));
+    }
+    return finalPath;
+}
+
 export interface NewsBlurResponse {
     code: -1 /*error*/ | 1 /*ok*/;
     errors: Record<string /*reason*/, string /*long reason*/> | null /*ok*/;
@@ -92,13 +109,50 @@ export interface NewsBlurResponse {
     feeds?: any;
 }
 
+/** A string with a date in format YYYY-MM-DDThh:mm:ss (T is just a T) */
 type dateString = string;
+
 interface NewsblurFeed {
     id: number;
     feed_title: string;
     feed_address: string;
     feed_link: string;
     last_story_date: dateString;
+}
+
+/**
+ * Summary is a count of unread stories in each feed.
+ *
+ * Counts are broken into three. Add them up for a
+ * total, but you shouldn't show or count the hidden
+ * stories.
+ **/
+interface NewsblurFeedSummary {
+    /** id of feed */
+    id: number;
+    /** positive/focus count */
+    ps: number;
+    /** neutral/unread count */
+    nt: number;
+    /** negative/hidden count */
+    ng: number;
+}
+
+interface NewsblurFeedResponse {
+    stories: NewsblurStory[];
+}
+
+interface NewsblurStory {
+    story_hash: string;
+    story_timestamp: string;
+    story_authors: string;
+    score: number;
+    read_status: 0 | 1;
+    id: string;
+    story_feed_id: string; // id of rss source
+    story_title: string;
+    story_content: string;
+    starred: boolean;
 }
 
 // Hooks (the api)
@@ -136,14 +190,15 @@ export const newsblurServiceHooks: ServiceHooks = {
 
     updateSources: () => async (dispatch, getState: () => RootState) => {
         const configs = getState().service as NewsBlurConfig;
-        const unparsedResponse = await fetchGetAPI(
-            configs,
-            "/reader/feeds",
-            {},
-        );
-        const response = await unparsedResponse.json();
+        const response = await fetchGetAPI(configs, "/reader/feeds", {})
+            // parse
+            .then((res) => res.json());
 
-        const feeds: Record<string, NewsblurFeed> = response.feeds;
+        const feeds: Record<string, NewsblurFeed> | undefined = response.feeds;
+
+        if (feeds === undefined) {
+            throw APIError("property 'feeds' is undefined");
+        }
 
         const sources: RSSSource[] = [];
         for (const key in feeds) {
@@ -152,11 +207,62 @@ export const newsblurServiceHooks: ServiceHooks = {
             sources.push(source);
         }
 
-        return [sources, undefined];
+        return [sources, undefined /* Apparently no groups in Newsblur */];
     },
 
+    // get remote read and star state of articles, for local sync
     syncItems: () => async (_, getState) => {
-        throw new Error("todo!");
+        const configs = getState().service as NewsBlurConfig;
+        const unread = new Set<string>();
+        const starred = new Set<string>();
+
+        // get all rss sources with unread posts. Call only once a minute !!!
+        // (Should I hardcode-ly enforce min wait time?)
+        const response = await fetchGetAPI(configs, "/reader/refresh_feeds", {})
+            // parse
+            .then((res) => res.json());
+
+        const feeds: Record<string, NewsblurFeedSummary> | undefined =
+            response.feeds;
+        if (feeds === undefined) {
+            throw APIError("property 'feeds' is undefined");
+        }
+
+        // get unread
+        let unreadPromises: Promise<string[]>[] = Object.values(feeds).map(
+            (feed) =>
+                // call to each feed
+                fetchGetAPI(
+                    configs,
+                    pathParams("/reader/feed/:id", {
+                        id: feed.id.toString(),
+                    }),
+                    {
+                        read_filter: "unread",
+                    },
+                )
+                    .then((res) => res.json())
+                    .then((res: NewsblurFeedResponse) => res.stories ?? [])
+                    .then((stories) => stories.map((story) => story.id)),
+        );
+
+        // get starred
+        let starredPromise = fetchGetAPI(configs, "/reader/starred_stories", {})
+            .then((res) => res.json())
+            .then((res: NewsblurFeedResponse) => res.stories ?? [])
+            .then((stories) => stories.map((story) => story.id));
+
+        // wait for values
+        for (const unreadPromise of unreadPromises) {
+            for (const id of await unreadPromise) {
+                unread.add(id);
+            }
+        }
+        for (const id of await starredPromise) {
+            starred.add(id);
+        }
+
+        return [unread, starred];
     },
 
     fetchItems: () => async (_, getState) => {
