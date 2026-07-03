@@ -4,7 +4,7 @@ import { RSSItem } from "../item";
 import { ServiceHooks } from "../service";
 import { RSSSource } from "../source";
 
-export interface NewsBlurConfig extends ServiceConfigs {
+export interface NewsBlurConfigs extends ServiceConfigs {
     type: SyncService.NewsBlur;
     endpoint: string; // url
     username: string;
@@ -18,7 +18,7 @@ export type testFetchFunction = (url: URL, options: RequestInit) => string;
 const MIN_WAIT_SECONDS = 60;
 
 async function fetchGetAPI(
-    configs: NewsBlurConfig,
+    configs: NewsBlurConfigs,
     path: string,
     params: Record<string, string>,
 ) {
@@ -39,7 +39,7 @@ async function fetchGetAPI(
 }
 
 async function fetchPostAPI(
-    configs: NewsBlurConfig,
+    configs: NewsBlurConfigs,
     path: string,
     params: Record<string, string>,
 ) {
@@ -81,7 +81,7 @@ function printErrors(response: NewsBlurResponse) {
     }
 }
 
-export async function newsblurFetchItems(configs: NewsBlurConfig) {
+export async function newsblurFetchItems(configs: NewsBlurConfigs) {
     const response = await fetchGetAPI(configs, "/reader/feeds", {});
     // parse response
     const json: NewsBlurResponse = await response.json();
@@ -158,7 +158,7 @@ interface NewsblurStory {
 // Hooks (the api)
 export const newsblurServiceHooks: ServiceHooks = {
     authenticate: async (serviceConfigs) => {
-        const configs = serviceConfigs as NewsBlurConfig;
+        const configs = serviceConfigs as NewsBlurConfigs;
         /*
          * POST /api/login
          *
@@ -190,7 +190,7 @@ export const newsblurServiceHooks: ServiceHooks = {
     },
 
     updateSources: () => async (dispatch, getState: () => RootState) => {
-        const configs = getState().service as NewsBlurConfig;
+        const configs = getState().service as NewsBlurConfigs;
         const response = await fetchGetAPI(configs, "/reader/feeds", {})
             // parse
             .then((res) => res.json());
@@ -213,7 +213,7 @@ export const newsblurServiceHooks: ServiceHooks = {
 
     // get remote read and star state of articles, for local sync
     syncItems: () => async (_, getState) => {
-        const configs = getState().service as NewsBlurConfig;
+        const configs = getState().service as NewsBlurConfigs;
         const unread = new Set<string>();
         const starred = new Set<string>();
 
@@ -267,7 +267,12 @@ export const newsblurServiceHooks: ServiceHooks = {
     },
 
     fetchItems: () => async (_, getState) => {
+        const state = getState();
+        const configs = state.service as NewsBlurConfigs;
+
         throw new Error("todo!");
+
+        // return [RSSItem[], ServiceConfigs];
     },
 
     markAllRead: (sids, date, before) => async (_, getState) => {

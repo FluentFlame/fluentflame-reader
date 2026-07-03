@@ -1,11 +1,11 @@
 import { expect } from "chai";
 import {
-    NewsBlurConfig,
+    NewsBlurConfigs,
     newsblurServiceHooks,
 } from "../../../../src/scripts/models/services/newsblur";
 import { SyncService } from "../../../../src/schema-types";
 
-const NEWSBLUR_CONFIGS: NewsBlurConfig = {
+const NEWSBLUR_CONFIGS: NewsBlurConfigs = {
     type: SyncService.NewsBlur,
     endpoint: "https://newsblur.com/",
     username: "test",
