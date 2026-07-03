@@ -157,7 +157,8 @@ interface NewsblurStory {
 
 // Hooks (the api)
 export const newsblurServiceHooks: ServiceHooks = {
-    authenticate: async (configs: NewsBlurConfig) => {
+    authenticate: async (serviceConfigs) => {
+        const configs = serviceConfigs as NewsBlurConfig;
         /*
          * POST /api/login
          *
@@ -207,7 +208,7 @@ export const newsblurServiceHooks: ServiceHooks = {
             sources.push(source);
         }
 
-        return [sources, undefined /* Apparently no groups in Newsblur */];
+        return [sources, undefined as any /* Apparently no groups in Newsblur */];
     },
 
     // get remote read and star state of articles, for local sync
