@@ -1,5 +1,6 @@
 import { ServiceConfigs, SyncService } from "../../../schema-types";
 import { RootState } from "../../reducer";
+import { htmlDecode } from "../../utils";
 import { RSSItem } from "../item";
 import { ServiceHooks } from "../service";
 import { RSSSource } from "../source";
@@ -106,7 +107,7 @@ export interface NewsBlurResponse {
     result: "ok";
     authenticated: boolean;
     user_id: number;
-    feeds?: any;
+    feeds?: NewsblurFeed[];
 }
 
 /** A string with a date in format YYYY-MM-DDThh:mm:ss (T is just a T) */
@@ -218,34 +219,39 @@ export const newsblurServiceHooks: ServiceHooks = {
         const starred = new Set<string>();
 
         // get all rss sources with unread posts. Call only once a minute !!!
-        // (Should I hardcode-ly enforce min wait time?)
-        const response = await fetchGetAPI(configs, "/reader/refresh_feeds", {})
-            // parse
-            .then((res) => res.json());
+        // (Should I hardcodedly enforce min wait time?)
+        const unreadPromises: Promise<Promise<string[]>[]> = (async () => {
 
-        const feeds: Record<string, NewsblurFeedSummary> | undefined =
-            response.feeds;
-        if (feeds === undefined) {
-            throw APIError("property 'feeds' is undefined");
-        }
+            const response = await fetchGetAPI(configs, "/reader/refresh_feeds", {})
+                // parse
+                .then((res) => res.json());
 
-        // get unread
-        let unreadPromises: Promise<string[]>[] = Object.values(feeds).map(
-            (feed) =>
-                // call to each feed
-                fetchGetAPI(
-                    configs,
-                    pathParams("/reader/feed/:id", {
-                        id: feed.id.toString(),
-                    }),
-                    {
-                        read_filter: "unread",
-                    },
-                )
-                    .then((res) => res.json())
-                    .then((res: NewsblurFeedResponse) => res.stories ?? [])
-                    .then((stories) => stories.map((story) => story.id)),
-        );
+            const feeds: Record<string, NewsblurFeedSummary> | undefined =
+                response.feeds;
+            if (feeds === undefined) {
+                throw APIError("property 'feeds' is undefined");
+            }
+
+            // get unread
+            const unreadPromises: Promise<string[]>[] = Object.values(feeds).map(
+                (feed) =>
+                    // call to each feed
+                    fetchGetAPI(
+                        configs,
+                        pathParams("/reader/feed/:id", {
+                            id: feed.id.toString(),
+                        }),
+                        {
+                            read_filter: "unread",
+                        },
+                    )
+                        .then((res) => res.json())
+                        .then((res: NewsblurFeedResponse) => res.stories ?? [])
+                        .then((stories) => stories.map((story) => story.id)),
+            );
+
+            return unreadPromises;
+        })();
 
         // get starred
         let starredPromise = fetchGetAPI(configs, "/reader/starred_stories", {})
@@ -254,7 +260,7 @@ export const newsblurServiceHooks: ServiceHooks = {
             .then((stories) => stories.map((story) => story.id));
 
         // wait for values
-        for (const unreadPromise of unreadPromises) {
+        for (const unreadPromise of await unreadPromises) {
             for (const id of await unreadPromise) {
                 unread.add(id);
             }
@@ -270,9 +276,68 @@ export const newsblurServiceHooks: ServiceHooks = {
         const state = getState();
         const configs = state.service as NewsBlurConfigs;
 
-        throw new Error("todo!");
+        // get sources that possess ref/id given by service, associate new items
+        const sourceMap = new Map<string, RSSSource>();
+        for (let source of Object.values(state.sources)) {
+            if (source.serviceRef) {
+                sourceMap.set(source.serviceRef, source);
+            }
+        }
 
-        // return [RSSItem[], ServiceConfigs];
+        // get all feed sources
+        const promise = fetchGetAPI(configs, "/reader/feeds", {
+            // Returns a flat folder structure instead of nested folders.
+            // Useful when displaying all folders in a single depth without recursive descent. 
+            flat: "true"
+        }).then(res => res.json())
+            .then((res: NewsBlurResponse) => res.feeds ?? [])
+            .then((feeds) =>
+                // get items for each feed
+                feeds.map(feed =>
+                    fetchGetAPI(
+                        configs,
+                        pathParams("/reader/feed/:id", { id: feed.id.toString() }),
+                        {}
+                    )
+                        .then(res => res.json())
+                        .then((res: NewsblurFeedResponse) => res.stories)
+                        .then(stories => stories.map(story => {
+                            const source = sourceMap.get(feed.feed_address);
+
+                            // parse item
+                            let parsedItem = {
+                                source: source?.sid,
+                                title: story.story_title,
+                                link: story.id,
+                                date: new Date(parseInt(story.story_timestamp)),
+                                fetchedDate: new Date(),
+                                content: story.story_content,
+                                snippet: htmlDecode(story.story_content).trim(),
+                                creator: story.story_authors,
+                                hasRead: Boolean(story.read_status === 1),
+                                starred: Boolean(story.starred),
+                                hidden: false,
+                                notify: false,
+                                serviceRef: String(story.id),
+                            } as RSSItem;
+
+                            // thumbnail
+                            // todo!
+
+                            return parsedItem;
+                        }))
+                )
+            )
+
+        // collect
+        let parsedItems: RSSItem[] = [];
+        for (const feed of await promise) {
+            for (const item of await feed) {
+                parsedItems.push(item);
+            }
+        }
+
+        return [parsedItems/*RSSItem[]*/, configs/*ServiceConfigs*/];
     },
 
     markAllRead: (sids, date, before) => async (_, getState) => {
