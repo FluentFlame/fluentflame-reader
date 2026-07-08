@@ -341,7 +341,10 @@ export const newsblurServiceHooks: ServiceHooks = {
     },
 
     markAllRead: (sids, date, before) => async (_, getState) => {
-        throw new Error("todo!");
+        const state = getState();
+        const configs = state.service as NewsBlurConfigs;
+
+        fetchPostAPI(configs, "/reader/mark_all_as_read", {});
     },
 
     markRead: (item: RSSItem) => async (_, getState) => {
