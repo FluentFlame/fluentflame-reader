@@ -42,7 +42,7 @@ async function fetchGetAPI(
 async function fetchPostAPI(
     configs: NewsBlurConfigs,
     path: string,
-    params: Record<string, string>,
+    params: ParamsObject,
 ) {
     // set url
     while (path.startsWith("/")) path = path.substring(1); // remove leading slash
@@ -51,7 +51,7 @@ async function fetchPostAPI(
     const headers = new Headers();
     headers.set("Content-Type", "application/x-www-form-urlencoded");
     // set body & encode params
-    const body = new URLSearchParams(params);
+    const body = new URLSearchParams(objectToSearchParams(params));
     // options
     const options: RequestInit = {
         method: "POST",
@@ -62,6 +62,22 @@ async function fetchPostAPI(
     // send
     const response = await fetch(url, options);
     return response;
+}
+
+type ParamsObject = Record<string, string | string[]>;
+function objectToSearchParams(object: ParamsObject): URLSearchParams {
+    const params = new URLSearchParams();
+    for (const key in object) {
+        const value = object[key];
+        if (Array.isArray(value)) {
+            for (const innerValue of value) {
+                params.append(key, innerValue.toString());
+            }
+        } else {
+            params.set(key, value.toString());
+        }
+    }
+    return params;
 }
 
 function APIError(msg?: string) {
@@ -287,9 +303,10 @@ export const newsblurServiceHooks: ServiceHooks = {
         // get all feed sources
         const promise = fetchGetAPI(configs, "/reader/feeds", {
             // Returns a flat folder structure instead of nested folders.
-            // Useful when displaying all folders in a single depth without recursive descent. 
-            flat: "true"
-        }).then(res => res.json())
+            // Useful when displaying all folders in a single depth without recursive descent.
+            flat: "true",
+        })
+            .then((res) => res.json())
             .then((res: NewsBlurResponse) => res.feeds ?? [])
             .then((feeds) =>
                 // get items for each feed
@@ -347,7 +364,18 @@ export const newsblurServiceHooks: ServiceHooks = {
         fetchPostAPI(configs, "/reader/mark_all_as_read", {});
     },
 
+    // Marks one story as read
+    // Note: could be optimized if instead of making
+    // one request for each RSSItem, it makes one request
+    // with the hashes of all RSSItem's at once
     markRead: (item: RSSItem) => async (_, getState) => {
+        const state = getState();
+        const configs = state.service as NewsBlurConfigs;
+
+        fetchPostAPI(configs, "/reader/mark_story_hashes_as_read", {
+            story_hash: [/* todo!: get story_hash from RSSItem */],
+        });
+
         throw new Error("todo!");
     },
 
