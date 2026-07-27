@@ -24,7 +24,7 @@ buildNpmPackage {
   inherit pname;
   version = "2.2.0-dev.1";
   src = ../.;
-  npmDepsHash = "";
+  npmDepsHash = "sha256-hOcI54ZyTInRXRZqYu1jVrPyPk1kydxfb9TnX8Iu6o4=";
   makeCacheWritable = true;
 
   env = {
