@@ -109,11 +109,5 @@
     "elliptic": "^6.6.1",
     "minimatch": "^10.2.3",
     "serialize-javascript": "^7.0.4"
-  },
-  "allowScripts": {
-    "electron@41.1.1": true,
-    "electron-winstaller@5.4.0": true,
-    "esbuild@0.28.1": true,
-    "react-intl-universal@2.13.4": true
   }
 }
