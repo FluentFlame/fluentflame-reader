@@ -246,10 +246,15 @@ describe("newsblurServiceHooks", () => {
     });
 
     it("returs auth error", async () => {
+        mocks.consoleError = global.console.error;
+        global.console.error = () => undefined;
+
         shouldAuthenticate = false;
         const result =
             await newsblurServiceHooks.authenticate(NEWSBLUR_CONFIGS);
         expect(result).to.equal(false);
+
+        global.console.error = mocks.consoleError;
     });
 
     /*
