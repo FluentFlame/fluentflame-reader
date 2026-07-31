@@ -24,7 +24,7 @@
       libgbm
       libxkbcommon
       libz
-      nodePackages.prettier
+      prettier
       nodejs_24
       nspr
       nss
@@ -40,15 +40,15 @@
       flatpak-builder # For flatpak building
 
       appimage-run # For appimage running (not building)
-    ])
-    ++ (with pkgs.xorg; [
-      libX11
-      libXcomposite
-      libXcursor
-      libXdamage
-      libXext
-      libXfixes
-      libXrandr
+
+      # X11 Packages
+      libx11
+      libxcomposite
+      libxcursor
+      libxdamage
+      libxext
+      libxfixes
+      libxrandr
       libxcb
     ]);
   multiPkgs =

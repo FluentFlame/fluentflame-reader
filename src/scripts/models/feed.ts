@@ -136,11 +136,11 @@ export class RSSFeed {
         // for a rewrite.
         return await db.fluentDB.items
             .orderBy("date")
-            .reverse()
-            .offset(skip)
             .filter(
                 (item) => feed.sids.includes(item.source) && predicate(item),
             )
+            .reverse()
+            .offset(skip)
             .limit(LOAD_QUANTITY)
             .toArray();
     }

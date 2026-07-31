@@ -5,10 +5,8 @@ import { RSSSource } from "../source";
 import { htmlDecode, type FetchFunc } from "../../utils";
 import { RSSItem } from "../item";
 import { SourceRule } from "../rule";
-import {
-    generateThumbnailAttrList,
-} from "../../thumb-utils";
-import { fetchPool } from "../../fetch-pool";
+import { generateThumbnailAttrList } from "../../thumb-utils";
+import { GLOBAL_FETCH_POOL } from "../../fetch-pool";
 
 export interface FeverConfigs extends ServiceConfigs {
     type: SyncService.Fever;
@@ -20,11 +18,16 @@ export interface FeverConfigs extends ServiceConfigs {
     useInt32?: boolean;
 }
 
+const defaultFetchFunc: FetchFunc = (
+    resource: string | URL | Request,
+    options?: RequestInit,
+) => GLOBAL_FETCH_POOL.fetch(resource, options);
+
 async function fetchAPI(
     configs: FeverConfigs,
     params: string = "",
     postparams: string = "",
-    fetchFunc: FetchFunc = fetchPool,
+    fetchFunc: FetchFunc = defaultFetchFunc,
 ) {
     const response = await fetchFunc(configs.endpoint + "?api" + params, {
         method: "POST",
@@ -106,7 +109,8 @@ export const feverServiceHooks: ServiceHooks = {
         let response: undefined | { items: Array<{ id: number }> };
         do {
             response = await fetchAPI(configs, `&items&max_id=${min}`);
-            if (response.items === undefined) throw APIError("items was undefined");
+            if (response.items === undefined)
+                throw APIError("items was undefined");
             items.push(...response.items.filter((i) => i.id > configs.lastId));
             if (
                 response.items.length === 0 &&
@@ -164,10 +168,15 @@ export const feverServiceHooks: ServiceHooks = {
             });
             for (const item of parsedItems) {
                 // Try to get the thumbnail of the item
-                item.thumbnails = await generateThumbnailAttrList({
-                    targetLink: item.link,
-                    content: item.content,
-                });
+                const potentialThumbs = (
+                    await Promise.all(
+                        generateThumbnailAttrList({
+                            targetLink: item.link,
+                            content: item.content,
+                        }),
+                    )
+                ).flat();
+                item.thumbnails = potentialThumbs;
                 item.thumb = item.thumbnails?.at(0)?.url;
             }
             return [parsedItems, configs];
@@ -186,7 +195,9 @@ export const feverServiceHooks: ServiceHooks = {
             typeof unreadResponse.unread_item_ids !== "string" ||
             typeof starredResponse.saved_item_ids !== "string"
         ) {
-            throw APIError("either unread_item_ids or saved_item_ids were not strings");
+            throw APIError(
+                "either unread_item_ids or saved_item_ids were not strings",
+            );
         }
         const unreadFids: string[] = unreadResponse.unread_item_ids.split(",");
         const starredFids: string[] = starredResponse.saved_item_ids.split(",");

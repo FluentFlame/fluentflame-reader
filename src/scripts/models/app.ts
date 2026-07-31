@@ -6,7 +6,6 @@ import {
     UPDATE_SOURCE,
     DELETE_SOURCE,
     initSources,
-    SourceOpenTarget,
     updateFavicon,
 } from "./source";
 import { RSSItem, ItemActionTypes, FETCH_ITEMS, fetchItems } from "./item";
@@ -25,15 +24,8 @@ import {
     REMOVE_SOURCE_FROM_GROUP,
     REORDER_SOURCE_GROUPS,
 } from "./group";
-import {
-    showItemFromId,
-    selectAllArticles
-} from "./page";
-import {
-    SELECT_PAGE,
-    PageType,
-    type PageActionTypes,
-} from "./page-interface";
+import { showItemFromId, selectAllArticles } from "./page";
+import { SELECT_PAGE, PageType, type PageActionTypes } from "./page-interface";
 import {
     getCurrentLocale,
     setThemeDefaultFont,
@@ -41,6 +33,7 @@ import {
 } from "../settings";
 import locales from "../i18n/_locales";
 import { SYNC_SERVICE, ServiceActionTypes } from "./service";
+import { SourceOpenTarget } from "../../schema-types";
 
 export const enum ContextMenuType {
     Hidden,
@@ -92,6 +85,10 @@ export class AppState {
     menu = getWindowBreakpoint() && window.settings.getDefaultMenu();
     menuKey = ALL;
     title = "";
+    defaultOpenTarget = SourceOpenTarget.Local;
+    addSourceModal = {
+        display: false,
+    };
     settings = {
         display: false,
         changed: false,
@@ -198,6 +195,7 @@ export const TOGGLE_SETTINGS = "TOGGLE_SETTINGS";
 export const SET_SETTINGS_TAB = "SET_SETTINGS_TAB";
 export const SAVE_SETTINGS = "SAVE_SETTINGS";
 export const FREE_MEMORY = "FREE_MEMORY";
+export const SET_DEFAULT_OPEN_TARGET = "SET_DEFAULT_OPEN_TARGET";
 
 interface ToggleSettingsAction {
     type: typeof TOGGLE_SETTINGS;
@@ -216,11 +214,38 @@ interface FreeMemoryAction {
     type: typeof FREE_MEMORY;
     iids: Set<number>;
 }
+interface SetDefaultOpenTargetAction {
+    type: typeof SET_DEFAULT_OPEN_TARGET;
+    value: SourceOpenTarget;
+}
 export type SettingsActionTypes =
     | ToggleSettingsAction
+    | SetDefaultOpenTargetAction
     | SetSettingsTabAction
     | SaveSettingsAction
     | FreeMemoryAction;
+
+const SHOW_ADD_SOURCE_MODAL = "SHOW_ADD_SOURCE_MODAL";
+const HIDE_ADD_SOURCE_MODAL = "HIDE_ADD_SOURCE_MODAL";
+
+interface ShowAddSourceModalAction {
+    type: typeof SHOW_ADD_SOURCE_MODAL;
+}
+interface HideAddSourceModalAction {
+    type: typeof HIDE_ADD_SOURCE_MODAL;
+}
+
+export type AddSourceModalActionTypes =
+    | ShowAddSourceModalAction
+    | HideAddSourceModalAction;
+
+export function showAddSourceModal(): ShowAddSourceModalAction {
+    return { type: SHOW_ADD_SOURCE_MODAL };
+}
+
+export function hideAddSourceModal(): HideAddSourceModalAction {
+    return { type: HIDE_ADD_SOURCE_MODAL };
+}
 
 export function closeContextMenu(): AppThunk {
     return (dispatch, getState) => {
@@ -422,6 +447,12 @@ export function initApp(): AppThunk {
         dispatch(initIntl())
             .then(async () => {
                 if (window.utils.platform === "darwin") initTouchBarWithTexts();
+                const defaultOpenTarget =
+                    await window.settings.getDefaultOpenTargetPref();
+                dispatch({
+                    type: SET_DEFAULT_OPEN_TARGET,
+                    value: defaultOpenTarget,
+                });
                 await dispatch(initSources());
             })
             .then(() => dispatch(initFeeds()))
@@ -438,6 +469,7 @@ export function initApp(): AppThunk {
 export function appReducer(
     state = new AppState(),
     action:
+        | AddSourceModalActionTypes
         | SourceActionTypes
         | ItemActionTypes
         | ContextMenuActionTypes
@@ -466,6 +498,19 @@ export function appReducer(
                 default:
                     return state;
             }
+        case SHOW_ADD_SOURCE_MODAL:
+            return {
+                ...state,
+                addSourceModal: {
+                    display: true,
+                },
+                settings: {
+                    ...state.settings,
+                    display: false,
+                },
+            };
+        case HIDE_ADD_SOURCE_MODAL:
+            return { ...state, addSourceModal: { display: false } };
         case ADD_SOURCE:
             switch (action.status) {
                 case ActionStatus.Request:
@@ -697,6 +742,10 @@ export function appReducer(
         case TOGGLE_SETTINGS:
             return {
                 ...state,
+                addSourceModal: {
+                    ...state.addSourceModal,
+                    display: false,
+                },
                 settings: {
                     ...state.settings,
                     display: action.open,
@@ -712,6 +761,15 @@ export function appReducer(
                     ...state.settings,
                     tab: action.tab,
                 },
+            };
+        case SET_DEFAULT_OPEN_TARGET:
+            if (action.value === SourceOpenTarget.DeferToGlobal) {
+                // This is invalid, this _IS_ the global state.
+                return state;
+            }
+            return {
+                ...state,
+                defaultOpenTarget: action.value,
             };
         case TOGGLE_LOGS:
             return {

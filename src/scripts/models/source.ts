@@ -10,6 +10,7 @@ import {
 import {
     RSSItem,
     insertItems,
+    attachToThumbnailJobs,
     ItemActionTypes,
     FETCH_ITEMS,
     MARK_READ,
@@ -17,15 +18,11 @@ import {
     MARK_ALL_READ,
 } from "./item";
 import { saveSettings } from "./app";
+import { selectAllArticles } from "./page";
+import { initFeeds } from "./feed";
 import { SourceRule } from "./rule";
 import { fixBrokenGroups } from "./group";
-
-export const enum SourceOpenTarget {
-    Local,
-    Webpage,
-    External,
-    FullContent,
-}
+import { SourceOpenTarget } from "../../schema-types";
 
 export const enum SourceTextDirection {
     LTR,
@@ -54,7 +51,7 @@ export class RSSSource {
     constructor(url: string, name: string = null) {
         this.url = url;
         this.name = name;
-        this.openTarget = SourceOpenTarget.Local;
+        this.openTarget = SourceOpenTarget.DeferToGlobal;
         this.lastFetched = new Date();
         this.fetchFrequency = 0;
         this.textDir = SourceTextDirection.LTR;
@@ -73,7 +70,7 @@ export class RSSSource {
     private static async checkItem(
         source: RSSSource,
         item: MyParserItem,
-    ): Promise<RSSItem> {
+    ): Promise<RSSItem | null> {
         let i = new RSSItem(item, source);
         const items = await db.fluentDB.items
             .where("date")
@@ -90,23 +87,13 @@ export class RSSSource {
         }
     }
 
-    static checkItems(
+    static async checkItems(
         source: RSSSource,
         items: MyParserItem[],
     ): Promise<RSSItem[]> {
-        return new Promise<RSSItem[]>((resolve, reject) => {
-            let p = new Array<Promise<RSSItem>>();
-            for (let item of items) {
-                p.push(this.checkItem(source, item));
-            }
-            Promise.all(p)
-                .then((values) => {
-                    resolve(values.filter((v) => v != null));
-                })
-                .catch((e) => {
-                    reject(e);
-                });
-        });
+        let p = items.map((item) => this.checkItem(source, item));
+        const results = await Promise.all(p);
+        return results.filter((v) => v != null);
     }
 
     static async fetchItems(source: RSSSource) {
@@ -281,8 +268,12 @@ export function addSourceFailure(err, batch: boolean): SourceActionTypes {
     };
 }
 
+export type InsertSourceResponse =
+    | { inserted: true; newSource: RSSSource }
+    | { inserted: false; existingSource: RSSSource };
+
 let insertPromises = Promise.resolve();
-export function insertSource(source: RSSSource): Promise<RSSSource> {
+export function insertSource(source: RSSSource): Promise<InsertSourceResponse> {
     return new Promise((resolve, reject) => {
         insertPromises = insertPromises.then(async () => {
             const existingSources = await db.fluentDB.sources
@@ -290,11 +281,14 @@ export function insertSource(source: RSSSource): Promise<RSSSource> {
                 .equals(source.url)
                 .toArray();
             if (existingSources.length > 0) {
-                reject(intl.get("sources.exist"));
+                resolve({
+                    inserted: false,
+                    existingSource: existingSources[0],
+                });
             }
             try {
                 await db.fluentDB.sources.add(source);
-                resolve(source);
+                resolve({ inserted: true, newSource: source });
             } catch (err) {
                 reject(err);
             }
@@ -306,6 +300,7 @@ export function addSource(
     url: string,
     name: string = null,
     batch = false,
+    ignoreDuplicates = false,
 ): AppThunk<Promise<number>> {
     return async (dispatch, getState) => {
         const app = getState().app;
@@ -314,14 +309,38 @@ export function addSource(
             const source = new RSSSource(url, name);
             try {
                 const feed = await RSSSource.fetchMetaData(source);
-                const inserted = await insertSource(source);
-                inserted.unreadCount = feed.items.length;
-                dispatch(addSourceSuccess(inserted, batch));
-                window.settings.saveGroups(getState().groups);
-                dispatch(updateFavicon([inserted.sid]));
-                const items = await RSSSource.checkItems(inserted, feed.items);
-                await insertItems(items);
-                return inserted.sid;
+                const insertedResp = await insertSource(source);
+                switch (insertedResp.inserted) {
+                    case true:
+                        const newSource = insertedResp.newSource;
+                        newSource.unreadCount = feed.items.length;
+                        dispatch(addSourceSuccess(newSource, batch));
+                        window.settings.saveGroups(getState().groups);
+                        dispatch(updateFavicon([newSource.sid]));
+                        const items = await RSSSource.checkItems(
+                            newSource,
+                            feed.items,
+                        );
+                        const inserted = await insertItems(items);
+                        for (const item of inserted) {
+                            // Don't await on these, these could take some
+                            // time and they can dispatch independently.
+                            dispatch(attachToThumbnailJobs(item));
+                        }
+                        return newSource.sid;
+                    case false:
+                        if (ignoreDuplicates) {
+                            const existingSource = insertedResp.existingSource;
+                            dispatch(
+                                addSourceFailure(
+                                    intl.get("sources.exist"),
+                                    batch,
+                                ),
+                            );
+                            return existingSource.sid;
+                        }
+                        throw new Error(intl.get("sources.exist"));
+                }
             } catch (e) {
                 dispatch(addSourceFailure(e, batch));
                 if (!batch) {
@@ -335,6 +354,25 @@ export function addSource(
             }
         }
         throw new Error("Sources not initialized.");
+    };
+}
+
+export function addSourcesThenReInit(
+    newSources: string[],
+): AppThunk<Promise<void>> {
+    return async (dispatch, _) => {
+        dispatch(selectAllArticles(true));
+        try {
+            for (const source of newSources) {
+                await dispatch(addSource(source, null, true, true));
+            }
+        } finally {
+            // Always re-init, because even if addSource fails,
+            // we need to refresh the display and initFeeds does this.
+            // It's inefficient, and we should change this. But that's
+            // for later.
+            await dispatch(initFeeds(true));
+        }
     };
 }
 

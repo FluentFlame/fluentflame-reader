@@ -12,7 +12,7 @@ import { startPool } from "./scripts/fetch-pool";
 import { rootStore } from "./scripts/reducer";
 import { initThemeUpdateListener } from "./scripts/settings";
 
-startPool();  // Start global fetch pool.
+startPool(); // Start global fetch pool.
 initThemeUpdateListener();
 window.settings.setProxy();
 

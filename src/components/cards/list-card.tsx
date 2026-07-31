@@ -42,7 +42,7 @@ function ListCard(props: Card.Props): React.JSX.Element {
                 </h3>
                 {Boolean(
                     props.viewConfig.listViewConfigs &
-                        ListViewConfigs.ShowSnippet,
+                    ListViewConfigs.ShowSnippet,
                 ) && (
                     <p className="snippet">
                         <Highlights

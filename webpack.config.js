@@ -1,7 +1,9 @@
+const webpack = require("webpack")
 const CopyPlugin = require("copy-webpack-plugin")
 const HtmlWebpackPlugin = require("html-webpack-plugin")
 
 const fallbacks = {
+    "buffer": require.resolve("buffer/"),
     "stream": require.resolve("stream-browserify"),
     "http": require.resolve("stream-http"),
     "https": require.resolve("https-browserify"),
@@ -98,6 +100,9 @@ module.exports = [
                         info: { minimized: true },
                     }
                 ],
+            }),
+            new webpack.ProvidePlugin({
+                Buffer: ["buffer", "Buffer"],
             }),
         ],
         resolve: {

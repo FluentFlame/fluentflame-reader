@@ -69,6 +69,14 @@ fluentDB
     })
     .upgrade(migrateServiceRef);
 
+fluentDB
+    .version(8)
+    .stores({
+        sources: `++sid, &url`,
+        items: `++iid, source, date, serviceRef`,
+    })
+    .upgrade(migrateOpenTarget);
+
 export async function calculateItemSize(): Promise<number> {
     await fluentDB.open();
     let result = 0;
@@ -243,6 +251,22 @@ async function migrateServiceRef(
         });
 }
 
+async function migrateOpenTarget(
+    trans: Transaction & {
+        sources: Dexie.Table<SourceEntry, "sid">;
+        items: Dexie.Table<ItemEntry, "iid">;
+    },
+) {
+    return trans
+        .table("sources")
+        .toCollection()
+        .modify((source: SourceEntry) => {
+            if (source.openTarget === 0) {
+                // 255 is reserved for DeferToGlobal.
+                source.openTarget = 255;
+            }
+        });
+}
 // ------------------------------------------------------------------------------------------------
 // Utils
 // ------------------------------------------------------------------------------------------------

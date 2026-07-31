@@ -1,6 +1,7 @@
 {
   "name": "fluentflame-reader",
-  "version": "2.1.0",
+  "desktopName": "fluentflame-reader.desktop",
+  "version": "2.2.0-dev.1",
   "description": "A modern desktop RSS reader given new life",
   "main": "./dist/electron.js",
   "scripts": {
@@ -48,6 +49,12 @@
     }
   ],
   "license": "BSD-3-Clause",
+  "sideEffects": [
+    "*.css",
+    "./src/scripts/reducer.ts",
+    "./src/scripts/db.ts",
+    "./src/scripts/preload.ts"
+  ],
   "repository": "github:FluentFlame/fluentflame-reader",
   "devDependencies": {
     "@fluentui/react": "^8.123.6",
@@ -60,7 +67,7 @@
     "chai": "^6.2.0",
     "copy-webpack-plugin": "^14.0.0",
     "dexie": "^4.0.11",
-    "electron": "^38.0.0",
+    "electron": "^41.1.1",
     "electron-builder": "^26.5.0",
     "electron-react-devtools": "^0.5.3",
     "electron-store": "^5.2.0",
@@ -89,6 +96,8 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
+    "buffer": "^6.0.3",
+    "dompurify": "^3.4.0",
     "https-browserify": "^1.0.0",
     "minimist": "^1.2.8",
     "stream-browserify": "^3.0.0",

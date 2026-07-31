@@ -1,6 +1,6 @@
-import { fluentDB } from "../db";
+import { type ItemEntry, fluentDB } from "../db";
 import intl from "react-intl-universal";
-import type { MyParserItem } from "../utils";
+import { type MyParserItem, timeoutPromise } from "../utils";
 import {
     type ThumbnailAttributes,
     generateThumbnailAttrList,
@@ -36,6 +36,7 @@ export class RSSItem {
     fetchedDate: Date;
     thumb?: string;
     thumbnails?: ThumbnailAttributes[];
+    thumbnailJobs?: Promise<ThumbnailAttributes[]>[];
     content: string;
     snippet: string;
     creator?: string;
@@ -55,6 +56,8 @@ export class RSSItem {
         this.link = item.link || "";
         this.fetchedDate = new Date();
         this.date = new Date(item.isoDate ?? item.pubDate ?? this.fetchedDate);
+        this.thumbnails = [];
+        this.thumbnailJobs = [];
         this.creator = item.creator;
         this.hasRead = false;
         this.starred = false;
@@ -110,7 +113,7 @@ export class RSSItem {
             item.content = parsed.content || "";
             item.snippet = htmlDecode(parsed.contentSnippet || "");
         }
-        item.thumbnails = await generateThumbnailAttrList({
+        item.thumbnailJobs = generateThumbnailAttrList({
             targetLink: item.link,
             mediaThumbnails: parsed.mediaThumbnails,
             mediaContent: parsed.mediaContent,
@@ -119,7 +122,9 @@ export class RSSItem {
             parsedImage: parsed.image,
             content: parsed.content,
         });
-        item.thumb = item.thumbnails?.at(0)?.url;
+        // Ensure we don't spend more than 1 second on loading the thumbnails.
+        const jobsComplete = Promise.allSettled(item.thumbnailJobs);
+        await Promise.race([jobsComplete, timeoutPromise(1000)]);
     }
 }
 
@@ -127,12 +132,19 @@ export type ItemState = {
     [iid: number]: RSSItem;
 };
 
+export const ADD_ITEM_THUMBNAILS = "ADD_ITEM_THUMBNAILS";
 export const FETCH_ITEMS = "FETCH_ITEMS";
 export const MARK_READ = "MARK_READ";
 export const MARK_ALL_READ = "MARK_ALL_READ";
 export const MARK_UNREAD = "MARK_UNREAD";
 export const TOGGLE_STARRED = "TOGGLE_STARRED";
 export const TOGGLE_HIDDEN = "TOGGLE_HIDDEN";
+
+interface AddItemThumbnails {
+    type: typeof ADD_ITEM_THUMBNAILS;
+    item: RSSItem;
+    thumbnails: ThumbnailAttributes[];
+}
 
 interface FetchItemsAction {
     type: typeof FETCH_ITEMS;
@@ -172,12 +184,60 @@ interface ToggleHiddenAction {
 }
 
 export type ItemActionTypes =
+    | AddItemThumbnails
     | FetchItemsAction
     | MarkReadAction
     | MarkAllReadAction
     | MarkUnreadAction
     | ToggleStarredAction
     | ToggleHiddenAction;
+
+export function addItemThumbnails(
+    item: RSSItem,
+    thumbnails: ThumbnailAttributes[],
+) {
+    return {
+        type: ADD_ITEM_THUMBNAILS,
+        item: item,
+        thumbnails: thumbnails,
+    };
+}
+
+/**
+ * Dispatch state updates on each thumbnail job completion.
+ *
+ * Specifically, this assumes that the passed in item has
+ * already started its thumbnailJobs list. It then attaches
+ * promises to each job which updates the Redux state and
+ * database accordingly.
+ */
+export function attachToThumbnailJobs(item: RSSItem) {
+    return (dispatch: any, _: any) =>
+        item.thumbnailJobs.map(async (promise) => {
+            const result = await promise;
+
+            if (result.length === 0) {
+                return result;
+            }
+            if (item.iid === undefined) {
+                const msg = `iid is undefined for ${item.link} during thumbnail update`;
+                console.error(msg);
+                throw Error(msg);
+            }
+
+            if (item.thumbnails && item.thumbnails.length > 0) {
+                item.thumbnails = [...item.thumbnails, ...result];
+            } else {
+                item.thumbnails = result;
+            }
+            item.thumb = item.thumb ?? result?.at(0)?.url;
+            await Promise.all([
+                updateItemInDB(item, { thumbnails: item.thumbnails }),
+                dispatch(addItemThumbnails(item, result)),
+            ]);
+            return result;
+        });
+}
 
 export function fetchItemsRequest(fetchCount = 0): ItemActionTypes {
     return {
@@ -199,7 +259,10 @@ export function fetchItemsSuccess(
     };
 }
 
-export function fetchItemsFailure(source: RSSSource, err): ItemActionTypes {
+export function fetchItemsFailure(
+    source: RSSSource,
+    err: any,
+): ItemActionTypes {
     return {
         type: FETCH_ITEMS,
         status: ActionStatus.Failure,
@@ -216,8 +279,28 @@ export function fetchItemsIntermediate(): ItemActionTypes {
 }
 
 export async function insertItems(items: RSSItem[]): Promise<RSSItem[]> {
-    items.sort((a, b) => a.date.getTime() - b.date.getTime());
-    const keys = await fluentDB.items.bulkAdd(items, { allKeys: true });
+    const entries: ItemEntry[] = items
+        .sort((a, b) => a.date.getTime() - b.date.getTime())
+        .map((i) => {
+            return {
+                iid: i.iid,
+                source: i.source,
+                title: i.title,
+                link: i.link,
+                date: i.date,
+                fetchedDate: i.fetchedDate,
+                thumbnails: i.thumbnails ?? [],
+                content: i.content ?? "",
+                snippet: i.snippet ?? "",
+                creator: i.creator,
+                hasRead: i.hasRead,
+                starred: i.starred,
+                hidden: i.hidden,
+                notify: i.notify,
+                serviceRef: i.serviceRef,
+            };
+        });
+    const keys = await fluentDB.items.bulkAdd(entries, { allKeys: true });
     let itemIdx = 0;
     for (const key of keys) {
         items[itemIdx].iid = key;
@@ -228,7 +311,7 @@ export async function insertItems(items: RSSItem[]): Promise<RSSItem[]> {
 
 export function fetchItems(
     background = false,
-    sids: number[] = null,
+    sids: number[] | null = null,
 ): AppThunk<Promise<void>> {
     return async (dispatch, getState) => {
         let promises = new Array<Promise<RSSItem[]>>();
@@ -263,7 +346,10 @@ export function fetchItems(
                 let promise = RSSSource.fetchItems(source);
                 promise.then(() =>
                     dispatch(
-                        updateSource({ ...source, lastFetched: new Date() }),
+                        updateSource({
+                            ...source,
+                            lastFetched: new Date(),
+                        }),
                     ),
                 );
                 promise.finally(() => dispatch(fetchItemsIntermediate()));
@@ -273,15 +359,16 @@ export function fetchItems(
             const results = await Promise.allSettled(promises);
             return await new Promise<void>((resolve, reject) => {
                 let items = new Array<RSSItem>();
-                results.map((r, i) => {
+                results.forEach((r, i) => {
                     if (r.status === "fulfilled") items.push(...r.value);
                     else {
-                        console.log(r.reason);
+                        console.warn("Fetch result not fulfilled", r.reason);
                         dispatch(fetchItemsFailure(sources[i], r.reason));
                     }
                 });
                 insertItems(items)
                     .then((inserted) => {
+                        // General redux state handling.
                         dispatch(
                             fetchItemsSuccess(
                                 inserted.reverse(),
@@ -302,6 +389,16 @@ export function fetchItems(
                             dispatch(dismissItems());
                         }
                         dispatch(setupAutoFetch());
+                        return inserted;
+                    })
+                    .then((inserted) => {
+                        // Thumbnails.
+                        for (const item of inserted) {
+                            // Don't await on these, these could take some
+                            // time and they can dispatch independently.
+                            dispatch(attachToThumbnailJobs(item));
+                        }
+                        return inserted;
                     })
                     .catch((err) => {
                         dispatch(fetchItemsSuccess([], getState().items));
@@ -309,7 +406,7 @@ export function fetchItems(
                             "A database error has occurred.",
                             String(err),
                         );
-                        console.log(err);
+                        console.error(err);
                         reject(err);
                     });
             });
@@ -508,6 +605,13 @@ export function itemReducer(
         | SettingsActionTypes,
 ): ItemState {
     switch (action.type) {
+        case ADD_ITEM_THUMBNAILS:
+            const nextItem = { ...state[action.item.iid] };
+            nextItem.thumbnails = [
+                ...action.thumbnails,
+                ...(nextItem.thumbnails ?? []),
+            ];
+            return { ...state, [action.item.iid]: nextItem };
         case FETCH_ITEMS:
             switch (action.status) {
                 case ActionStatus.Success: {

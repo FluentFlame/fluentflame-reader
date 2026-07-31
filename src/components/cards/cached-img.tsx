@@ -32,6 +32,7 @@ class CachedImg extends React.Component<ImgProps> {
     private _requestVideoFrameCallback: number | null = null;
     private _maxCanvasWidth: number;
     private _maxCanvasHeight: number;
+    private _failed: boolean = false;
 
     constructor(props: ImgProps) {
         super(props);
@@ -43,7 +44,7 @@ class CachedImg extends React.Component<ImgProps> {
         if (!url) return "";
         const response = await fetch(url, { method: "HEAD" });
         if (!response.ok) return "";
-        return response.headers.get("content-type");
+        return response.headers.get("content-type") ?? "";
     }
 
     private async loadImage(url: string): Promise<VideoFrame[]> {
@@ -51,7 +52,8 @@ class CachedImg extends React.Component<ImgProps> {
             const response = await fetch(url);
             if (!response.ok) return null;
             const data = await response.bytes();
-            const contentType = response.headers.get("content-type");
+            const contentType: string =
+                response.headers.get("content-type") ?? "";
             if (!ImageDecoder.isTypeSupported(contentType)) return null;
             const decoder = new ImageDecoder({ data, type: contentType });
             let frameIndex = 0;
@@ -69,8 +71,8 @@ class CachedImg extends React.Component<ImgProps> {
                 }
             }
             return frames;
-        } catch {
-            console.log(`Failed to fetch ${url}`);
+        } catch (e) {
+            console.warn(`Failed to fetch ${url} for thumb load`, e);
             return null;
         }
     }
@@ -154,14 +156,16 @@ class CachedImg extends React.Component<ImgProps> {
             if (imgSource === placeholderImageSource) {
                 await new Promise((resolve) => setTimeout(resolve, 100));
                 this.forceUpdate();
-            } else this._imgSource = imgSource;
+            } else {
+                this._imgSource = imgSource;
+            }
         } else {
             CachedImg._cache.set(this.props.src, placeholderImageSource);
             const contentType = await this.loadContentType(this.props.src);
             if (contentType.startsWith("video/")) {
                 this._imgSource = this.createVideo(this.props.src);
             } else if (
-                //potentially animated images
+                // potentially animated images
                 [
                     "image/gif",
                     "image/webp",
@@ -176,19 +180,40 @@ class CachedImg extends React.Component<ImgProps> {
                     this.draw(imgSource[0]);
                     const img = this._canvasRef.current.toDataURL();
                     this._imgSource = this.createImage(img);
-                } else this._imgSource = imgSource;
-            } else if (contentType !== "") {
-                this._imgSource = this.createImage(this.props.src);
+                } else {
+                    this._imgSource = imgSource;
+                }
+            } else {
+                // Assume it's a static image. This may fail but that's okay.
+                try {
+                    this._imgSource = this.createImage(this.props.src);
+                } catch (e) {
+                    this._imgSource = null;
+                    this._failed = true;
+                    console.warn(
+                        `Failed to create image element from ${this.props.src}:`,
+                        e,
+                    );
+                    this.forceUpdate();
+                    return;
+                }
             }
             CachedImg._cache.set(this.props.src, this._imgSource);
         }
-        if (this._imgSource !== null) {
+        if (this._imgSource !== null && !this._failed) {
             if (this._imgSource instanceof HTMLImageElement) {
                 try {
                     await this._imgSource.decode();
                     this.draw(this._imgSource);
-                } catch {
+                } catch (e) {
+                    this._imgSource = null;
+                    this._failed = true;
+                    console.warn(
+                        `Failed to decode image from ${this.props.src}:`,
+                        e,
+                    );
                     this.forceUpdate();
+                    return;
                 }
             } else if (this._imgSource instanceof HTMLVideoElement) {
                 const video = this._imgSource;
@@ -252,6 +277,11 @@ class CachedImg extends React.Component<ImgProps> {
     }
 
     render(): React.ReactNode {
+        if (this._failed) {
+            // If we failed somewhere during a previous render,
+            // give up immediately.
+            return null;
+        }
         const canvas = (
             <canvas
                 className={this.props.className}

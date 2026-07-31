@@ -56,7 +56,8 @@
     background-color: var(--neutralLighterAltOpacity);
     backdrop-filter: var(--blur);
     box-shadow: 5px 0 25px #0004;
-    transition: clip-path var(--transition-timing) 0.367s,
+    transition:
+        clip-path var(--transition-timing) 0.367s,
         opacity cubic-bezier(0, 0, 0.2, 1) 0.367s;
     clip-path: inset(0 100% 0 0);
     opacity: 0;
@@ -98,7 +99,28 @@ body.darwin .menu .btn-group {
 .menu .unread-count {
     color: var(--neutralSecondary);
 }
-.settings-container {
+.form-panel {
+    padding: 12px 16px;
+
+    .ms-TextField {
+        /* Necessary to allow error messages. */
+        min-height: 100px;
+    }
+}
+.modal-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 8;
+}
+.centered-button {
+    display: block;
+    margin: 12px auto;
+    max-width: 200px;
+    width: 100%;
+}
+.modal-container {
     position: fixed;
     z-index: 7;
     left: 0;
@@ -107,14 +129,27 @@ body.darwin .menu .btn-group {
     height: 100%;
     background-color: var(--neutralLight);
     overflow: hidden;
-}
-.settings-container .settings {
-    margin: var(--settingsTopMargin) auto 0;
-    max-width: 820px;
-    background-color: var(--white);
-    box-shadow: 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.132),
-        0 1.2px 3.6px 0 rgba(0, 0, 0, 0.108);
-    overflow: hidden;
+    color: var(--neutralPrimary);
+
+    .modal {
+        margin: 200px auto 0 auto;
+        width: 100%;
+        max-width: 600px;
+        background-color: var(--white);
+        box-shadow:
+            0 6.4px 14.4px 0 rgba(0, 0, 0, 0.132),
+            0 1.2px 3.6px 0 rgba(0, 0, 0, 0.108);
+    }
+
+    .settings {
+        margin: var(--settingsTopMargin) auto 0;
+        max-width: 820px;
+        background-color: var(--white);
+        box-shadow:
+            0 6.4px 14.4px 0 rgba(0, 0, 0, 0.132),
+            0 1.2px 3.6px 0 rgba(0, 0, 0, 0.108);
+        overflow: hidden;
+    }
 }
 .settings-inner-container {
     display: flex;
@@ -124,9 +159,8 @@ body.darwin .menu .btn-group {
 .settings-nav {
     min-width: 150px;
 }
-.settings-panel {
+.settings-inner-container .form-panel {
     flex-grow: 1;
-    margin: 12px 16px 0 16px;
     overflow-y: scroll;
 }
 .settings .loading {
@@ -238,11 +272,13 @@ img.favicon.dropdown {
     left: 36px;
     width: 100%;
     max-width: calc(100% - 484px);
+    min-width: 150px;
     margin: 4px 16px;
     border: none;
     -webkit-app-region: none;
     height: calc(var(--navHeight) - 4px);
-    box-shadow: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.132),
+    box-shadow:
+        0 1.6px 3.6px 0 rgba(0, 0, 0, 0.132),
         0 0.3px 0.9px 0 rgba(0, 0, 0, 0.108);
 }
 body.darwin.not-fullscreen .article-search {

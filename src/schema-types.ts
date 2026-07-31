@@ -5,7 +5,7 @@ export class SourceGroup {
     expanded?: boolean;
     index?: number; // available only from menu or groups tab container
 
-    constructor(sids: number[], name: string = null) {
+    constructor(sids: number[], name?: string) {
         name = (name && name.trim()) || "Source group";
         if (sids.length == 1) {
             this.isMultiple = false;
@@ -71,6 +71,14 @@ export enum ThumbnailTypePref {
     Other = "other",
 }
 
+export const enum SourceOpenTarget {
+    Local = 0,
+    Webpage = 1,
+    External = 2,
+    FullContent = 3,
+    DeferToGlobal = 255,
+}
+
 export const enum SearchEngines {
     Google,
     Bing,
@@ -128,6 +136,7 @@ export type SchemaTypes = {
     fontSize: number;
     fontFamily: string;
     menuOn: boolean;
+    defaultOpenTarget: SourceOpenTarget;
     fetchInterval: number;
     searchEngine: SearchEngines;
     serviceConfigs: ServiceConfigs;

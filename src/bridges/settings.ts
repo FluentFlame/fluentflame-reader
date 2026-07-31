@@ -3,6 +3,7 @@ import {
     ThemeSettings,
     SearchEngines,
     ServiceConfigs,
+    SourceOpenTarget,
     ViewConfig,
     AnimationMotionPref,
     ThumbnailTypePref,
@@ -95,6 +96,13 @@ const settingsBridge = {
     },
     setFont: (font: string) => {
         ipcRenderer.invoke("set-font", font);
+    },
+
+    getDefaultOpenTargetPref: (): Promise<SourceOpenTarget> => {
+        return ipcRenderer.invoke("get-default-open-target-pref");
+    },
+    setDefaultOpenTargetPref: (openTarget: SourceOpenTarget) => {
+        ipcRenderer.invoke("set-default-open-target-pref", openTarget);
     },
 
     getFetchInterval: (): number => {

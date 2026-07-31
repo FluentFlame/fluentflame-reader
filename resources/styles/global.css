@@ -227,7 +227,7 @@ body.show-window-frame .btn-group .seperator {
     user-select: none;
     app-region: none;
 
-    a {
+    a, .btn {
       display: inline-block;
     }
 
@@ -245,6 +245,8 @@ body.show-window-frame .btn-group .seperator {
 
     .btn {
         width: 48px;
+        min-width: 0;
+        border: none;
         height: var(--navHeight);
         text-decoration: none;
         text-align: center;

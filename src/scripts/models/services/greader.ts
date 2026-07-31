@@ -279,10 +279,14 @@ export const gReaderServiceHooks: ServiceHooks = {
                         item.link.split("/").slice(0, 3).join("/"),
                     );
                     dom.head.append(baseEl);
-                    const potentialThumbs = await generateThumbnailAttrList({
-                        targetLink: item.link,
-                        content: item.content,
-                    });
+                    const potentialThumbs = (
+                        await Promise.all(
+                            generateThumbnailAttrList({
+                                targetLink: item.link,
+                                content: item.content,
+                            }),
+                        )
+                    ).flat();
                     item.thumbnails = potentialThumbs;
                     if (configs.type == SyncService.Inoreader)
                         item.title = htmlDecode(item.title);

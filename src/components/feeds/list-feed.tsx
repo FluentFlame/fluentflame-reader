@@ -19,6 +19,7 @@ class ListFeed extends React.Component<FeedProps> {
     onRenderItem = (item: RSSItem) => {
         const props = {
             feedId: this.props.feed.iid,
+            defaultOpenTarget: this.props.defaultOpenTarget,
             key: item.iid,
             item: item,
             source: this.props.sourceMap[item.source],

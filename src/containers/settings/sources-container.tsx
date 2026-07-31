@@ -8,7 +8,6 @@ import {
     RSSSource,
     updateSource,
     deleteSource,
-    SourceOpenTarget,
     deleteSources,
     toggleSourceHidden,
 } from "../../scripts/models/source";
@@ -16,7 +15,7 @@ import { importOPML, exportOPML } from "../../scripts/models/group";
 import { AppDispatch, validateFavicon } from "../../scripts/utils";
 import { saveSettings, toggleSettings } from "../../scripts/models/app";
 import { fetchItems } from "../../scripts/models/item";
-import { SyncService } from "../../schema-types";
+import { SyncService, SourceOpenTarget } from "../../schema-types";
 
 const getSources = (state: RootState) => state.sources;
 const getServiceOn = (state: RootState) =>

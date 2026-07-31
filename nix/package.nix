@@ -13,16 +13,18 @@ let
     name = pname;
     exec = pname;
     desktopName = "Fluentflame Reader";
-    categories = [ "Utility" ];
+    categories = [ "Network" "Feed" ];
+    comment = "A modern desktop RSS reader given new life";
     icon = pname;
+    startupWMClass = pname;
   };
 in
 
 buildNpmPackage {
   inherit pname;
-  version = "2.1.0";
+  version = "2.2.0-dev.1";
   src = ../.;
-  npmDepsHash = "sha256-+tqzrG08Q2ygVPAz+zXW8RPv7fcz33wcTFDm9LKlXxo=";
+  npmDepsHash = "sha256-hOcI54ZyTInRXRZqYu1jVrPyPk1kydxfb9TnX8Iu6o4=";
   makeCacheWritable = true;
 
   env = {

@@ -57,7 +57,7 @@ export default function Settings(props: SettingsProps): React.JSX.Element {
 
     return (
         props.display && (
-            <div className="settings-container">
+            <div className="modal-container">
                 <div className={"settings " + AnimationClassNames.slideUpIn20}>
                     <div className="btn-group">
                         <a
@@ -86,7 +86,7 @@ export default function Settings(props: SettingsProps): React.JSX.Element {
                             groups={makeNavLinkGroups()}
                             onLinkClick={onLinkClick}
                         />
-                        <div className="settings-panel">
+                        <div className="form-panel">
                             {renderSettingsPanel(getCurrentTab())}
                         </div>
                     </div>
