@@ -206,6 +206,10 @@ export const newsblurServiceHooks: ServiceHooks = {
         }
     },
 
+    ///////////////////
+    // GET REQUESTS //
+    ///////////////////
+
     updateSources: () => async (dispatch, getState: () => RootState) => {
         const configs = getState().service as NewsBlurConfigs;
         const response = await fetchGetAPI(configs, "/reader/feeds", {})
@@ -357,6 +361,10 @@ export const newsblurServiceHooks: ServiceHooks = {
         return [parsedItems/*RSSItem[]*/, configs/*ServiceConfigs*/];
     },
 
+    ///////////////////
+    // POST REQUESTS //
+    ///////////////////
+
     markAllRead: (sids, date, before) => async (_, getState) => {
         const state = getState();
         const configs = state.service as NewsBlurConfigs;
@@ -380,14 +388,35 @@ export const newsblurServiceHooks: ServiceHooks = {
     },
 
     markUnread: (item: RSSItem) => async (_, getState) => {
+        const state = getState();
+        const configs = state.service as NewsBlurConfigs;
+
+        fetchPostAPI(configs, "/reader/mark_story_hash_as_unread", {
+            story_hash: [/* todo!: get story_hash from RSSItem */],
+        });
+
         throw new Error("todo!");
     },
 
     star: (item: RSSItem) => async (_, getState) => {
+        const state = getState();
+        const configs = state.service as NewsBlurConfigs;
+
+        fetchPostAPI(configs, "/reader/mark_story_hash_as_starred", {
+            story_hash: undefined /* todo!: get story_hash from RSSItem */,
+        });
+
         throw new Error("todo!");
     },
 
     unstar: (item: RSSItem) => async (_, getState) => {
+        const state = getState();
+        const configs = state.service as NewsBlurConfigs;
+
+        fetchPostAPI(configs, "/reader/mark_story_hash_as_unstarred", {
+            story_hash: undefined /* todo!: get story_hash from RSSItem */,
+        });
+
         throw new Error("todo!");
     },
 };
