@@ -226,12 +226,7 @@ export const newsblurServiceHooks: ServiceHooks = {
             throw APIError("property 'feeds' is undefined");
         }
 
-        const sources: RSSSource[] = [];
-        for (const key in feeds) {
-            const feed = feeds[key];
-            const source = new RSSSource(feed.feed_address, feed.feed_title);
-            sources.push(source);
-        }
+        const sources: RSSSource[] = Object.values(feeds).map(f => new RSSSource(f.feed_address, f.feed_title));
 
         return [sources, undefined as any /* Apparently no groups in Newsblur */];
     },
