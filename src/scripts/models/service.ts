@@ -20,6 +20,7 @@ import { feedbinServiceHooks } from "./services/feedbin";
 import { gReaderServiceHooks } from "./services/greader";
 import { minifluxServiceHooks } from "./services/miniflux";
 import { nextcloudServiceHooks } from "./services/nextcloud";
+import { newsblurServiceHooks } from "./services/newsblur";
 
 export interface ServiceHooks {
     authenticate?: (configs: ServiceConfigs) => Promise<boolean>;
@@ -51,6 +52,8 @@ export function getServiceHooksFromType(type: SyncService): ServiceHooks {
             return minifluxServiceHooks;
         case SyncService.Nextcloud:
             return nextcloudServiceHooks;
+        case SyncService.NewsBlur:
+            return newsblurServiceHooks;
         default:
             return {};
     }
