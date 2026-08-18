@@ -222,7 +222,7 @@ export const newsblurServiceHooks: ServiceHooks = {
 
         const feeds: Record<string, NewsblurFeed> | undefined = response.feeds;
 
-        if (feeds === undefined) {
+        if (feeds == null) {
             throw APIError("property 'feeds' is undefined");
         }
 
