@@ -204,7 +204,7 @@ export const newsblurServiceHooks: ServiceHooks = {
             // correct?
             return json.authenticated === true;
         } catch (e) {
-            console.error(APIError("Authentication error").message)
+            console.error(APIError("authentication error").message)
             console.error(e);
             return false;
         }
