@@ -1,9 +1,0 @@
-{
-  "languages": {
-    "TypeScript": {
-      "language_servers": ["vtsls"],
-      "format_on_save": "off"
-    }
-  },
-  "tab_size": 4,
-}
