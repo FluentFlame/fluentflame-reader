@@ -53,7 +53,7 @@ async function fetchPostAPI(
     const headers = new Headers();
     headers.set("Content-Type", "application/x-www-form-urlencoded");
     // set body & encode params
-    const body = new URLSearchParams(objectToSearchParams(params));
+    const body = objectToSearchParams(params);
     // options
     const options: RequestInit = {
         method: "POST",
