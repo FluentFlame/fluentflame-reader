@@ -203,7 +203,9 @@ export const newsblurServiceHooks: ServiceHooks = {
             configs._lastRefresh = new Date();
             // correct?
             return json.authenticated === true;
-        } catch {
+        } catch (e) {
+            console.error(APIError("Authentication error").message)
+            console.error(e);
             return false;
         }
     },
