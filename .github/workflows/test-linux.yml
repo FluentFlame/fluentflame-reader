@@ -9,7 +9,7 @@ jobs:
     ubuntu_package_appimage:
         runs-on: "ubuntu-latest"
         steps:
-            - uses: "actions/checkout@v5"
+            - uses: "actions/checkout@v7"
             - name: "Set Up Node"
               uses: "actions/setup-node@v6"
               with:
@@ -22,7 +22,7 @@ jobs:
     ubuntu_package_deb:
         runs-on: "ubuntu-latest"
         steps:
-            - uses: "actions/checkout@v5"
+            - uses: "actions/checkout@v7"
             - name: "Build Debian Package"
               uses: "actions/setup-node@v6"
               with:
@@ -34,7 +34,7 @@ jobs:
     check_nix:
         runs-on: "ubuntu-latest"
         steps:
-            - uses: "actions/checkout@v5"
+            - uses: "actions/checkout@v7"
             - name: "Check Nix Packaging"
               uses: "cachix/install-nix-action@v31"
               with:

@@ -9,7 +9,7 @@ jobs:
     macos_package_dmg:
         runs-on: "macos-latest"
         steps:
-            - uses: "actions/checkout@v5"
+            - uses: "actions/checkout@v7"
             - name: "Set Up Node"
               uses: "actions/setup-node@v6"
               with:
