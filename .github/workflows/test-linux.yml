@@ -11,7 +11,7 @@ jobs:
         steps:
             - uses: "actions/checkout@v5"
             - name: "Set Up Node"
-              uses: "actions/setup-node@v6"
+              uses: "actions/setup-node@v7"
               with:
                   node-version: "24.x"
                   cache: "npm"
@@ -24,7 +24,7 @@ jobs:
         steps:
             - uses: "actions/checkout@v5"
             - name: "Build Debian Package"
-              uses: "actions/setup-node@v6"
+              uses: "actions/setup-node@v7"
               with:
                   node-version: "24.x"
                   cache: "npm"
