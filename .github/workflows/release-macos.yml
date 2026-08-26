@@ -30,7 +30,7 @@ jobs:
                 echo "version=${version}" >> "${GITHUB_OUTPUT}"
 
             - name: "Upload MacOS Universal Binary"
-              uses: "shogo82148/actions-upload-release-asset@v1.9.1"
+              uses: "shogo82148/actions-upload-release-asset@v1.10.4"
               with:
                   upload_url: ${{ github.event.release.upload_url }}
                   asset_path: bin/darwin/universal/fluentflame-reader-mac-universal-${{ steps.package-version.outputs.version }}.dmg
@@ -39,7 +39,7 @@ jobs:
             # distribute broken things until we can guarantee they work.
 
             #- name: "Upload ARM64 DMG"
-            #  uses: "shogo82148/actions-upload-release-asset@v1.9.1"
+            #  uses: "shogo82148/actions-upload-release-asset@v1.10.4"
             #  with:
             #      upload_url: ${{ github.event.release.upload_url }}
             #      asset_path: bin/darwin/arm64/fluentflame-reader-mac-arm64-${{ steps.package-version.outputs.version }}.dmg

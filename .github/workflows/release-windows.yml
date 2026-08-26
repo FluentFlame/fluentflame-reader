@@ -29,13 +29,13 @@ jobs:
                 echo "version=${version}"
                 echo "version=${version}" >> "${GITHUB_OUTPUT}"
             - name: "Upload Windows .zip"
-              uses: "shogo82148/actions-upload-release-asset@v1.9.1"
+              uses: "shogo82148/actions-upload-release-asset@v1.10.4"
               with:
                   upload_url: ${{ github.event.release.upload_url }}
                   asset_path: bin/win32/x64/fluentflame-reader-win-x64-${{ steps.package-version.outputs.version }}.zip
 
             - name: "Upload Windows NSIS Installer"
-              uses: "shogo82148/actions-upload-release-asset@v1.9.1"
+              uses: "shogo82148/actions-upload-release-asset@v1.10.4"
               with:
                   upload_url: ${{ github.event.release.upload_url }}
                   asset_path: bin/win32/x64/fluentflame-reader-win-x64-installer-${{ steps.package-version.outputs.version }}.exe
