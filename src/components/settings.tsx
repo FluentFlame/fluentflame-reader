@@ -10,7 +10,7 @@ import {
     INavLinkGroup,
     INavLink,
 } from "@fluentui/react";
-import SourcesTabContainer from "../containers/settings/sources-container";
+import SourcesTab from "./settings/sources";
 import GroupsTabContainer from "../containers/settings/groups-container";
 import AppTabContainer from "../containers/settings/app-container";
 import RulesTabContainer from "../containers/settings/rules-container";
@@ -101,7 +101,7 @@ function renderSettingsPanel(currentPanel: string): React.JSX.Element {
         case "app":
             return <AppTabContainer />;
         case "sources":
-            return <SourcesTabContainer />;
+            return <SourcesTab />;
         case "grouping":
             return <GroupsTabContainer />;
         case "rules":

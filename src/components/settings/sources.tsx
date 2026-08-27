@@ -18,36 +18,26 @@ import {
     MessageBarType,
     Toggle,
 } from "@fluentui/react";
-import { SourceState, RSSSource } from "../../scripts/models/source";
+import {
+    addSource,
+    updateSource,
+    deleteSource,
+    deleteSources,
+    toggleSourceHidden,
+    SourceState,
+    RSSSource,
+} from "../../scripts/models/source";
+import { importOPML, exportOPML } from "../../scripts/models/group";
 import {
     RootState,
     useAppDispatch,
     useAppSelector,
 } from "../../scripts/reducer";
+import { fetchItems } from "../../scripts/models/item";
+import { saveSettings, toggleSettings } from "../../scripts/models/app";
 import { SyncService, SourceOpenTarget } from "../../schema-types";
-import { urlTest } from "../../scripts/utils";
+import { urlTest, validateFavicon } from "../../scripts/utils";
 import DangerButton from "../utils/danger-button";
-
-type SourcesTabProps = {
-    sources: SourceState;
-    serviceOn: boolean;
-    sids: number[];
-    acknowledgeSIDs: () => void;
-    addSource: (url: string) => void;
-    updateSourceUrl: (source: RSSSource, url: string) => void;
-    updateSourceName: (source: RSSSource, name: string) => void;
-    updateSourceIcon: (source: RSSSource, iconUrl: string) => Promise<void>;
-    updateSourceOpenTarget: (
-        source: RSSSource,
-        target: SourceOpenTarget,
-    ) => void;
-    updateFetchFrequency: (source: RSSSource, frequency: number) => void;
-    deleteSource: (source: RSSSource) => void;
-    deleteSources: (sources: RSSSource[]) => void;
-    importOPML: () => void;
-    exportOPML: () => void;
-    toggleSourceHidden: (source: RSSSource) => void;
-};
 
 const enum EditDropdownKeys {
     Name = "n",
@@ -158,7 +148,7 @@ function singleSelectedSource(sources: RSSSource[]): RSSSource | null {
     return null;
 }
 
-export function SourcesTab(props: SourcesTabProps) {
+export default function SourcesTab() {
     const dispatch = useAppDispatch();
     const sources = useAppSelector(useSources);
     const serviceOn = useAppSelector(useServiceOn);
@@ -213,27 +203,38 @@ export function SourcesTab(props: SourcesTabProps) {
             return;
         }
         let frequency = parseInt(option.key as string);
-        props.updateFetchFrequency(selectedSource, frequency);
+        dispatch(
+            updateSource({
+                ...selectedSource,
+                fetchFrequency: frequency,
+            }),
+        );
         updateSingleSource(selectedSource, { fetchFrequency: frequency });
     };
 
-    const updateSourceUrl = () => {
+    const updateSourceUrlCb = () => {
         const selectedSource = singleSelectedSource(selectedSources);
         if (selectedSource == null) {
             return;
         }
         const newUrlTrimmed = newUrl.trim();
-        props.updateSourceUrl(selectedSource, newUrlTrimmed);
+        dispatch(updateSource({ ...selectedSource, url: newUrlTrimmed })).then(
+            () => {
+                // We need to fetch after updating because otherwise
+                // nothing will actually happen when we set the URL.
+                return dispatch(fetchItems(true, [selectedSource.sid]));
+            },
+        );
         updateSingleSource(selectedSource, { url: newUrlTrimmed });
     };
 
-    const updateSourceName = () => {
+    const updateSourceNameCb = () => {
         const selectedSource = singleSelectedSource(selectedSources);
         if (selectedSource == null) {
             return;
         }
         const newName = newSourceName.trim();
-        props.updateSourceName(selectedSource, newName);
+        dispatch(updateSource({ ...selectedSource, name: newName }));
         updateSingleSource(selectedSource, { name: newName });
     };
 
@@ -243,7 +244,19 @@ export function SourcesTab(props: SourcesTabProps) {
             return;
         }
         const newIcon = newSourceIcon.trim();
-        props.updateSourceIcon(selectedSource, newIcon);
+        dispatch(saveSettings());
+        validateFavicon(newIcon)
+            .then((result) => {
+                if (!result) {
+                    window.utils.showErrorBox(intl.get("sources.badIcon"), "");
+                    return;
+                }
+                dispatch(updateSource({ ...selectedSource, iconurl: newIcon }));
+            })
+            .catch((e: Error) =>
+                console.error(`Failed call to validateFavicon '${newIcon}'`, e),
+            )
+            .then(() => dispatch(saveSettings()));
         updateSingleSource(selectedSource, { iconurl: newIcon });
     };
 
@@ -274,10 +287,12 @@ export function SourcesTab(props: SourcesTabProps) {
         }
     };
 
-    const addSource = (event: React.FormEvent) => {
+    const addSourceFromForm = (event: React.FormEvent) => {
         event.preventDefault();
         let trimmed = newUrl.trim();
-        if (urlTest(trimmed)) props.addSource(trimmed);
+        if (urlTest(trimmed)) {
+            dispatch(addSource(trimmed));
+        }
     };
 
     const onOpenTargetChange = (_: any, option: IChoiceGroupOption) => {
@@ -286,7 +301,12 @@ export function SourcesTab(props: SourcesTabProps) {
             return;
         }
         let newTarget = parseInt(option.key) as SourceOpenTarget;
-        props.updateSourceOpenTarget(selectedSource, newTarget);
+        dispatch(
+            updateSource({
+                ...selectedSource,
+                openTarget: newTarget,
+            }),
+        );
         updateSingleSource(selectedSource, { openTarget: newTarget });
     };
 
@@ -295,7 +315,7 @@ export function SourcesTab(props: SourcesTabProps) {
         if (selectedSource == null) {
             return;
         }
-        props.toggleSourceHidden(selectedSource);
+        dispatch(toggleSourceHidden(selectedSource));
         updateSingleSource(selectedSource, { hidden: !selectedSource.hidden });
     };
 
@@ -304,7 +324,7 @@ export function SourcesTab(props: SourcesTabProps) {
             for (const sid of sids) {
                 selection.setKeySelected(String(sid), true, false);
             }
-            props.acknowledgeSIDs();
+            dispatch(toggleSettings(true));
         }
     }, []);
 
@@ -352,7 +372,7 @@ export function SourcesTab(props: SourcesTabProps) {
                                         newSourceName.trim().length == 0 ||
                                         newSourceName === selectedSource.name
                                     }
-                                    onClick={updateSourceName}
+                                    onClick={updateSourceNameCb}
                                     text={intl.get("sources.editName")}
                                 />
                             </Stack.Item>
@@ -408,7 +428,7 @@ export function SourcesTab(props: SourcesTabProps) {
                                         newUrl.trim().length == 0 ||
                                         newUrl === selectedSource.url
                                     }
-                                    onClick={updateSourceUrl}
+                                    onClick={updateSourceUrlCb}
                                     text={intl.get("edit")}
                                 />
                             </Stack.Item>
@@ -458,7 +478,7 @@ export function SourcesTab(props: SourcesTabProps) {
                         <Stack.Item>
                             <DangerButton
                                 onClick={() =>
-                                    props.deleteSource(selectedSource)
+                                    dispatch(deleteSource(selectedSource))
                                 }
                                 key={selectedSource.sid}
                                 text={intl.get("sources.delete")}
@@ -485,7 +505,9 @@ export function SourcesTab(props: SourcesTabProps) {
                 <Stack horizontal>
                     <Stack.Item>
                         <DangerButton
-                            onClick={() => props.deleteSources(selectedSources)}
+                            onClick={() =>
+                                dispatch(deleteSources(selectedSources))
+                            }
                             text={intl.get("sources.delete")}
                         />
                     </Stack.Item>
@@ -514,19 +536,19 @@ export function SourcesTab(props: SourcesTabProps) {
             <Stack horizontal>
                 <Stack.Item>
                     <PrimaryButton
-                        onClick={props.importOPML}
+                        onClick={() => dispatch(importOPML())}
                         text={intl.get("sources.import")}
                     />
                 </Stack.Item>
                 <Stack.Item>
                     <DefaultButton
-                        onClick={props.exportOPML}
+                        onClick={() => dispatch(exportOPML())}
                         text={intl.get("sources.export")}
                     />
                 </Stack.Item>
             </Stack>
 
-            <form onSubmit={addSource}>
+            <form onSubmit={addSourceFromForm}>
                 <Label htmlFor="newUrl">{intl.get("sources.add")}</Label>
                 <Stack horizontal>
                     <Stack.Item grow>
