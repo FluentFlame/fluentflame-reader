@@ -198,7 +198,7 @@ export async function parseFoundFeed(
 }
 
 /**
- * @deprecated Use findRSSFeeds instead.
+ * @deprecated Use findRSSFeeds or parseFoundFeed instead.
  */
 export async function parseRSS(url: string) {
     const decoded = await internalFetchDecode(new URL(url));
