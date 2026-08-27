@@ -19,7 +19,12 @@ import {
     Toggle,
 } from "@fluentui/react";
 import { SourceState, RSSSource } from "../../scripts/models/source";
-import { SourceOpenTarget } from "../../schema-types";
+import {
+    RootState,
+    useAppDispatch,
+    useAppSelector,
+} from "../../scripts/reducer";
+import { SyncService, SourceOpenTarget } from "../../schema-types";
 import { urlTest } from "../../scripts/utils";
 import DangerButton from "../utils/danger-button";
 
@@ -44,60 +49,32 @@ type SourcesTabProps = {
     toggleSourceHidden: (source: RSSSource) => void;
 };
 
-type SourcesTabState = {
-    [formName: string]: string;
-} & {
-    selectedSource: RSSSource;
-    selectedSources: RSSSource[];
-};
-
 const enum EditDropdownKeys {
     Name = "n",
     Icon = "i",
     Url = "u",
 }
 
-class SourcesTab extends React.Component<SourcesTabProps, SourcesTabState> {
-    selection: Selection;
-
-    constructor(props) {
-        super(props);
-        this.state = {
-            newUrl: "",
-            newSourceName: "",
-            newSourceIcon: "",
-            selectedSource: null,
-            selectedSources: null,
-        };
-        this.selection = new Selection({
-            getKey: (s) => (s as RSSSource).sid,
-            onSelectionChanged: () => {
-                let count = this.selection.getSelectedCount();
-                let sources = count
-                    ? (this.selection.getSelection() as RSSSource[])
-                    : null;
-                this.setState({
-                    selectedSource: count === 1 ? sources[0] : null,
-                    selectedSources: count > 1 ? sources : null,
-                    newUrl: count === 1 ? sources[0].url : "",
-                    newSourceName: count === 1 ? sources[0].name : "",
-                    newSourceIcon: count === 1 ? sources[0].iconurl || "" : "",
-                    sourceEditOption: EditDropdownKeys.Name,
-                });
-            },
-        });
+function toEditDropdownKeys(s: string | number): EditDropdownKeys {
+    switch (s) {
+        case "n":
+        case "i":
+        case "u":
+            return s as EditDropdownKeys;
+        default:
+            throw Error("Invalid EditDropdownKeys value");
     }
+}
 
-    componentDidMount = () => {
-        if (this.props.sids.length > 0) {
-            for (let sid of this.props.sids) {
-                this.selection.setKeySelected(String(sid), true, false);
-            }
-            this.props.acknowledgeSIDs();
-        }
-    };
+// TODO: Selectors should be defined inside slice files rather than
+// near components, see https://redux.js.org/usage/deriving-data-selectors
+const useSources = (state: RootState) => state.sources;
+const useServiceOn = (state: RootState) =>
+    state.service.type !== SyncService.None;
+const useSIDs = (state: RootState) => state.app.settings.sids;
 
-    columns = (): IColumn[] => [
+function columns(): IColumn[] {
+    return [
         {
             key: "favicon",
             name: intl.get("icon"),
@@ -125,18 +102,18 @@ class SourcesTab extends React.Component<SourcesTabProps, SourcesTabState> {
             data: "string",
         },
     ];
+}
 
-    sourceEditOptions = (): IDropdownOption[] => [
+function sourceEditOptions(): IDropdownOption[] {
+    return [
         { key: EditDropdownKeys.Name, text: intl.get("name") },
         { key: EditDropdownKeys.Icon, text: intl.get("icon") },
         { key: EditDropdownKeys.Url, text: "URL" },
     ];
+}
 
-    onSourceEditOptionChange = (_, option: IDropdownOption) => {
-        this.setState({ sourceEditOption: option.key as string });
-    };
-
-    fetchFrequencyOptions = (): IDropdownOption[] => [
+function fetchFrequencyOptions(): IDropdownOption[] {
+    return [
         { key: "0", text: intl.get("sources.unlimited") },
         { key: "15", text: intl.get("time.minute", { m: 15 }) },
         { key: "30", text: intl.get("time.minute", { m: 30 }) },
@@ -147,19 +124,10 @@ class SourcesTab extends React.Component<SourcesTabProps, SourcesTabState> {
         { key: "720", text: intl.get("time.hour", { h: 12 }) },
         { key: "1440", text: intl.get("time.day", { d: 1 }) },
     ];
+}
 
-    onFetchFrequencyChange = (_, option: IDropdownOption) => {
-        let frequency = parseInt(option.key as string);
-        this.props.updateFetchFrequency(this.state.selectedSource, frequency);
-        this.setState({
-            selectedSource: {
-                ...this.state.selectedSource,
-                fetchFrequency: frequency,
-            } as RSSSource,
-        });
-    };
-
-    sourceOpenTargetChoices = (): IChoiceGroupOption[] => [
+function sourceOpenTargetChoices(): IChoiceGroupOption[] {
+    return [
         {
             key: String(SourceOpenTarget.DeferToGlobal),
             text: intl.get("default"),
@@ -181,75 +149,363 @@ class SourcesTab extends React.Component<SourcesTabProps, SourcesTabState> {
             text: intl.get("openExternal"),
         },
     ];
+}
 
-    updateSourceUrl = () => {
-        let newUrl = this.state.newUrl.trim();
-        this.props.updateSourceUrl(this.state.selectedSource, newUrl);
-        this.setState({
-            selectedSource: {
-                ...this.state.selectedSource,
-                url: newUrl,
-            } as RSSSource,
-        });
+function singleSelectedSource(sources: RSSSource[]): RSSSource | null {
+    if (sources.length === 1) {
+        return sources[0];
+    }
+    return null;
+}
+
+export function SourcesTab(props: SourcesTabProps) {
+    const dispatch = useAppDispatch();
+    const sources = useAppSelector(useSources);
+    const serviceOn = useAppSelector(useServiceOn);
+    const sids = useAppSelector(useSIDs);
+    const [newUrl, setNewUrl] = React.useState("");
+    const [newSourceName, setNewSourceName] = React.useState("");
+    const [newSourceIcon, setNewSourceIcon] = React.useState("");
+    const [selectedSources, setSelectedSources] = React.useState<RSSSource[]>(
+        [],
+    );
+    const [sourceEditOption, setSourceEditOption] =
+        React.useState<EditDropdownKeys | null>(null);
+    const selection = new Selection({
+        getKey: (s) => (s as RSSSource).sid,
+        onSelectionChanged: () => {
+            let count = selection.getSelectedCount();
+            let sources = count
+                ? (selection.getSelection() as RSSSource[])
+                : [];
+            setSelectedSources(sources);
+            if (count === 1) {
+                setNewUrl(sources[0].url);
+                setNewSourceName(sources[0].name);
+                setNewSourceIcon(sources[0].iconurl ?? "");
+            } else {
+                setNewUrl("");
+                setNewSourceName("");
+                setNewSourceIcon("");
+            }
+            setSourceEditOption(EditDropdownKeys.Name);
+        },
+    });
+
+    const updateSingleSource = (
+        source: RSSSource,
+        updater: Partial<RSSSource>,
+    ) => {
+        // We can't mutate state directly, so instead use this updater to do it.
+        // https://react.dev/learn/updating-arrays-in-state#replacing-items-in-an-array
+        const newSelectedSource = { ...source, ...updater };
+        setSelectedSources([newSelectedSource]);
+        return newSelectedSource;
     };
 
-    updateSourceName = () => {
-        let newName = this.state.newSourceName.trim();
-        this.props.updateSourceName(this.state.selectedSource, newName);
-        this.setState({
-            selectedSource: {
-                ...this.state.selectedSource,
-                name: newName,
-            } as RSSSource,
-        });
+    const onSourceEditOptionChange = (_: any, option: IDropdownOption) => {
+        setSourceEditOption(toEditDropdownKeys(option.key));
     };
 
-    updateSourceIcon = () => {
-        let newIcon = this.state.newSourceIcon.trim();
-        this.props.updateSourceIcon(this.state.selectedSource, newIcon);
-        this.setState({
-            selectedSource: {
-                ...this.state.selectedSource,
-                iconurl: newIcon,
-            } as RSSSource,
-        });
+    const onFetchFrequencyChange = (_: any, option: IDropdownOption) => {
+        const selectedSource = singleSelectedSource(selectedSources);
+        if (selectedSource == null) {
+            return;
+        }
+        let frequency = parseInt(option.key as string);
+        props.updateFetchFrequency(selectedSource, frequency);
+        updateSingleSource(selectedSource, { fetchFrequency: frequency });
     };
 
-    handleInputChange = (event) => {
+    const updateSourceUrl = () => {
+        const selectedSource = singleSelectedSource(selectedSources);
+        if (selectedSource == null) {
+            return;
+        }
+        const newUrlTrimmed = newUrl.trim();
+        props.updateSourceUrl(selectedSource, newUrlTrimmed);
+        updateSingleSource(selectedSource, { url: newUrlTrimmed });
+    };
+
+    const updateSourceName = () => {
+        const selectedSource = singleSelectedSource(selectedSources);
+        if (selectedSource == null) {
+            return;
+        }
+        const newName = newSourceName.trim();
+        props.updateSourceName(selectedSource, newName);
+        updateSingleSource(selectedSource, { name: newName });
+    };
+
+    const updateSourceIcon = () => {
+        const selectedSource = singleSelectedSource(selectedSources);
+        if (selectedSource == null) {
+            return;
+        }
+        const newIcon = newSourceIcon.trim();
+        props.updateSourceIcon(selectedSource, newIcon);
+        updateSingleSource(selectedSource, { iconurl: newIcon });
+    };
+
+    const handleInputChange = (event) => {
+        // This is a mess, but this matches how it was originally
+        // implemented.
         const name: string = event.target.name;
-        this.setState({ [name]: event.target.value });
+        const value: any = event.target.value;
+        switch (name) {
+            case "newUrl":
+                setNewUrl(value);
+                return;
+            case "newSourceName":
+                setNewSourceName(value);
+                return;
+            case "newSourceIcon":
+                setNewSourceIcon(value);
+                return;
+            case "selectedSources":
+                setSelectedSources(value);
+                return;
+            case "sourceEditOption":
+                setSourceEditOption(value);
+                return;
+            default:
+                console.error("Invalid input change", name);
+                return;
+        }
     };
 
-    addSource = (event: React.FormEvent) => {
+    const addSource = (event: React.FormEvent) => {
         event.preventDefault();
-        let trimmed = this.state.newUrl.trim();
-        if (urlTest(trimmed)) this.props.addSource(trimmed);
+        let trimmed = newUrl.trim();
+        if (urlTest(trimmed)) props.addSource(trimmed);
     };
 
-    onOpenTargetChange = (_, option: IChoiceGroupOption) => {
+    const onOpenTargetChange = (_: any, option: IChoiceGroupOption) => {
+        const selectedSource = singleSelectedSource(selectedSources);
+        if (selectedSource == null) {
+            return;
+        }
         let newTarget = parseInt(option.key) as SourceOpenTarget;
-        this.props.updateSourceOpenTarget(this.state.selectedSource, newTarget);
-        this.setState({
-            selectedSource: {
-                ...this.state.selectedSource,
-                openTarget: newTarget,
-            } as RSSSource,
-        });
+        props.updateSourceOpenTarget(selectedSource, newTarget);
+        updateSingleSource(selectedSource, { openTarget: newTarget });
     };
 
-    onToggleHidden = () => {
-        this.props.toggleSourceHidden(this.state.selectedSource);
-        this.setState({
-            selectedSource: {
-                ...this.state.selectedSource,
-                hidden: !this.state.selectedSource.hidden,
-            } as RSSSource,
-        });
+    const onToggleHidden = () => {
+        const selectedSource = singleSelectedSource(selectedSources);
+        if (selectedSource == null) {
+            return;
+        }
+        props.toggleSourceHidden(selectedSource);
+        updateSingleSource(selectedSource, { hidden: !selectedSource.hidden });
     };
 
-    render = () => (
+    React.useEffect(() => {
+        if (sids.length > 0) {
+            for (const sid of sids) {
+                selection.setKeySelected(String(sid), true, false);
+            }
+            props.acknowledgeSIDs();
+        }
+    }, []);
+
+    const renderSelectedSourceDiv = () => {
+        const selectedSource = singleSelectedSource(selectedSources);
+        if (selectedSource == null) {
+            return null;
+        }
+        return (
+            <>
+                {selectedSource.serviceRef && (
+                    <MessageBar messageBarType={MessageBarType.info}>
+                        {intl.get("sources.serviceManaged")}
+                    </MessageBar>
+                )}
+                <Label>{intl.get("sources.selected")}</Label>
+                <Stack horizontal>
+                    <Stack.Item>
+                        <Dropdown
+                            options={sourceEditOptions()}
+                            selectedKey={sourceEditOption}
+                            onChange={onSourceEditOptionChange}
+                            style={{ width: 120 }}
+                        />
+                    </Stack.Item>
+                    {sourceEditOption === EditDropdownKeys.Name && (
+                        <>
+                            <Stack.Item grow>
+                                <TextField
+                                    onGetErrorMessage={(v) =>
+                                        v.trim().length == 0
+                                            ? intl.get("emptyName")
+                                            : ""
+                                    }
+                                    validateOnLoad={false}
+                                    placeholder={intl.get("sources.name")}
+                                    value={newSourceName}
+                                    name="newSourceName"
+                                    onChange={handleInputChange}
+                                />
+                            </Stack.Item>
+                            <Stack.Item>
+                                <DefaultButton
+                                    disabled={
+                                        newSourceName.trim().length == 0 ||
+                                        newSourceName === selectedSource.name
+                                    }
+                                    onClick={updateSourceName}
+                                    text={intl.get("sources.editName")}
+                                />
+                            </Stack.Item>
+                        </>
+                    )}
+                    {sourceEditOption === EditDropdownKeys.Icon && (
+                        <>
+                            <Stack.Item grow>
+                                <TextField
+                                    onGetErrorMessage={(v) =>
+                                        urlTest(v.trim())
+                                            ? ""
+                                            : intl.get("sources.badUrl")
+                                    }
+                                    validateOnLoad={false}
+                                    placeholder={intl.get("sources.inputUrl")}
+                                    value={newSourceIcon}
+                                    name="newSourceIcon"
+                                    onChange={handleInputChange}
+                                />
+                            </Stack.Item>
+                            <Stack.Item>
+                                <DefaultButton
+                                    disabled={
+                                        !urlTest(newSourceIcon.trim()) ||
+                                        newSourceIcon === selectedSource.iconurl
+                                    }
+                                    onClick={updateSourceIcon}
+                                    text={intl.get("edit")}
+                                />
+                            </Stack.Item>
+                        </>
+                    )}
+                    {sourceEditOption === EditDropdownKeys.Url && (
+                        <>
+                            <Stack.Item grow>
+                                <TextField
+                                    onGetErrorMessage={(v) =>
+                                        urlTest(v.trim())
+                                            ? ""
+                                            : intl.get("sources.badUrl")
+                                    }
+                                    validateOnLoad={false}
+                                    placeholder={intl.get("sources.inputUrl")}
+                                    value={newUrl}
+                                    name="newUrl"
+                                    onChange={handleInputChange}
+                                />
+                            </Stack.Item>
+                            <Stack.Item>
+                                <DefaultButton
+                                    disabled={
+                                        newUrl.trim().length == 0 ||
+                                        newUrl === selectedSource.url
+                                    }
+                                    onClick={updateSourceUrl}
+                                    text={intl.get("edit")}
+                                />
+                            </Stack.Item>
+                        </>
+                    )}
+                </Stack>
+                {!selectedSource.serviceRef && (
+                    <>
+                        <Label>{intl.get("sources.fetchFrequency")}</Label>
+                        <Stack>
+                            <Stack.Item>
+                                <Dropdown
+                                    options={fetchFrequencyOptions()}
+                                    selectedKey={
+                                        selectedSource.fetchFrequency
+                                            ? String(
+                                                  selectedSource.fetchFrequency,
+                                              )
+                                            : "0"
+                                    }
+                                    onChange={onFetchFrequencyChange}
+                                    style={{ width: 200 }}
+                                />
+                            </Stack.Item>
+                        </Stack>
+                    </>
+                )}
+                <ChoiceGroup
+                    label={intl.get("sources.openTarget")}
+                    options={sourceOpenTargetChoices()}
+                    selectedKey={String(selectedSource.openTarget)}
+                    onChange={onOpenTargetChange}
+                />
+                <Stack horizontal verticalAlign="baseline">
+                    <Stack.Item grow>
+                        <Label>{intl.get("sources.hidden")}</Label>
+                    </Stack.Item>
+                    <Stack.Item>
+                        <Toggle
+                            checked={selectedSource.hidden}
+                            onChange={onToggleHidden}
+                        />
+                    </Stack.Item>
+                </Stack>
+                {!selectedSource.serviceRef && (
+                    <Stack horizontal>
+                        <Stack.Item>
+                            <DangerButton
+                                onClick={() =>
+                                    props.deleteSource(selectedSource)
+                                }
+                                key={selectedSource.sid}
+                                text={intl.get("sources.delete")}
+                            />
+                        </Stack.Item>
+                        <Stack.Item>
+                            <span className="settings-hint">
+                                {intl.get("sources.deleteWarning")}
+                            </span>
+                        </Stack.Item>
+                    </Stack>
+                )}
+            </>
+        );
+    };
+
+    const renderMultipleSourcesDiv = () => {
+        if (selectedSources.length < 2) {
+            return null;
+        }
+        return selectedSources.filter((s) => s.serviceRef).length === 0 ? (
+            <>
+                <Label>{intl.get("sources.selectedMulti")}</Label>
+                <Stack horizontal>
+                    <Stack.Item>
+                        <DangerButton
+                            onClick={() => props.deleteSources(selectedSources)}
+                            text={intl.get("sources.delete")}
+                        />
+                    </Stack.Item>
+                    <Stack.Item>
+                        <span className="settings-hint">
+                            {intl.get("sources.deleteWarning")}
+                        </span>
+                    </Stack.Item>
+                </Stack>
+            </>
+        ) : (
+            <MessageBar messageBarType={MessageBarType.info}>
+                {intl.get("sources.serviceManaged")}
+            </MessageBar>
+        );
+    };
+
+    return (
         <div className="tab-body">
-            {this.props.serviceOn && (
+            {serviceOn && (
                 <MessageBar messageBarType={MessageBarType.info}>
                     {intl.get("sources.serviceWarning")}
                 </MessageBar>
@@ -258,19 +514,19 @@ class SourcesTab extends React.Component<SourcesTabProps, SourcesTabState> {
             <Stack horizontal>
                 <Stack.Item>
                     <PrimaryButton
-                        onClick={this.props.importOPML}
+                        onClick={props.importOPML}
                         text={intl.get("sources.import")}
                     />
                 </Stack.Item>
                 <Stack.Item>
                     <DefaultButton
-                        onClick={this.props.exportOPML}
+                        onClick={props.exportOPML}
                         text={intl.get("sources.export")}
                     />
                 </Stack.Item>
             </Stack>
 
-            <form onSubmit={this.addSource}>
+            <form onSubmit={addSource}>
                 <Label htmlFor="newUrl">{intl.get("sources.add")}</Label>
                 <Stack horizontal>
                     <Stack.Item grow>
@@ -282,15 +538,15 @@ class SourcesTab extends React.Component<SourcesTabProps, SourcesTabState> {
                             }
                             validateOnLoad={false}
                             placeholder={intl.get("sources.inputUrl")}
-                            value={this.state.newUrl}
+                            value={newUrl}
                             id="newUrl"
                             name="newUrl"
-                            onChange={this.handleInputChange}
+                            onChange={handleInputChange}
                         />
                     </Stack.Item>
                     <Stack.Item>
                         <PrimaryButton
-                            disabled={!urlTest(this.state.newUrl.trim())}
+                            disabled={!urlTest(newUrl.trim())}
                             type="submit"
                             text={intl.get("add")}
                         />
@@ -299,226 +555,16 @@ class SourcesTab extends React.Component<SourcesTabProps, SourcesTabState> {
             </form>
 
             <DetailsList
-                compact={Object.keys(this.props.sources).length >= 10}
-                items={Object.values(this.props.sources)}
-                columns={this.columns()}
+                compact={Object.keys(sources).length >= 10}
+                items={Object.values(sources)}
+                columns={columns()}
                 getKey={(s) => s.sid}
                 setKey="selected"
-                selection={this.selection}
+                selection={selection}
                 selectionMode={SelectionMode.multiple}
             />
-
-            {this.state.selectedSource && (
-                <>
-                    {this.state.selectedSource.serviceRef && (
-                        <MessageBar messageBarType={MessageBarType.info}>
-                            {intl.get("sources.serviceManaged")}
-                        </MessageBar>
-                    )}
-                    <Label>{intl.get("sources.selected")}</Label>
-                    <Stack horizontal>
-                        <Stack.Item>
-                            <Dropdown
-                                options={this.sourceEditOptions()}
-                                selectedKey={this.state.sourceEditOption}
-                                onChange={this.onSourceEditOptionChange}
-                                style={{ width: 120 }}
-                            />
-                        </Stack.Item>
-                        {this.state.sourceEditOption ===
-                            EditDropdownKeys.Name && (
-                            <>
-                                <Stack.Item grow>
-                                    <TextField
-                                        onGetErrorMessage={(v) =>
-                                            v.trim().length == 0
-                                                ? intl.get("emptyName")
-                                                : ""
-                                        }
-                                        validateOnLoad={false}
-                                        placeholder={intl.get("sources.name")}
-                                        value={this.state.newSourceName}
-                                        name="newSourceName"
-                                        onChange={this.handleInputChange}
-                                    />
-                                </Stack.Item>
-                                <Stack.Item>
-                                    <DefaultButton
-                                        disabled={
-                                            this.state.newSourceName.trim()
-                                                .length == 0 ||
-                                            this.state.newSourceName ===
-                                                this.state.selectedSource.name
-                                        }
-                                        onClick={this.updateSourceName}
-                                        text={intl.get("sources.editName")}
-                                    />
-                                </Stack.Item>
-                            </>
-                        )}
-                        {this.state.sourceEditOption ===
-                            EditDropdownKeys.Icon && (
-                            <>
-                                <Stack.Item grow>
-                                    <TextField
-                                        onGetErrorMessage={(v) =>
-                                            urlTest(v.trim())
-                                                ? ""
-                                                : intl.get("sources.badUrl")
-                                        }
-                                        validateOnLoad={false}
-                                        placeholder={intl.get(
-                                            "sources.inputUrl",
-                                        )}
-                                        value={this.state.newSourceIcon}
-                                        name="newSourceIcon"
-                                        onChange={this.handleInputChange}
-                                    />
-                                </Stack.Item>
-                                <Stack.Item>
-                                    <DefaultButton
-                                        disabled={
-                                            !urlTest(
-                                                this.state.newSourceIcon.trim(),
-                                            ) ||
-                                            this.state.newSourceIcon ===
-                                                this.state.selectedSource
-                                                    .iconurl
-                                        }
-                                        onClick={this.updateSourceIcon}
-                                        text={intl.get("edit")}
-                                    />
-                                </Stack.Item>
-                            </>
-                        )}
-                        {this.state.sourceEditOption ===
-                            EditDropdownKeys.Url && (
-                            <>
-                                <Stack.Item grow>
-                                    <TextField
-                                        onGetErrorMessage={(v) =>
-                                            urlTest(v.trim())
-                                                ? ""
-                                                : intl.get("sources.badUrl")
-                                        }
-                                        validateOnLoad={false}
-                                        placeholder={intl.get(
-                                            "sources.inputUrl",
-                                        )}
-                                        value={this.state.newUrl}
-                                        name="newUrl"
-                                        onChange={this.handleInputChange}
-                                    />
-                                </Stack.Item>
-                                <Stack.Item>
-                                    <DefaultButton
-                                        disabled={
-                                            this.state.newUrl.trim().length ==
-                                                0 ||
-                                            this.state.newUrl ===
-                                                this.state.selectedSource.url
-                                        }
-                                        onClick={this.updateSourceUrl}
-                                        text={intl.get("edit")}
-                                    />
-                                </Stack.Item>
-                            </>
-                        )}
-                    </Stack>
-                    {!this.state.selectedSource.serviceRef && (
-                        <>
-                            <Label>{intl.get("sources.fetchFrequency")}</Label>
-                            <Stack>
-                                <Stack.Item>
-                                    <Dropdown
-                                        options={this.fetchFrequencyOptions()}
-                                        selectedKey={
-                                            this.state.selectedSource
-                                                .fetchFrequency
-                                                ? String(
-                                                      this.state.selectedSource
-                                                          .fetchFrequency,
-                                                  )
-                                                : "0"
-                                        }
-                                        onChange={this.onFetchFrequencyChange}
-                                        style={{ width: 200 }}
-                                    />
-                                </Stack.Item>
-                            </Stack>
-                        </>
-                    )}
-                    <ChoiceGroup
-                        label={intl.get("sources.openTarget")}
-                        options={this.sourceOpenTargetChoices()}
-                        selectedKey={String(
-                            this.state.selectedSource.openTarget,
-                        )}
-                        onChange={this.onOpenTargetChange}
-                    />
-                    <Stack horizontal verticalAlign="baseline">
-                        <Stack.Item grow>
-                            <Label>{intl.get("sources.hidden")}</Label>
-                        </Stack.Item>
-                        <Stack.Item>
-                            <Toggle
-                                checked={this.state.selectedSource.hidden}
-                                onChange={this.onToggleHidden}
-                            />
-                        </Stack.Item>
-                    </Stack>
-                    {!this.state.selectedSource.serviceRef && (
-                        <Stack horizontal>
-                            <Stack.Item>
-                                <DangerButton
-                                    onClick={() =>
-                                        this.props.deleteSource(
-                                            this.state.selectedSource,
-                                        )
-                                    }
-                                    key={this.state.selectedSource.sid}
-                                    text={intl.get("sources.delete")}
-                                />
-                            </Stack.Item>
-                            <Stack.Item>
-                                <span className="settings-hint">
-                                    {intl.get("sources.deleteWarning")}
-                                </span>
-                            </Stack.Item>
-                        </Stack>
-                    )}
-                </>
-            )}
-            {this.state.selectedSources &&
-                (this.state.selectedSources.filter((s) => s.serviceRef)
-                    .length === 0 ? (
-                    <>
-                        <Label>{intl.get("sources.selectedMulti")}</Label>
-                        <Stack horizontal>
-                            <Stack.Item>
-                                <DangerButton
-                                    onClick={() =>
-                                        this.props.deleteSources(
-                                            this.state.selectedSources,
-                                        )
-                                    }
-                                    text={intl.get("sources.delete")}
-                                />
-                            </Stack.Item>
-                            <Stack.Item>
-                                <span className="settings-hint">
-                                    {intl.get("sources.deleteWarning")}
-                                </span>
-                            </Stack.Item>
-                        </Stack>
-                    </>
-                ) : (
-                    <MessageBar messageBarType={MessageBarType.info}>
-                        {intl.get("sources.serviceManaged")}
-                    </MessageBar>
-                ))}
+            {renderSelectedSourceDiv()}
+            {renderMultipleSourcesDiv()}
         </div>
     );
 }
-
-export default SourcesTab;
