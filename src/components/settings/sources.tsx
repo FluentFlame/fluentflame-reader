@@ -24,7 +24,6 @@ import {
     deleteSource,
     deleteSources,
     toggleSourceHidden,
-    SourceState,
     RSSSource,
 } from "../../scripts/models/source";
 import { importOPML, exportOPML } from "../../scripts/models/group";
@@ -260,11 +259,13 @@ export default function SourcesTab() {
         updateSingleSource(selectedSource, { iconurl: newIcon });
     };
 
-    const handleInputChange = (event) => {
+    const handleInputChange = (
+        event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>,
+    ) => {
         // This is a mess, but this matches how it was originally
         // implemented.
-        const name: string = event.target.name;
-        const value: any = event.target.value;
+        const name: string = (event.target as any).name;
+        const value: any = (event.target as any).value;
         switch (name) {
             case "newUrl":
                 setNewUrl(value);
