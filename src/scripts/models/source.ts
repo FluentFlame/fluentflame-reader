@@ -5,6 +5,7 @@ import {
     ActionStatus,
     AppThunk,
     parseRSS,
+    parseFoundFeed,
     MyParserItem,
 } from "../utils";
 import {
@@ -97,7 +98,7 @@ export class RSSSource {
     }
 
     static async fetchItems(source: RSSSource) {
-        let feed = await parseRSS(source.url);
+        const feed = await parseFoundFeed({ url: new URL(source.url) });
         return await this.checkItems(source, feed.items);
     }
 }
