@@ -1,6 +1,6 @@
 import * as React from "react";
 import intl from "react-intl-universal";
-import md5 from "js-md5";
+import { md5 } from "js-md5";
 import { ServiceConfigsTabProps } from "../service";
 import { FeverConfigs } from "../../../scripts/models/services/fever";
 import { SyncService } from "../../../schema-types";
