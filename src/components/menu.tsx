@@ -175,7 +175,7 @@ export default function Menu(): React.JSX.Element {
         groupContextMenu(sids, event);
     };
 
-    const onRenderLink = (link: INavLink): JSX.Element => {
+    const onRenderLink = (link: INavLink): React.JSX.Element => {
         let count = link.ariaLabel.split(" ").pop();
         return (
             <Stack
@@ -191,7 +191,7 @@ export default function Menu(): React.JSX.Element {
         );
     };
 
-    const onRenderGroupHeader = (group: INavLinkGroup): JSX.Element => {
+    const onRenderGroupHeader = (group: INavLinkGroup): React.JSX.Element => {
         return (
             <p className={"subs-header " + AnimationClassNames.slideDownIn10}>
                 {group.name}
