@@ -8,6 +8,9 @@ import CardThumbnail from "./thumbnail";
 
 const className = (props: Card.Props) => {
     let cn = ["card", "default-card"];
+    if (props.item.hasRead) {
+        cn.push("read");
+    }
     if (
         props.item.snippet &&
         (props.item.thumbnails?.length > 0 || props.item.thumb)

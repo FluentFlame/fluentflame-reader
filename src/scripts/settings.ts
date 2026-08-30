@@ -281,7 +281,7 @@ function migrateExport(input: any): FluentflameSettingConfig {
         useNativeWindowFramePref: input.useNativeWindowFramePref ?? false,
         sourceGroups: input.sourceGroups ?? [],
         viewConfig: {
-            listViewConfigs: ListViewConfigs.ShowCover,
+            listViewConfigs: ListViewConfigs.ShowCover | ListViewConfigs.FadeRead,
             currentView: input.view ?? 0,
         },
     };

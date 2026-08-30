@@ -118,6 +118,14 @@
     transform: scale(0.97);
     box-shadow: #0004 0 5px 20px;
 }
+/* Always fade the title with the default card view. */
+.default-card.read {
+    color: var(--neutralSecondary);
+
+    h3.title {
+        font-weight: 500;
+    }
+}
 
 .default-card .bg {
     position: absolute;
@@ -174,7 +182,7 @@
 .default-card h3.title {
     font-size: 16px;
     line-height: 22px;
-    font-weight: 600;
+    font-weight: 700;
     margin: 10px 12px;
     position: relative;
     -webkit-line-clamp: 3;
@@ -246,7 +254,7 @@
 .list-card h3.title {
     font-size: 14px;
     line-height: 18px;
-    font-weight: 600;
+    font-weight: 700;
     margin: 0;
     position: relative;
     -webkit-line-clamp: 3;
@@ -264,6 +272,9 @@
     display: -webkit-box;
     -webkit-box-orient: vertical;
 }
+.list-card.selected {
+    background-color: var(--neutralQuaternaryAlt);
+}
 .list-card.selected::before {
     content: "";
     display: block;
@@ -271,9 +282,13 @@
     height: 100%;
     border-left: 2px solid var(--primary);
 }
-.list-card.read,
-.list-card.read p.snippet {
-    color: var(--neutralSecondaryAlt);
+/* If faded, dim the text and reduce font size. */
+.list-card.read.faded,
+.list-card.read.faded p.snippet {
+    color: var(--neutralSecondary);
+}
+.list-card.read.faded h3.title {
+    font-weight: 500;
 }
 
 .magazine-card {
@@ -291,7 +306,7 @@
     box-shadow: #0000 0 5px 20px;
 }
 .magazine-card.read {
-    color: var(--neutralSecondaryAlt);
+    color: var(--neutralSecondary);
 }
 .magazine-card:hover,
 .ms-Fabric--isFocusVisible .magazine-card:focus {
@@ -344,7 +359,7 @@
 .magazine-card h3.title {
     font-size: 18px;
     line-height: 27px;
-    font-weight: 600;
+    font-weight: 700;
     -webkit-line-clamp: 2;
 }
 .magazine-card p.snippet {
@@ -397,7 +412,7 @@
     white-space: nowrap;
 }
 .compact-card .data .title {
-    font-weight: 600;
+    font-weight: 700;
     margin-right: 6px;
 }
 .compact-card .data .snippet {

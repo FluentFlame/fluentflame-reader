@@ -11,11 +11,12 @@ const className = (props: Card.Props) => {
     let cn = ["card", "list-card"];
     if (props.item.hidden) cn.push("hidden");
     if (props.selected) cn.push("selected");
-    if (
-        props.viewConfig.listViewConfigs & ListViewConfigs.FadeRead &&
-        props.item.hasRead
-    )
+    if (props.item.hasRead) {
         cn.push("read");
+    }
+    if (props.viewConfig.listViewConfigs & ListViewConfigs.FadeRead) {
+        cn.push("faded");
+    }
     if (props.source.textDir === SourceTextDirection.RTL) cn.push("rtl");
     return cn.join(" ");
 };

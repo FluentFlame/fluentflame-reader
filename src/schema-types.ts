@@ -47,7 +47,7 @@ export interface ViewConfig {
 export function defaultViewConfig(): ViewConfig {
     return {
         currentView: ViewType.Cards,
-        listViewConfigs: ListViewConfigs.ShowCover,
+        listViewConfigs: ListViewConfigs.ShowCover | ListViewConfigs.FadeRead,
     };
 }
 
