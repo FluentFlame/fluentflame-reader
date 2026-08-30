@@ -42,6 +42,16 @@
         --whiteConstant: #f8f8f8;
     }
 }
+
+@font-face {
+    /*
+     * We ship with Noto Sans as it's not guaranteed to be installed on
+     * every system, and Segoe UI is only available on Windows.
+     */
+    font-family: "Noto Sans";
+    src: url("../fonts/NotoSans/NotoSans-VariableFont.ttf");
+}
+
 body.darwin {
     --navHeight: 38px;
 }
@@ -49,26 +59,27 @@ body.darwin {
 html,
 body {
     background-color: transparent;
-    font-family: "Segoe UI", "Source Han Sans Regular", sans-serif;
+    font-family: "Noto Sans", "Source Han Sans Regular", sans-serif;
     height: 100%;
     overflow: hidden;
     margin: 0;
 }
 body:lang(zh-CN) {
-    font-family: "Segoe UI", "Source Han Sans SC Regular", "Microsoft YaHei",
-        sans-serif;
+    font-family:
+        "Noto Sans", "Source Han Sans SC Regular", "Microsoft YaHei", sans-serif;
 }
 body:lang(zh-TW) {
-    font-family: "Segoe UI", "Source Han Sans TC Regular", "Microsoft JhengHei",
+    font-family:
+        "Noto Sans", "Source Han Sans TC Regular", "Microsoft JhengHei",
         sans-serif;
 }
 body:lang(ja) {
-    font-family: "Segoe UI", "Source Han Sans JP Regular", "Yu Gothic UI",
-        sans-serif;
+    font-family:
+        "Noto Sans", "Source Han Sans JP Regular", "Yu Gothic UI", sans-serif;
 }
 body:lang(ko) {
-    font-family: "Segoe UI", "Source Han Sans KR Regular", "Malgun Gothic",
-        sans-serif;
+    font-family:
+        "Noto Sans", "Source Han Sans KR Regular", "Malgun Gothic", sans-serif;
 }
 body.win32,
 body.linux {
@@ -227,8 +238,9 @@ body.show-window-frame .btn-group .seperator {
     user-select: none;
     app-region: none;
 
-    a, .btn {
-      display: inline-block;
+    a,
+    .btn {
+        display: inline-block;
     }
 
     .seperator {

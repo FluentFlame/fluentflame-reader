@@ -15,7 +15,8 @@ import { SourceTextDirection } from "./models/source";
 
 let lightTheme: IPartialTheme = {
     defaultFontStyle: {
-        fontFamily: '"Segoe UI", "Source Han Sans Regular", sans-serif',
+        fontFamily:
+            '"Noto Sans", "Segoe UI", "Source Han Sans Regular", sans-serif',
     },
 };
 let darkTheme: IPartialTheme = {
@@ -52,23 +53,23 @@ export function setThemeDefaultFont(locale: string) {
     switch (locale) {
         case "zh-CN":
             lightTheme.defaultFontStyle.fontFamily =
-                '"Segoe UI", "Source Han Sans SC Regular", "Microsoft YaHei", sans-serif';
+                '"Noto Sans", "Source Han Sans SC Regular", "Microsoft YaHei", sans-serif';
             break;
         case "zh-TW":
             lightTheme.defaultFontStyle.fontFamily =
-                '"Segoe UI", "Source Han Sans TC Regular", "Microsoft JhengHei", sans-serif';
+                '"Noto Sans", "Source Han Sans TC Regular", "Microsoft JhengHei", sans-serif';
             break;
         case "ja":
             lightTheme.defaultFontStyle.fontFamily =
-                '"Segoe UI", "Source Han Sans JP Regular", "Yu Gothic UI", sans-serif';
+                '"Noto Sans", "Source Han Sans JP Regular", "Yu Gothic UI", sans-serif';
             break;
         case "ko":
             lightTheme.defaultFontStyle.fontFamily =
-                '"Segoe UI", "Source Han Sans KR Regular", "Malgun Gothic", sans-serif';
+                '"Noto Sans", "Source Han Sans KR Regular", "Malgun Gothic", sans-serif';
             break;
         default:
             lightTheme.defaultFontStyle.fontFamily =
-                '"Segoe UI", "Source Han Sans Regular", sans-serif';
+                '"Noto Sans", "Source Han Sans Regular", sans-serif';
     }
     darkTheme.defaultFontStyle.fontFamily =
         lightTheme.defaultFontStyle.fontFamily;
@@ -281,7 +282,8 @@ function migrateExport(input: any): FluentflameSettingConfig {
         useNativeWindowFramePref: input.useNativeWindowFramePref ?? false,
         sourceGroups: input.sourceGroups ?? [],
         viewConfig: {
-            listViewConfigs: ListViewConfigs.ShowCover | ListViewConfigs.FadeRead,
+            listViewConfigs:
+                ListViewConfigs.ShowCover | ListViewConfigs.FadeRead,
             currentView: input.view ?? 0,
         },
     };
