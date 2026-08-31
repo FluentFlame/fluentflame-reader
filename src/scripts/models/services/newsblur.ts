@@ -2,6 +2,7 @@
 
 import { ServiceConfigs, SyncService } from "../../../schema-types";
 import { RootState } from "../../reducer";
+import { generateThumbnailAttrList } from "../../thumb-utils";
 import { htmlDecode } from "../../utils";
 import { RSSItem } from "../item";
 import { ServiceHooks } from "../service";
@@ -349,8 +350,11 @@ export const newsblurServiceHooks: ServiceHooks = {
                                     serviceRef: String(story.story_hash),
                                 } as RSSItem;
 
-                                // thumbnail
-                                // todo!
+                                parsedItem.thumbnailJobs =
+                                    generateThumbnailAttrList({
+                                        targetLink: parsedItem.link,
+                                        content: parsedItem.content,
+                                    });
 
                                 return parsedItem;
                             }),
