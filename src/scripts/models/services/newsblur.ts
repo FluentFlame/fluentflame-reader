@@ -121,7 +121,7 @@ function pathParams(path: string, params: Record<string, string>) {
 
 export interface NewsBlurResponse {
     code: -1 /*error*/ | 1 /*ok*/;
-    errors: Record<string /*reason*/, string /*long reason*/> | null /*ok*/;
+    errors: Record</*reason*/ string, /*long reason*/ string> | null /*ok*/;
     result: "ok";
     authenticated: boolean;
     user_id: number;
@@ -145,7 +145,7 @@ interface NewsblurFeed {
  * Counts are broken into three. Add them up for a
  * total, but you shouldn't show or count the hidden
  * stories.
- **/
+ */
 interface NewsblurFeedSummary {
     /** id of feed */
     id: number;
@@ -204,7 +204,7 @@ export const newsblurServiceHooks: ServiceHooks = {
             // correct?
             return json.authenticated === true;
         } catch (e) {
-            console.error(APIError("authentication error").message)
+            console.error(APIError("authentication error").message);
             console.error(e);
             return false;
         }
@@ -226,9 +226,11 @@ export const newsblurServiceHooks: ServiceHooks = {
             throw APIError("property 'feeds' is undefined");
         }
 
-        const sources: RSSSource[] = Object.values(feeds).map(f => new RSSSource(f.feed_address, f.feed_title));
+        const sources: RSSSource[] = Object.values(feeds).map(
+            (f) => new RSSSource(f.feed_address, f.feed_title),
+        );
 
-        return [sources, undefined as any /* Apparently no groups in Newsblur */];
+        return [sources, undefined as any /* No groups in Newsblur */];
     },
 
     // get remote read and star state of articles, for local sync
@@ -238,10 +240,13 @@ export const newsblurServiceHooks: ServiceHooks = {
         const starred = new Set<string>();
 
         // get all rss sources with unread posts. Call only once a minute !!!
-        // (Should I hardcodedly enforce min wait time?)
+        // (How should this be enforced?)
         const unreadPromises: Promise<Promise<string[]>[]> = (async () => {
-
-            const response = await fetchGetAPI(configs, "/reader/refresh_feeds", {})
+            const response = await fetchGetAPI(
+                configs,
+                "/reader/refresh_feeds",
+                {},
+            )
                 // parse
                 .then((res) => res.json());
 
@@ -252,8 +257,8 @@ export const newsblurServiceHooks: ServiceHooks = {
             }
 
             // get unread
-            const unreadPromises: Promise<string[]>[] = Object.values(feeds).map(
-                (feed) =>
+            const unreadPromises: Promise<string[]>[] = // keep
+                Object.values(feeds).map((feed) =>
                     // call to each feed
                     fetchGetAPI(
                         configs,
@@ -267,8 +272,7 @@ export const newsblurServiceHooks: ServiceHooks = {
                         .then((res) => res.json())
                         .then((res: NewsblurFeedResponse) => res.stories ?? [])
                         .then((stories) => stories.map((story) => story.id)),
-            );
-
+                );
             return unreadPromises;
         })();
 
@@ -313,41 +317,49 @@ export const newsblurServiceHooks: ServiceHooks = {
             .then((res: NewsBlurResponse) => res.feeds ?? [])
             .then((feeds) =>
                 // get items for each feed
-                feeds.map(feed =>
+                feeds.map((feed) =>
                     fetchGetAPI(
                         configs,
-                        pathParams("/reader/feed/:id", { id: feed.id.toString() }),
-                        {}
+                        pathParams("/reader/feed/:id", {
+                            id: feed.id.toString(),
+                        }),
+                        {},
                     )
-                        .then(res => res.json())
+                        .then((res) => res.json())
                         .then((res: NewsblurFeedResponse) => res.stories)
-                        .then(stories => stories.map(story => {
-                            const source = sourceMap.get(feed.feed_address);
+                        .then((stories) =>
+                            stories.map((story) => {
+                                const source = sourceMap.get(feed.feed_address);
 
-                            // parse item
-                            let parsedItem = {
-                                source: source?.sid,
-                                title: story.story_title,
-                                link: story.id,
-                                date: new Date(parseInt(story.story_timestamp)),
-                                fetchedDate: new Date(),
-                                content: story.story_content,
-                                snippet: htmlDecode(story.story_content).trim(),
-                                creator: story.story_authors,
-                                hasRead: Boolean(story.read_status === 1),
-                                starred: Boolean(story.starred),
-                                hidden: false,
-                                notify: false,
-                                serviceRef: String(story.id),
-                            } as RSSItem;
+                                // parse item
+                                let parsedItem = {
+                                    source: source?.sid,
+                                    title: story.story_title,
+                                    link: story.id,
+                                    date: new Date(
+                                        parseInt(story.story_timestamp),
+                                    ),
+                                    fetchedDate: new Date(),
+                                    content: story.story_content,
+                                    snippet: htmlDecode(
+                                        story.story_content,
+                                    ).trim(),
+                                    creator: story.story_authors,
+                                    hasRead: Boolean(story.read_status === 1),
+                                    starred: Boolean(story.starred),
+                                    hidden: false,
+                                    notify: false,
+                                    serviceRef: String(story.id),
+                                } as RSSItem;
 
-                            // thumbnail
-                            // todo!
+                                // thumbnail
+                                // todo!
 
-                            return parsedItem;
-                        }))
-                )
-            )
+                                return parsedItem;
+                            }),
+                        ),
+                ),
+            );
 
         // collect
         let parsedItems: RSSItem[] = [];
@@ -357,7 +369,7 @@ export const newsblurServiceHooks: ServiceHooks = {
             }
         }
 
-        return [parsedItems/*RSSItem[]*/, configs/*ServiceConfigs*/];
+        return [parsedItems, /*RSSItem[]*/ configs /*ServiceConfigs*/];
     },
 
     ///////////////////
