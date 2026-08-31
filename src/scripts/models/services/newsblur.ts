@@ -363,12 +363,7 @@ export const newsblurServiceHooks: ServiceHooks = {
             );
 
         // collect
-        let parsedItems: RSSItem[] = [];
-        for (const feed of await promise) {
-            for (const item of await feed) {
-                parsedItems.push(item);
-            }
-        }
+        let parsedItems: RSSItem[] = (await Promise.all(await promise)).flat();
 
         return [parsedItems, /*RSSItem[]*/ configs /*ServiceConfigs*/];
     },
