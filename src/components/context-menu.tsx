@@ -1,6 +1,6 @@
 import * as React from "react";
 import intl from "react-intl-universal";
-import QRCode from "qrcode.react";
+import { QRCodeSVG } from "qrcode.react";
 import {
     cutText,
     webSearch,
@@ -51,7 +51,7 @@ export const shareSubmenu = (item: RSSItem): IContextualMenuItem[] => [
 
 export const renderShareQR = (item: IContextualMenuItem) => (
     <div className="qr-container">
-        <QRCode value={item.url} size={150} renderAs="svg" />
+        <QRCodeSVG value={item.url} size={150} />
     </div>
 );
 

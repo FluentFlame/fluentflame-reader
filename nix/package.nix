@@ -5,9 +5,11 @@
   fetchFromGitHub,
   makeDesktopItem,
   makeWrapper,
+  importNpmLock,
 }:
 let
   pname = "fluentflame-reader";
+  version = "2.2.0-dev.1";
   myElectron = electron;
   desktopItem = makeDesktopItem {
     name = pname;
@@ -22,9 +24,16 @@ in
 
 buildNpmPackage {
   inherit pname;
-  version = "2.2.0-dev.1";
+  inherit version;
   src = ../.;
-  npmDepsHash = "sha256-hOcI54ZyTInRXRZqYu1jVrPyPk1kydxfb9TnX8Iu6o4=";
+  
+  # See for details on why we do this:
+  # https://nixos.org/manual/nixpkgs/stable/#javascript-buildNpmPackage-importNpmLock
+  npmDeps = importNpmLock {
+    npmRoot = ../.;
+  };
+  npmConfigHook = importNpmLock.npmConfigHook;
+
   makeCacheWritable = true;
 
   env = {
