@@ -12,12 +12,11 @@ export interface NewsBlurConfigs extends ServiceConfigs {
     endpoint: string; // url
     username: string;
     password: string;
-    _lastRefresh?: Date;
 }
 
 export type testFetchFunction = (url: URL, options: RequestInit) => string;
 
-// According to newblur documentation
+// According to newsblur documentation
 const MIN_WAIT_SECONDS = 60;
 
 async function fetchGetAPI(
@@ -199,10 +198,8 @@ export const newsblurServiceHooks: ServiceHooks = {
             // parse body
             const json: NewsBlurResponse = await response.json();
             printErrors(json);
-            // minTime to avoid overwhelming the server
-            configs._lastRefresh = new Date();
-            // correct?
-            return json.authenticated === true;
+            // correct
+            return json.authenticated == true;
         } catch (e) {
             console.error(APIError("authentication error").message);
             console.error(e);
