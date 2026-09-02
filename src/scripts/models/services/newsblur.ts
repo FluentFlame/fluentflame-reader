@@ -1,5 +1,15 @@
 /* WORK IN PROGRESS... */
 
+/*
+Newsblur Dictionary:
+
+| Newsblur | Fluentflame |
+|----------|-------------|
+| feed     | source      |
+| story    | item        |
+| folders  | groups?     |
+*/
+
 import { ServiceConfigs, SyncService } from "../../../schema-types";
 import { RootState } from "../../reducer";
 import { generateThumbnailAttrList } from "../../thumb-utils";
@@ -7,38 +17,41 @@ import { htmlDecode } from "../../utils";
 import { RSSItem } from "../item";
 import { ServiceHooks } from "../service";
 import { RSSSource } from "../source";
+import { ParamsObject, pathParams, toSearchParams } from "./service-utils";
 
 export interface NewsBlurConfigs extends ServiceConfigs {
     type: SyncService.NewsBlur;
-    endpoint: string; // url
+    endpoint: URL; // url
     username: string;
     password: string;
 }
 
-export type testFetchFunction = (url: URL, options: RequestInit) => string;
-
-// According to newsblur documentation
-const MIN_WAIT_SECONDS = 60;
+// Basic fetch functions
 
 async function fetchGetAPI(
     configs: NewsBlurConfigs,
     path: string,
     params: Record<string, string>,
 ) {
-    // encode params
-    const paramsSearch = new URLSearchParams(params);
     // set url
-    while (path.startsWith("/")) path = path.substring(1); // remove leading slash
-    const url = new URL(configs.endpoint + path);
-    url.search = paramsSearch.toString();
+    const url = new URL(configs.endpoint);
+    url.pathname = path;
+    // set params
+    const searchParams = new URLSearchParams(params);
+    url.search = searchParams.toString();
     // set headers
     const headers = new Headers();
     // options
     const options: RequestInit = { headers, credentials: "include" };
     // send
     const response = await fetch(url, options);
-    // return
-    return response;
+    // return or throw
+    const json: NewsblurResponse = await response.json();
+    if (json.errors == null) {
+        return json;
+    } else {
+        throw new NewsblurError(json.errors);
+    }
 }
 
 async function fetchPostAPI(
@@ -47,13 +60,13 @@ async function fetchPostAPI(
     params: ParamsObject,
 ) {
     // set url
-    while (path.startsWith("/")) path = path.substring(1); // remove leading slash
-    const url = new URL(configs.endpoint + path);
+    const url = new URL(configs.endpoint);
+    url.pathname = path;
+    // set params
+    const body = toSearchParams(params);
     // set headers
     const headers = new Headers();
     headers.set("Content-Type", "application/x-www-form-urlencoded");
-    // set body & encode params
-    const body = objectToSearchParams(params);
     // options
     const options: RequestInit = {
         method: "POST",
@@ -63,69 +76,116 @@ async function fetchPostAPI(
     };
     // send
     const response = await fetch(url, options);
-    return response;
-}
-
-type ParamsObject = Record<string, string | string[]>;
-function objectToSearchParams(object: ParamsObject): URLSearchParams {
-    const params = new URLSearchParams();
-    for (const key in object) {
-        const value = object[key];
-        if (Array.isArray(value)) {
-            for (const innerValue of value) {
-                params.append(key, innerValue.toString());
-            }
-        } else {
-            params.set(key, value.toString());
-        }
-    }
-    return params;
-}
-
-function APIError(msg?: string) {
-    if (msg) {
-        return new Error(`APIError: Failed to connect to NewsblurAPI: ${msg}`);
+    // return or throw
+    const json: NewsblurResponse = await response.json();
+    if (json.errors == null) {
+        return json;
     } else {
-        return new Error("APIError: Failed to connect to NewsblurAPI service");
+        throw new NewsblurError(json.errors);
     }
 }
 
-function printErrors(response: NewsBlurResponse) {
-    if (response.errors) {
-        for (const error in response.errors) {
-            console.error(
-                `[service: NewsBlur] ${error}: ${response.errors[error]}`,
-            );
-        }
+// Fetch direct API endpoints
+
+export const NewsblurAPI = {
+    /**
+     * Newsblur docs:
+     *
+     * POST /api/login
+     *
+     * Login as an existing user.
+     * | Parameter | Description         | Example    |
+     * |-----------|---------------------|------------|
+     * | username  | Username (required) | samuelclay |
+     * | password  | Password            | new$blur   |
+     *
+     * Tips:
+     * - If a user has no password set, you cannot just send any old password. This is not Instapaper.
+     */
+    async authenticate(configs: NewsBlurConfigs): Promise<boolean> {
+        const response = await fetchPostAPI(configs, "/api/login", {
+            username: configs.username,
+            password: configs.password,
+        });
+        return Boolean(response.authenticated);
+    },
+    async fetchFeeds(configs: NewsBlurConfigs): Promise<NewsblurFeed[]> {
+        const response = (await fetchGetAPI(configs, "/reader/feeds", {
+            flat: "true",
+        })) as NewsblurFeedsResponse;
+        return Object.values(response.feeds);
+    },
+    async fetchStoriesInFeed(
+        configs: NewsBlurConfigs,
+        feedId: string | number,
+    ): Promise<NewsblurStory[]> {
+        const response = (await fetchGetAPI(
+            configs,
+            pathParams("/reader/feed/:id", {
+                id: feedId.toString(),
+            }),
+            {},
+        )) as NewsblurStoriesResponse;
+        return Object.values(response.stories);
+    },
+    async fetchUnreadStoriesInFeed(
+        configs: NewsBlurConfigs,
+        feedId: string | number,
+    ): Promise<NewsblurStory[]> {
+        const response = (await fetchGetAPI(
+            configs,
+            pathParams("/reader/feed/:id", {
+                id: feedId.toString(),
+            }),
+            { read_filter: "unread" },
+        )) as NewsblurStoriesResponse;
+        return Object.values(response.stories);
+    },
+    async fetchAllStarredStories(
+        configs: NewsBlurConfigs,
+    ): Promise<NewsblurStory[]> {
+        const response = (await fetchGetAPI(
+            configs,
+            "/reader/starred_stories",
+            {},
+        )) as NewsblurStoriesResponse;
+        return Object.values(response.stories);
+    },
+    async fetchAllStories(configs: NewsBlurConfigs): Promise<NewsblurStory[]> {
+        const feeds = await NewsblurAPI.fetchFeeds(configs);
+        const promises = feeds.flatMap(async (feed) =>
+            NewsblurAPI.fetchStoriesInFeed(configs, feed.id),
+        );
+        return (await Promise.all(promises)).flat();
+    },
+};
+
+// Types
+
+export class NewsblurError extends Error {
+    constructor(errors: Record<string, string>, options?: ErrorOptions) {
+        super(Object.values(errors)[0], options);
+        this.newsblurError = errors;
     }
+    newsblurError: Record<string, string>;
 }
 
-export async function newsblurFetchItems(configs: NewsBlurConfigs) {
-    const response = await fetchGetAPI(configs, "/reader/feeds", {});
-    // parse response
-    const json: NewsBlurResponse = await response.json();
-    // errors
-    printErrors(json);
-    // return feeds
-    return json;
-}
-
-function pathParams(path: string, params: Record<string, string>) {
-    let finalPath = path;
-    for (const param in params) {
-        const value = params[param];
-        finalPath = finalPath.replace(`:${param}`, encodeURIComponent(value));
-    }
-    return finalPath;
-}
-
-export interface NewsBlurResponse {
-    code: -1 /*error*/ | 1 /*ok*/;
+export interface NewsblurResponse {
     errors: Record</*reason*/ string, /*long reason*/ string> | null /*ok*/;
-    result: "ok";
     authenticated: boolean;
     user_id: number;
-    feeds?: Record</* id: */ string, NewsblurFeed>;
+}
+
+export interface NewsblurAuthResponse extends NewsblurResponse {
+    code: -1 /*error*/ | 1 /*ok*/;
+}
+
+export interface NewsblurFeedsResponse extends NewsblurResponse {
+    feeds: Record</* id: */ string, NewsblurFeed>;
+}
+
+interface NewsblurStoriesResponse extends NewsblurResponse {
+    stories: NewsblurStory[];
 }
 
 /** A string with a date in format YYYY-MM-DDThh:mm:ss (T is just a T) */
@@ -157,10 +217,6 @@ interface NewsblurFeedSummary {
     ng: number;
 }
 
-interface NewsblurFeedResponse {
-    stories: NewsblurStory[];
-}
-
 interface NewsblurStory {
     story_hash: string;
     story_timestamp: string;
@@ -178,31 +234,9 @@ interface NewsblurStory {
 export const newsblurServiceHooks: ServiceHooks = {
     authenticate: async (serviceConfigs) => {
         const configs = serviceConfigs as NewsBlurConfigs;
-        /*
-         * POST /api/login
-         *
-         * Login as an existing user.
-         * | Parameter | Description         | Example    |
-         * |-----------|---------------------|------------|
-         * | username  | Username (required) | samuelclay |
-         * | password  | Password            | new$blur   |
-         *
-         * Tips:
-         * - If a user has no password set, you cannot just send any old password. This is not Instapaper.
-         */
         try {
-            // get and parse response
-            const response = await fetchPostAPI(configs, "/api/login", {
-                username: configs.username,
-                password: configs.password,
-            });
-            // parse body
-            const json: NewsBlurResponse = await response.json();
-            printErrors(json);
-            // correct
-            return json.authenticated == true;
+            return await NewsblurAPI.authenticate(configs);
         } catch (e) {
-            console.error(APIError("authentication error").message);
             console.error(e);
             return false;
         }
@@ -212,103 +246,61 @@ export const newsblurServiceHooks: ServiceHooks = {
     // GET REQUESTS //
     ///////////////////
 
-    updateSources: () => async (dispatch, getState: () => RootState) => {
+    /** get remote sources */
+    updateSources: () => async (_, getState: () => RootState) => {
         const configs = getState().service as NewsBlurConfigs;
 
         // fetch
-        const sources: RSSSource[] = await fetchGetAPI(
-            configs,
-            "/reader/feeds",
-            {
-                flat: "true",
-            },
-        )
-            // parse
-            .then((res) => res.json())
-            .then(
-                async (
-                    res: NewsBlurResponse,
-                ): Promise<Record<string, NewsblurFeed>> => {
-                    if (res.feeds) {
-                        return res.feeds;
-                    } else {
-                        throw APIError("property 'feeds' is undefined");
-                    }
-                },
-            )
-            .then((feeds) =>
+        const sources: RSSSource[] = await NewsblurAPI.fetchFeeds(configs).then(
+            (feeds) =>
                 Object.entries(feeds).map(([id, f]) => {
                     const source = new RSSSource(f.feed_address, f.feed_title);
                     source.serviceRef = id;
                     return source;
                 }),
-            );
+        );
 
         return [sources, new Map() /* No groups in Newsblur */];
     },
 
-    // get remote read and star state of articles, for local sync
+    /** get and set remote unreads and starreds */
     syncItems: () => async (_, getState) => {
         const configs = getState().service as NewsBlurConfigs;
         const unread = new Set<string>();
         const starred = new Set<string>();
 
         // get all rss sources with unread posts. Call only once a minute !!!
-        // (How should this be enforced?)
-        const unreadPromises: Promise<Promise<string[]>[]> = (async () => {
-            const response = await fetchGetAPI(
-                configs,
-                "/reader/refresh_feeds",
-                {},
-            )
-                // parse
-                .then((res) => res.json());
-
-            const feeds: Record<string, NewsblurFeedSummary> | undefined =
-                response.feeds;
-            if (feeds === undefined) {
-                throw APIError("property 'feeds' is undefined");
-            }
+        const unreadsPromise: Promise<string[]> = (async () => {
+            const feeds = await NewsblurAPI.fetchFeeds(configs);
 
             // get unread
             const unreadPromises: Promise<string[]>[] = // keep
                 Object.values(feeds).map((feed) =>
                     // call to each feed
-                    fetchGetAPI(
-                        configs,
-                        pathParams("/reader/feed/:id", {
-                            id: feed.id.toString(),
-                        }),
-                        {
-                            read_filter: "unread",
-                        },
-                    )
-                        .then((res) => res.json())
-                        .then((res: NewsblurFeedResponse) => res.stories ?? [])
-                        .then((stories) => stories.map((story) => story.id)),
+                    NewsblurAPI.fetchUnreadStoriesInFeed(configs, feed.id).then(
+                        (stories) => stories.map((story) => story.id),
+                    ),
                 );
-            return unreadPromises;
+            return (await Promise.all(unreadPromises)).flat();
         })();
 
         // get starred
-        let starredPromise = fetchGetAPI(configs, "/reader/starred_stories", {})
-            .then((res) => res.json())
-            .then((res: NewsblurFeedResponse) => res.stories ?? [])
-            .then((stories) => stories.map((story) => story.id));
+        let starredsPromise = NewsblurAPI.fetchAllStarredStories(configs).then(
+            (stories) => stories.map((story) => story.id),
+        );
 
         // wait for values
-        for (const unreadPromise of await unreadPromises) {
-            for (const id of await unreadPromise) {
-                unread.add(id);
-            }
+        for (const unreadId of await unreadsPromise) {
+            unread.add(unreadId);
         }
-        for (const id of await starredPromise) {
+        for (const id of await starredsPromise) {
             starred.add(id);
         }
 
         return [unread, starred];
     },
 
+    // get and set remote items
     fetchItems: () => async (_, getState) => {
         const state = getState();
         const configs = state.service as NewsBlurConfigs;
@@ -322,61 +314,41 @@ export const newsblurServiceHooks: ServiceHooks = {
         }
 
         // get all feed sources
-        const promise = fetchGetAPI(configs, "/reader/feeds", {
-            // Returns a flat folder structure instead of nested folders.
-            // Useful when displaying all folders in a single depth without recursive descent.
-            flat: "true",
-        })
-            .then((res) => res.json())
-            .then((res: NewsBlurResponse) => res.feeds ?? {})
-            .then((feeds) =>
-                // get items for each feed
-                Object.values(feeds).map((feed) =>
-                    fetchGetAPI(
-                        configs,
-                        pathParams("/reader/feed/:id", {
-                            id: feed.id.toString(),
+        const promise = NewsblurAPI.fetchFeeds(configs).then((feeds) =>
+            feeds.map((feed) =>
+                NewsblurAPI.fetchStoriesInFeed(configs, feed.id).then(
+                    (stories) =>
+                        stories.map((story) => {
+                            const source = sourceMap.get(feed.feed_address);
+
+                            // parse item
+                            let parsedItem = {
+                                source: source?.sid,
+                                title: story.story_title,
+                                link: story.id,
+                                date: new Date(parseInt(story.story_timestamp)),
+                                fetchedDate: new Date(),
+                                content: story.story_content,
+                                snippet: htmlDecode(story.story_content).trim(),
+                                creator: story.story_authors,
+                                hasRead: Boolean(story.read_status === 1),
+                                starred: Boolean(story.starred),
+                                hidden: false,
+                                notify: false,
+                                serviceRef: String(story.story_hash),
+                            } as RSSItem;
+
+                            parsedItem.thumbnailJobs =
+                                generateThumbnailAttrList({
+                                    targetLink: parsedItem.link,
+                                    content: parsedItem.content,
+                                });
+
+                            return parsedItem;
                         }),
-                        {},
-                    )
-                        .then((res) => res.json())
-                        .then((res: NewsblurFeedResponse) => res.stories)
-                        .then((stories) =>
-                            stories.map((story) => {
-                                const source = sourceMap.get(feed.feed_address);
-
-                                // parse item
-                                let parsedItem = {
-                                    source: source?.sid,
-                                    title: story.story_title,
-                                    link: story.id,
-                                    date: new Date(
-                                        parseInt(story.story_timestamp),
-                                    ),
-                                    fetchedDate: new Date(),
-                                    content: story.story_content,
-                                    snippet: htmlDecode(
-                                        story.story_content,
-                                    ).trim(),
-                                    creator: story.story_authors,
-                                    hasRead: Boolean(story.read_status === 1),
-                                    starred: Boolean(story.starred),
-                                    hidden: false,
-                                    notify: false,
-                                    serviceRef: String(story.story_hash),
-                                } as RSSItem;
-
-                                parsedItem.thumbnailJobs =
-                                    generateThumbnailAttrList({
-                                        targetLink: parsedItem.link,
-                                        content: parsedItem.content,
-                                    });
-
-                                return parsedItem;
-                            }),
-                        ),
                 ),
-            );
+            ),
+        );
 
         // collect
         let parsedItems: RSSItem[] = (await Promise.all(await promise)).flat();
