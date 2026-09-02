@@ -125,7 +125,7 @@ export interface NewsBlurResponse {
     result: "ok";
     authenticated: boolean;
     user_id: number;
-    feeds?: NewsblurFeed[];
+    feeds?: Record</* id: */ string, NewsblurFeed>;
 }
 
 /** A string with a date in format YYYY-MM-DDThh:mm:ss (T is just a T) */
@@ -214,21 +214,37 @@ export const newsblurServiceHooks: ServiceHooks = {
 
     updateSources: () => async (dispatch, getState: () => RootState) => {
         const configs = getState().service as NewsBlurConfigs;
-        const response = await fetchGetAPI(configs, "/reader/feeds", {})
+
+        // fetch
+        const sources: RSSSource[] = await fetchGetAPI(
+            configs,
+            "/reader/feeds",
+            {
+                flat: "true",
+            },
+        )
             // parse
-            .then((res) => res.json());
+            .then((res) => res.json())
+            .then(
+                async (
+                    res: NewsBlurResponse,
+                ): Promise<Record<string, NewsblurFeed>> => {
+                    if (res.feeds) {
+                        return res.feeds;
+                    } else {
+                        throw APIError("property 'feeds' is undefined");
+                    }
+                },
+            )
+            .then((feeds) =>
+                Object.entries(feeds).map(([id, f]) => {
+                    const source = new RSSSource(f.feed_address, f.feed_title);
+                    source.serviceRef = id;
+                    return source;
+                }),
+            );
 
-        const feeds: Record<string, NewsblurFeed> | undefined = response.feeds;
-
-        if (feeds == null) {
-            throw APIError("property 'feeds' is undefined");
-        }
-
-        const sources: RSSSource[] = Object.values(feeds).map(
-            (f) => new RSSSource(f.feed_address, f.feed_title),
-        );
-
-        return [sources, undefined as any /* No groups in Newsblur */];
+        return [sources, new Map() /* No groups in Newsblur */];
     },
 
     // get remote read and star state of articles, for local sync
@@ -312,10 +328,10 @@ export const newsblurServiceHooks: ServiceHooks = {
             flat: "true",
         })
             .then((res) => res.json())
-            .then((res: NewsBlurResponse) => res.feeds ?? [])
+            .then((res: NewsBlurResponse) => res.feeds ?? {})
             .then((feeds) =>
                 // get items for each feed
-                feeds.map((feed) =>
+                Object.values(feeds).map((feed) =>
                     fetchGetAPI(
                         configs,
                         pathParams("/reader/feed/:id", {
