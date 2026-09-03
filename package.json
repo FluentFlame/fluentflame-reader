@@ -81,7 +81,7 @@
     "mocha": ">=10.0.10 <11.7.6",
     "prettier": "^3.6.2",
     "qrcode.react": "^4.2.0",
-    "ts-loader": "^7.0.4",
+    "ts-loader": "^9.6.2",
     "tsx": "^4.20.6",
     "typescript": "^5.8.2",
     "webpack": "^5.110.2",
