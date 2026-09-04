@@ -1,4 +1,4 @@
-# Copilot Instructions — Fluent Reader
+# Fluent Reader
 
 ## Overview
 
