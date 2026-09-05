@@ -192,13 +192,19 @@ export default function SourcesTab() {
         return newSelectedSource;
     };
 
-    const onSourceEditOptionChange = (_: any, option: IDropdownOption) => {
-        setSourceEditOption(toEditDropdownKeys(option.key));
+    const onSourceEditOptionChange = (
+        _: any,
+        option: IDropdownOption | undefined,
+    ) => {
+        setSourceEditOption(toEditDropdownKeys(option?.key ?? ""));
     };
 
-    const onFetchFrequencyChange = (_: any, option: IDropdownOption) => {
+    const onFetchFrequencyChange = (
+        _: any,
+        option: IDropdownOption | undefined,
+    ) => {
         const selectedSource = singleSelectedSource(selectedSources);
-        if (selectedSource == null) {
+        if (selectedSource == null || option == null) {
             return;
         }
         let frequency = parseInt(option.key as string);
@@ -296,9 +302,12 @@ export default function SourcesTab() {
         }
     };
 
-    const onOpenTargetChange = (_: any, option: IChoiceGroupOption) => {
+    const onOpenTargetChange = (
+        _: any,
+        option: IChoiceGroupOption | undefined,
+    ) => {
         const selectedSource = singleSelectedSource(selectedSources);
-        if (selectedSource == null) {
+        if (selectedSource == null || option == null) {
             return;
         }
         let newTarget = parseInt(option.key) as SourceOpenTarget;

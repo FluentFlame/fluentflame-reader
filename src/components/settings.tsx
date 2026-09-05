@@ -23,12 +23,14 @@ type SettingsProps = {
     blocked: boolean;
     exitting: boolean;
     close: () => void;
-    setTab: (newTab: string | null) => void;
+    setTab: (newTab: string | undefined | null) => void;
 };
 
 const INITIAL_PANEL: string = "app";
 
-export default function Settings(props: SettingsProps): React.JSX.Element {
+export default function Settings(
+    props: SettingsProps,
+): React.JSX.Element | null {
     const getCurrentTab = () => props.currentTab ?? INITIAL_PANEL;
 
     const onKeyDown = (event: KeyboardEvent) => {
@@ -49,51 +51,47 @@ export default function Settings(props: SettingsProps): React.JSX.Element {
     }, [props.display]);
 
     const onLinkClick = (
-        _ev: React.MouseEvent<HTMLElement>,
-        item: INavLink,
+        _ev: React.MouseEvent<HTMLElement> | undefined,
+        item: INavLink | undefined,
     ) => {
-        props.setTab(item.key);
+        props.setTab(item?.key);
     };
 
-    return (
-        props.display && (
-            <div className="modal-container">
-                <div className={"settings " + AnimationClassNames.slideUpIn20}>
-                    <div className="btn-group">
-                        <a
-                            className={
-                                "btn" + (props.exitting ? " disabled" : "")
-                            }
-                            title={intl.get("settings.exit")}
-                            onClick={props.close}>
-                            <Icon iconName="Back" />
-                        </a>
-                    </div>
-                    {props.blocked && (
-                        <FocusTrapZone
-                            isClickableOutsideFocusTrap={true}
-                            className="loading">
-                            <Spinner
-                                label={intl.get("settings.fetching")}
-                                tabIndex={0}
-                            />
-                        </FocusTrapZone>
-                    )}
-                    <div className="settings-inner-container">
-                        <Nav
-                            initialSelectedKey={getCurrentTab()}
-                            className="settings-nav"
-                            groups={makeNavLinkGroups()}
-                            onLinkClick={onLinkClick}
+    return props.display ? (
+        <div className="modal-container">
+            <div className={"settings " + AnimationClassNames.slideUpIn20}>
+                <div className="btn-group">
+                    <a
+                        className={"btn" + (props.exitting ? " disabled" : "")}
+                        title={intl.get("settings.exit")}
+                        onClick={props.close}>
+                        <Icon iconName="Back" />
+                    </a>
+                </div>
+                {props.blocked && (
+                    <FocusTrapZone
+                        isClickableOutsideFocusTrap={true}
+                        className="loading">
+                        <Spinner
+                            label={intl.get("settings.fetching")}
+                            tabIndex={0}
                         />
-                        <div className="form-panel">
-                            {renderSettingsPanel(getCurrentTab())}
-                        </div>
+                    </FocusTrapZone>
+                )}
+                <div className="settings-inner-container">
+                    <Nav
+                        initialSelectedKey={getCurrentTab()}
+                        className="settings-nav"
+                        groups={makeNavLinkGroups()}
+                        onLinkClick={onLinkClick}
+                    />
+                    <div className="form-panel">
+                        {renderSettingsPanel(getCurrentTab())}
                     </div>
                 </div>
             </div>
-        )
-    );
+        </div>
+    ) : null;
 }
 
 function renderSettingsPanel(currentPanel: string): React.JSX.Element {
