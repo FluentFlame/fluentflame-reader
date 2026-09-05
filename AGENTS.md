@@ -4,7 +4,7 @@
 
 Fluent Reader is a **modern desktop RSS reader** built with **Electron + React + Redux + TypeScript**. It targets Windows, macOS (including Mac App Store), and Linux. The UI uses Microsoft's **Fluent UI (v7)** component library. Data is stored client-side using **Lovefield** (SQL-like browser DB) and **NeDB**. Articles are parsed with **Mercury Parser** and fetched via **rss-parser**. Settings are persisted with **electron-store**.
 
-The repository is ~80 TypeScript/TSX source files under `src/`. There is no test suite. There is no ESLint — formatting is handled solely by **Prettier**.
+The repository is ~80 TypeScript/TSX source files under `src/`. There is no ESLint — formatting is handled solely by **Prettier**.
 
 ## Build & Validate
 
@@ -59,9 +59,17 @@ npm run format
 
 ### Tests
 
-There is **no test suite** in this project. Validation consists of:
+Basic validation of code changes consists of:
 1. `npm run build` — must compile without errors.
 2. `npx prettier --check .` — must pass with no formatting violations.
+
+A private suite of E2E tests is available for project maintainers. Run the suite from the repository root:
+
+```bash
+npm --prefix tests/e2e test
+```
+
+See `tests/README.md` for test setup details.
 
 ### Packaging (not needed for typical changes)
 
@@ -145,5 +153,7 @@ After any code change, always run:
 npm install && npm run build && npx prettier --check .
 ```
 All three must succeed. If the build fails, fix TypeScript errors. If prettier fails, run `npm run format` then verify.
+
+Run the E2E test suite if available at the end of sessions to check for regressions, and update the test suite to cover any new features built.
 
 Trust these instructions. Only search the codebase if information here is incomplete or found to be incorrect.
