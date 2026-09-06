@@ -15,6 +15,7 @@ import { RootState } from "../../reducer";
 import { generateThumbnailAttrList } from "../../thumb-utils";
 import { htmlDecode } from "../../utils";
 import { RSSItem } from "../item";
+import { SourceRule } from "../rule";
 import { ServiceHooks } from "../service";
 import { RSSSource } from "../source";
 import { ParamsObject, pathParams, toSearchParams } from "./service-utils";
@@ -32,7 +33,7 @@ async function fetchGetAPI(
     configs: NewsBlurConfigs,
     path: string,
     params: Record<string, string>,
-) {
+): Promise<NewsblurResponse> {
     // set url
     const url = new URL(configs.endpoint);
     url.pathname = path;
@@ -47,18 +48,14 @@ async function fetchGetAPI(
     const response = await fetch(url, options);
     // return or throw
     const json: NewsblurResponse = await response.json();
-    if (json.errors == null) {
-        return json;
-    } else {
-        throw new NewsblurError(json.errors);
-    }
+    return json;
 }
 
 async function fetchPostAPI(
     configs: NewsBlurConfigs,
     path: string,
     params: ParamsObject,
-) {
+): Promise<NewsblurPostResponse> {
     // set url
     const url = new URL(configs.endpoint);
     url.pathname = path;
@@ -77,12 +74,8 @@ async function fetchPostAPI(
     // send
     const response = await fetch(url, options);
     // return or throw
-    const json: NewsblurResponse = await response.json();
-    if (json.errors == null) {
-        return json;
-    } else {
-        throw new NewsblurError(json.errors);
-    }
+    const json: NewsblurPostResponse = await response.json();
+    return json;
 }
 
 // Fetch direct API endpoints
@@ -158,34 +151,81 @@ export const NewsblurAPI = {
         );
         return (await Promise.all(promises)).flat();
     },
+    async setRead(
+        configs: NewsBlurConfigs,
+        serviceRef: string,
+        isRead: boolean,
+    ) {},
+    async setStar(
+        configs: NewsBlurConfigs,
+        serviceRef: string,
+        isStarred: boolean,
+    ): Promise<void> {
+        if (isStarred) {
+            const res = (await fetchPostAPI(
+                configs,
+                "/reader/mark_story_hash_as_starred",
+                {
+                    story_hash: serviceRef,
+                },
+            )) as NewsblurStarResponse;
+            if (res.code == -1) {
+                throw new NewsblurError([res.message]);
+            }
+        } else {
+            const res = (await fetchPostAPI(
+                configs,
+                "/reader/mark_story_hash_as_unstarred",
+                {
+                    story_hash: serviceRef,
+                },
+            )) as NewsblurUnstarResponse;
+            if (res.code == -1) {
+                throw new NewsblurError(res.messages);
+            }
+        }
+    },
 };
 
 // Types
 
 export class NewsblurError extends Error {
-    constructor(errors: Record<string, string>, options?: ErrorOptions) {
-        super(Object.values(errors)[0], options);
-        this.newsblurError = errors;
+    constructor(errors: string[], options?: ErrorOptions) {
+        super(errors[0], options);
+        this.newsblurErrors = errors;
     }
-    newsblurError: Record<string, string>;
+    newsblurErrors: string[];
 }
 
 export interface NewsblurResponse {
-    errors: Record</*reason*/ string, /*long reason*/ string> | null /*ok*/;
     authenticated: boolean;
     user_id: number;
 }
 
-export interface NewsblurAuthResponse extends NewsblurResponse {
+export interface NewsblurPostResponse extends NewsblurResponse {
     code: -1 /*error*/ | 1 /*ok*/;
+}
+
+export interface NewsblurAuthResponse extends NewsblurPostResponse {
+    errors: Record</*reason*/ string, /*long reason*/ string> | null /*ok*/;
 }
 
 export interface NewsblurFeedsResponse extends NewsblurResponse {
     feeds: Record</* id: */ string, NewsblurFeed>;
 }
 
-interface NewsblurStoriesResponse extends NewsblurResponse {
+export interface NewsblurStoriesResponse extends NewsblurResponse {
     stories: NewsblurStory[];
+}
+
+export interface NewsblurStarResponse extends NewsblurPostResponse {
+    /** is empty string `""` if `.code` is `1` */
+    message: string;
+}
+
+export interface NewsblurUnstarResponse extends NewsblurPostResponse {
+    /** is empty array `[]` if `.code` is `1` */
+    messages: string[];
 }
 
 /** A string with a date in format YYYY-MM-DDThh:mm:ss (T is just a T) */
@@ -224,7 +264,7 @@ interface NewsblurStory {
     score: number;
     read_status: 0 | 1;
     id: string;
-    story_feed_id: string; // id of rss source
+    story_feed_id: number; // serviceRef of RSSSource
     story_title: string;
     story_content: string;
     starred: boolean;
@@ -253,9 +293,9 @@ export const newsblurServiceHooks: ServiceHooks = {
         // fetch
         const sources: RSSSource[] = await NewsblurAPI.fetchFeeds(configs).then(
             (feeds) =>
-                Object.entries(feeds).map(([id, f]) => {
+                feeds.map((f) => {
                     const source = new RSSSource(f.feed_address, f.feed_title);
-                    source.serviceRef = id;
+                    source.serviceRef = String(f.id);
                     return source;
                 }),
         );
@@ -307,53 +347,59 @@ export const newsblurServiceHooks: ServiceHooks = {
 
         // get sources that possess ref/id given by service, associate new items
         const sourceMap = new Map<string, RSSSource>();
-        for (let source of Object.values(state.sources)) {
+        for (const source of Object.values(state.sources)) {
             if (source.serviceRef) {
                 sourceMap.set(source.serviceRef, source);
             }
         }
 
-        // get all feed sources
-        const promise = NewsblurAPI.fetchFeeds(configs).then((feeds) =>
-            feeds.map((feed) =>
-                NewsblurAPI.fetchStoriesInFeed(configs, feed.id).then(
-                    (stories) =>
-                        stories.map((story) => {
-                            const source = sourceMap.get(feed.feed_address);
+        // parse stories
+        const stories = await NewsblurAPI.fetchAllStories(configs).then(
+            (stories) =>
+                stories.map((story): RSSItem => {
+                    const source = sourceMap.get(String(story.story_feed_id));
 
-                            // parse item
-                            let parsedItem = {
-                                source: source?.sid,
-                                title: story.story_title,
-                                link: story.id,
-                                date: new Date(parseInt(story.story_timestamp)),
-                                fetchedDate: new Date(),
-                                content: story.story_content,
-                                snippet: htmlDecode(story.story_content).trim(),
-                                creator: story.story_authors,
-                                hasRead: Boolean(story.read_status === 1),
-                                starred: Boolean(story.starred),
-                                hidden: false,
-                                notify: false,
-                                serviceRef: String(story.story_hash),
-                            } as RSSItem;
-
-                            parsedItem.thumbnailJobs =
-                                generateThumbnailAttrList({
-                                    targetLink: parsedItem.link,
-                                    content: parsedItem.content,
-                                });
-
-                            return parsedItem;
+                    // parse item
+                    let parsedItem = {
+                        source: source?.sid,
+                        title: story.story_title,
+                        link: story.id,
+                        date: new Date(parseInt(story.story_timestamp)),
+                        fetchedDate: new Date(),
+                        content: story.story_content,
+                        snippet: htmlDecode(story.story_content).trim(),
+                        creator: story.story_authors,
+                        hasRead: Boolean(story.read_status == 1),
+                        starred: Boolean(story.starred),
+                        hidden: false,
+                        notify: false,
+                        serviceRef: String(story.story_hash),
+                        // will allow page to load, and get the images
+                        // async eventually
+                        thumbnailJobs: generateThumbnailAttrList({
+                            targetLink: story.id, // url
+                            content: story.story_content,
                         }),
-                ),
-            ),
+                    } as RSSItem;
+
+                    // Apply rules and sync back
+                    // prettier-ignore
+                    if (source?.rules) {
+                        SourceRule.applyAll(source.rules, parsedItem);
+                        const readChanged = Boolean(story.read_status == 1) !== parsedItem.hasRead;
+                        const starChanged = Boolean(story.starred) !== parsedItem.starred;
+                        if (readChanged) NewsblurAPI.setRead(configs, parsedItem.serviceRef, parsedItem.hasRead);
+                        if (starChanged) NewsblurAPI.setStar(configs, parsedItem.serviceRef, parsedItem.starred);
+                    }
+
+                    return parsedItem;
+                }),
         );
 
         // collect
-        let parsedItems: RSSItem[] = (await Promise.all(await promise)).flat();
+        let parsedItems: RSSItem[] = (await Promise.all(stories)).flat();
 
-        return [parsedItems, /*RSSItem[]*/ configs /*ServiceConfigs*/];
+        return [/*RSSItem[]*/ parsedItems, /*ServiceConfigs*/ configs];
     },
 
     ///////////////////
@@ -412,13 +458,7 @@ export const newsblurServiceHooks: ServiceHooks = {
         const configs = state.service as NewsBlurConfigs;
 
         if (item.serviceRef) {
-            const res = await fetchPostAPI(
-                configs,
-                "/reader/mark_story_hash_as_starred",
-                {
-                    story_hash: item.serviceRef,
-                },
-            );
+            const res = NewsblurAPI.setStar(configs, item.serviceRef, true);
         }
 
         throw new Error("todo!");
@@ -429,13 +469,7 @@ export const newsblurServiceHooks: ServiceHooks = {
         const configs = state.service as NewsBlurConfigs;
 
         if (item.serviceRef) {
-            const res = await fetchPostAPI(
-                configs,
-                "/reader/mark_story_hash_as_unstarred",
-                {
-                    story_hash: item.serviceRef,
-                },
-            );
+            const res = NewsblurAPI.setStar(configs, item.serviceRef, false);
         }
 
         throw new Error("todo!");
