@@ -458,10 +458,9 @@ export const newsblurServiceHooks: ServiceHooks = {
         const configs = state.service as NewsBlurConfigs;
 
         if (item.serviceRef) {
-            const res = NewsblurAPI.setStar(configs, item.serviceRef, true);
+            await NewsblurAPI.setStar(configs, item.serviceRef, true);
         }
 
-        throw new Error("todo!");
     },
 
     unstar: (item: RSSItem) => async (_, getState) => {
@@ -469,9 +468,7 @@ export const newsblurServiceHooks: ServiceHooks = {
         const configs = state.service as NewsBlurConfigs;
 
         if (item.serviceRef) {
-            const res = NewsblurAPI.setStar(configs, item.serviceRef, false);
+            await NewsblurAPI.setStar(configs, item.serviceRef, false);
         }
-
-        throw new Error("todo!");
     },
 };
