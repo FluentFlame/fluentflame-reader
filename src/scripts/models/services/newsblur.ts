@@ -155,7 +155,26 @@ export const NewsblurAPI = {
         configs: NewsBlurConfigs,
         serviceRef: string,
         isRead: boolean,
-    ) {},
+    ) {
+        if (isRead) {
+            // For some reason, `.code` is always 1.
+            // Even when hash is incorrect
+            await fetchPostAPI(configs, "/reader/mark_story_hashes_as_read", {
+                story_hash: serviceRef,
+            });
+        } else {
+            const res = (await fetchPostAPI(
+                configs,
+                "/reader/mark_story_hash_as_unread",
+                {
+                    story_hash: [serviceRef],
+                },
+            )) as NewsblurUnreadResponse;
+            if (res.code == -1) {
+                throw new NewsblurError([res.message!]);
+            }
+        }
+    },
     async setStar(
         configs: NewsBlurConfigs,
         serviceRef: string,
@@ -221,6 +240,21 @@ export interface NewsblurStoriesResponse extends NewsblurResponse {
 export interface NewsblurStarResponse extends NewsblurPostResponse {
     /** is empty string `""` if `.code` is `1` */
     message: string;
+}
+
+export interface NewsblurReadResponse extends NewsblurPostResponse {
+    /** Alwasy 1. Never fails for some reason. */
+    code: 1;
+    story_hashes: string[];
+    feed_ids: string[];
+}
+
+export interface NewsblurUnreadResponse extends NewsblurPostResponse {
+    /** is empty string `""` if `.code` is `1` */
+    code: 1 | -1;
+    story_hash: string;
+    feed_id: string;
+    message: string | undefined;
 }
 
 export interface NewsblurUnstarResponse extends NewsblurPostResponse {
@@ -424,16 +458,8 @@ export const newsblurServiceHooks: ServiceHooks = {
         const configs = state.service as NewsBlurConfigs;
 
         if (item.serviceRef) {
-            const res = await fetchPostAPI(
-                configs,
-                "/reader/mark_story_hashes_as_read",
-                {
-                    story_hash: [item.serviceRef],
-                },
-            );
+            await NewsblurAPI.setRead(configs, item.serviceRef, true);
         }
-
-        throw new Error("todo!");
     },
 
     markUnread: (item: RSSItem) => async (_, getState) => {
@@ -441,16 +467,8 @@ export const newsblurServiceHooks: ServiceHooks = {
         const configs = state.service as NewsBlurConfigs;
 
         if (item.serviceRef) {
-            const res = await fetchPostAPI(
-                configs,
-                "/reader/mark_story_hash_as_unread",
-                {
-                    story_hash: [item.serviceRef],
-                },
-            );
+            await NewsblurAPI.setRead(configs, item.serviceRef, false);
         }
-
-        throw new Error("todo!");
     },
 
     star: (item: RSSItem) => async (_, getState) => {
