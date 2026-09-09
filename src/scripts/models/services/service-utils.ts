@@ -25,18 +25,17 @@ export function getItemEntries(
         .toArray();
 }
 
-
 /**
  * An easier way to creating URLSearchParams() when
  * one has to pass arrays in this format
- * 
+ *
  * Instead of writing "array=1&array=2&array=3", one
  * can pass an object:
  * ```ts
  * { array: ["1", "2", "3"] }
  * ```
  * and it will be converted to the same url encoded form
- *  
+ *
  */
 export function toSearchParams(object: ParamsObject): URLSearchParams {
     const params = new URLSearchParams();
@@ -58,7 +57,7 @@ export type ParamsObject = Record<string, string | string[]>;
  * A helper function to add path-params to a path
  * @param path - for example `/profile/:id`
  * @param params - for example `{ id: "username" }`
- * @returns 
+ * @returns
  */
 export function pathParams(path: string, params: Record<string, string>) {
     let finalPath = path;

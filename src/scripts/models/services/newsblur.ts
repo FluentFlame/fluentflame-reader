@@ -460,7 +460,6 @@ export const newsblurServiceHooks: ServiceHooks = {
         if (item.serviceRef) {
             await NewsblurAPI.setStar(configs, item.serviceRef, true);
         }
-
     },
 
     unstar: (item: RSSItem) => async (_, getState) => {
