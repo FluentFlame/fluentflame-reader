@@ -444,16 +444,30 @@ export const newsblurServiceHooks: ServiceHooks = {
         const state = getState();
         const configs = state.service as NewsBlurConfigs;
 
-        const res = await fetchPostAPI(configs, "/reader/mark_all_as_read", {});
+        if (date == null) {
+            await fetchPostAPI(configs, "/reader/mark_all_as_read", {});
+        } else {
+            // make it newsblurry
+            // const iids = state.feeds[state.page.feedId].iids;
+            // const items = iids
+            //     .map((iid) => state.items[iid])
+            //     .filter(
+            //         (i) => !i.hasRead && i.date.getTime() >= date.getTime(),
+            //     );
+            // for (let item of items) {
+            //     if (item.serviceRef) {
+            //         markItem(configs, item, "read");
+            //     }
+            // }
+        }
 
         throw new Error("TODO! deal with res");
     },
 
-    // Marks one story as read
-    // Note: could be optimized if instead of making
-    // one request for each RSSItem, it makes one request
-    // with the hashes of all RSSItem's at once
     markRead: (item: RSSItem) => async (_, getState) => {
+        // Note: could be optimized if instead of making
+        // one request for each RSSItem, it makes one request
+        // with the hashes of all RSSItem's at once
         const state = getState();
         const configs = state.service as NewsBlurConfigs;
 

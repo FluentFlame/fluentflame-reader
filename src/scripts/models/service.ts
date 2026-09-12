@@ -321,9 +321,7 @@ interface SyncLocalItemsAction {
 }
 
 export type ServiceActionTypes =
-    | SaveServiceConfigsAction
-    | SyncWithServiceAction
-    | SyncLocalItemsAction;
+    SaveServiceConfigsAction | SyncWithServiceAction | SyncLocalItemsAction;
 
 export function saveServiceConfigs(configs: ServiceConfigs): AppThunk {
     return (dispatch) => {
