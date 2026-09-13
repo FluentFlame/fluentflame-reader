@@ -203,6 +203,12 @@ export namespace NewsblurAPI {
             }
         }
     }
+
+    export async function markAllAsRead(
+        configs: NewsBlurConfigs,
+    ): Promise<void> {
+        await fetchPostAPI(configs, "/reader/mark_all_as_read", {});
+    }
 }
 
 // Types
@@ -439,28 +445,24 @@ export const newsblurServiceHooks: ServiceHooks = {
     // POST REQUESTS //
     ///////////////////
 
-    markAllRead: (sids, date, before) => async (_, getState) => {
+    markAllRead: (_sids, date, _before) => async (_, getState) => {
         const state = getState();
         const configs = state.service as NewsBlurConfigs;
 
         if (date == null) {
-            await fetchPostAPI(configs, "/reader/mark_all_as_read", {});
+            // mark all
+            await NewsblurAPI.markAllAsRead(configs);
         } else {
-            // make it newsblurry
-            // const iids = state.feeds[state.page.feedId].iids;
-            // const items = iids
-            //     .map((iid) => state.items[iid])
-            //     .filter(
-            //         (i) => !i.hasRead && i.date.getTime() >= date.getTime(),
-            //     );
-            // for (let item of items) {
-            //     if (item.serviceRef) {
-            //         markItem(configs, item, "read");
-            //     }
-            // }
+            // mark only those after date
+            state.feeds[state.page.feedId].iids
+                .map((iid) => state.items[iid])
+                .filter((i) => !i.hasRead && i.date.getTime() >= date.getTime())
+                .forEach((item) => {
+                    if (item.serviceRef) {
+                        NewsblurAPI.setRead(configs, item.serviceRef, true);
+                    }
+                });
         }
-
-        throw new Error("TODO! deal with res");
     },
 
     markRead: (item: RSSItem) => async (_, getState) => {
