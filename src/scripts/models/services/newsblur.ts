@@ -27,88 +27,80 @@ export interface NewsBlurConfigs extends ServiceConfigs {
     password: string;
 }
 
-// Basic fetch functions
+export namespace NewsblurAPI {
+    // Basic fetch functions (not exported)
 
-async function fetchGetAPI(
-    configs: NewsBlurConfigs,
-    path: string,
-    params: Record<string, string>,
-): Promise<NewsblurResponse> {
-    // set url
-    const url = new URL(configs.endpoint);
-    url.pathname = path;
-    // set params
-    const searchParams = new URLSearchParams(params);
-    url.search = searchParams.toString();
-    // set headers
-    const headers = new Headers();
-    // options
-    const options: RequestInit = { headers, credentials: "include" };
-    // send
-    const response = await fetch(url, options);
-    // return or throw
-    const json: NewsblurResponse = await response.json();
-    return json;
-}
+    async function fetchGetAPI(
+        configs: NewsBlurConfigs,
+        path: string,
+        params: Record<string, string>,
+    ): Promise<NewsblurResponse> {
+        // set url
+        const url = new URL(configs.endpoint);
+        url.pathname = path;
+        // set params
+        const searchParams = new URLSearchParams(params);
+        url.search = searchParams.toString();
+        // set headers
+        const headers = new Headers();
+        // options
+        const options: RequestInit = { headers, credentials: "include" };
+        // send
+        const response = await fetch(url, options);
+        // return or throw
+        const json: NewsblurResponse = await response.json();
+        return json;
+    }
 
-async function fetchPostAPI(
-    configs: NewsBlurConfigs,
-    path: string,
-    params: ParamsObject,
-): Promise<NewsblurPostResponse> {
-    // set url
-    const url = new URL(configs.endpoint);
-    url.pathname = path;
-    // set params
-    const body = toSearchParams(params);
-    // set headers
-    const headers = new Headers();
-    headers.set("Content-Type", "application/x-www-form-urlencoded");
-    // options
-    const options: RequestInit = {
-        method: "POST",
-        headers: headers,
-        body: body,
-        credentials: "include",
-    };
-    // send
-    const response = await fetch(url, options);
-    // return or throw
-    const json: NewsblurPostResponse = await response.json();
-    return json;
-}
+    async function fetchPostAPI(
+        configs: NewsBlurConfigs,
+        path: string,
+        params: ParamsObject,
+    ): Promise<NewsblurPostResponse> {
+        // set url
+        const url = new URL(configs.endpoint);
+        url.pathname = path;
+        // set params
+        const body = toSearchParams(params);
+        // set headers
+        const headers = new Headers();
+        headers.set("Content-Type", "application/x-www-form-urlencoded");
+        // options
+        const options: RequestInit = {
+            method: "POST",
+            headers: headers,
+            body: body,
+            credentials: "include",
+        };
+        // send
+        const response = await fetch(url, options);
+        // return or throw
+        const json: NewsblurPostResponse = await response.json();
+        return json;
+    }
 
-// Fetch direct API endpoints
+    // Direct API endpoints (exported)
 
-export const NewsblurAPI = {
-    /**
-     * Newsblur docs:
-     *
-     * POST /api/login
-     *
-     * Login as an existing user.
-     * | Parameter | Description         | Example    |
-     * |-----------|---------------------|------------|
-     * | username  | Username (required) | samuelclay |
-     * | password  | Password            | new$blur   |
-     *
-     * Tips:
-     * - If a user has no password set, you cannot just send any old password. This is not Instapaper.
-     */
-    async authenticate(configs: NewsBlurConfigs): Promise<boolean> {
+    export async function authenticate(
+        configs: NewsBlurConfigs,
+    ): Promise<boolean> {
         const response = await fetchPostAPI(configs, "/api/login", {
             username: configs.username,
             password: configs.password,
         });
         return Boolean(response.authenticated);
-    },
-    async fetchFeeds(configs: NewsBlurConfigs): Promise<NewsblurFeed[]> {
+    }
+
+    export async function fetchFeeds(
+        configs: NewsBlurConfigs,
+    ): Promise<NewsblurFeed[]> {
         const response = (await fetchGetAPI(configs, "/reader/feeds", {
             flat: "true",
         })) as NewsblurFeedsResponse;
         return Object.values(response.feeds);
-    },
-    async fetchStoriesInFeed(
+    }
+
+    export async function fetchStoriesInFeed(
         configs: NewsBlurConfigs,
         feedId: string | number,
     ): Promise<NewsblurStory[]> {
@@ -120,8 +112,9 @@ export const NewsblurAPI = {
             {},
         )) as NewsblurStoriesResponse;
         return Object.values(response.stories);
-    },
-    async fetchUnreadStoriesInFeed(
+    }
+
+    export async function fetchUnreadStoriesInFeed(
         configs: NewsBlurConfigs,
         feedId: string | number,
     ): Promise<NewsblurStory[]> {
@@ -133,8 +126,9 @@ export const NewsblurAPI = {
             { read_filter: "unread" },
         )) as NewsblurStoriesResponse;
         return Object.values(response.stories);
-    },
-    async fetchAllStarredStories(
+    }
+
+    export async function fetchAllStarredStories(
         configs: NewsBlurConfigs,
     ): Promise<NewsblurStory[]> {
         const response = (await fetchGetAPI(
@@ -143,15 +137,19 @@ export const NewsblurAPI = {
             {},
         )) as NewsblurStoriesResponse;
         return Object.values(response.stories);
-    },
-    async fetchAllStories(configs: NewsBlurConfigs): Promise<NewsblurStory[]> {
+    }
+
+    export async function fetchAllStories(
+        configs: NewsBlurConfigs,
+    ): Promise<NewsblurStory[]> {
         const feeds = await NewsblurAPI.fetchFeeds(configs);
-        const promises = feeds.flatMap(async (feed) =>
+        const promises = feeds.map((feed) =>
             NewsblurAPI.fetchStoriesInFeed(configs, feed.id),
         );
         return (await Promise.all(promises)).flat();
-    },
-    async setRead(
+    }
+
+    export async function setRead(
         configs: NewsBlurConfigs,
         serviceRef: string,
         isRead: boolean,
@@ -174,8 +172,9 @@ export const NewsblurAPI = {
                 throw new NewsblurError([res.message!]);
             }
         }
-    },
-    async setStar(
+    }
+
+    export async function setStar(
         configs: NewsBlurConfigs,
         serviceRef: string,
         isStarred: boolean,
@@ -203,8 +202,8 @@ export const NewsblurAPI = {
                 throw new NewsblurError(res.messages);
             }
         }
-    },
-};
+    }
+}
 
 // Types
 
