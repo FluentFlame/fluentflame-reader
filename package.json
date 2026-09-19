@@ -83,7 +83,7 @@
     "qrcode.react": "^4.2.0",
     "ts-loader": "^7.0.4",
     "tsx": "^4.23.13",
-    "typescript": "^5.8.2",
+    "typescript": "^7.0.2",
     "webpack": "^5.110.3",
     "webpack-cli": "^7.2.3"
   },
