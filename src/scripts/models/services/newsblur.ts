@@ -1,5 +1,3 @@
-/* WORK IN PROGRESS... */
-
 /*
 Newsblur Dictionary:
 
@@ -7,7 +5,8 @@ Newsblur Dictionary:
 |----------|-------------|
 | feed     | source      |
 | story    | item        |
-| folders  | groups?     |
+| folders  | -           |
+
 */
 
 import { ServiceConfigs, SyncService } from "../../../schema-types";
@@ -278,24 +277,6 @@ interface NewsblurFeed {
     last_story_date: dateString;
 }
 
-/**
- * Summary is a count of unread stories in each feed.
- *
- * Counts are broken into three. Add them up for a
- * total, but you shouldn't show or count the hidden
- * stories.
- */
-interface NewsblurFeedSummary {
-    /** id of feed */
-    id: number;
-    /** positive/focus count */
-    ps: number;
-    /** neutral/unread count */
-    nt: number;
-    /** negative/hidden count */
-    ng: number;
-}
-
 interface NewsblurStory {
     story_hash: string;
     story_timestamp: string;
@@ -454,14 +435,16 @@ export const newsblurServiceHooks: ServiceHooks = {
             await NewsblurAPI.markAllAsRead(configs);
         } else {
             // mark only those after date
-            state.feeds[state.page.feedId].iids
+            const requests = state.feeds[state.page.feedId].iids
                 .map((iid) => state.items[iid])
                 .filter((i) => !i.hasRead && i.date.getTime() >= date.getTime())
-                .forEach((item) => {
+                .map(async (item) => {
+                    // prettier-ignore
                     if (item.serviceRef) {
-                        NewsblurAPI.setRead(configs, item.serviceRef, true);
+                        await NewsblurAPI.setRead(configs, item.serviceRef, true);
                     }
                 });
+            await Promise.all(requests);
         }
     },
 
