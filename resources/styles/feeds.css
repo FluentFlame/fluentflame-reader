@@ -74,7 +74,6 @@
     user-select: none;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
     display: inline-block;
 }
 /* Hide the source name on small screens. We need the space for buttons. */
@@ -154,7 +153,7 @@
 }
 .list-feed-container {
     max-width: 350px;
-    flex-basis: 0;
+    flex-basis: 350px;
     flex-grow: 1;
     min-width: 120px;
     background-color: var(--neutralLighterAlt);
