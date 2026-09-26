@@ -53,12 +53,18 @@
 .article .actions {
     color: var(--black);
     border-bottom: 1px solid var(--neutralQuaternaryAlt);
+    height: 38px;
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
 }
 .actions-spacer-left {
     flex-basis: 96px;
+    flex-shrink: 2;
 }
 .actions-spacer-right {
-    flex-basis: 112px;
+    flex-basis: 12px;
+    flex-shrink: 2;
 }
 .article .actions .favicon,
 .article .actions .ms-Spinner {
@@ -74,9 +80,14 @@
     user-select: none;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
     display: inline-block;
+    flex-grow: 1;
+    /* This max width prevents the source name from squishing the sidebar
+     * when the source name is super long, and the screenspace is really
+     * small. */
+    max-width: calc(100vw - 700px);
 }
+
 /* Hide the source name on small screens. We need the space for buttons. */
 @media (max-width: 600px) {
     .article .actions .source-name {
@@ -128,8 +139,6 @@
 }
 .side-article-wrapper .article .actions {
     border-bottom: none;
-}
-.side-article-wrapper .article > .ms-Stack {
     border-top: 1px solid var(--neutralQuaternaryAlt);
 }
 .list-feed-container:first-child::before,
@@ -154,7 +163,7 @@
 }
 .list-feed-container {
     max-width: 350px;
-    flex-basis: 0;
+    flex-basis: 350px;
     flex-grow: 1;
     min-width: 120px;
     background-color: var(--neutralLighterAlt);

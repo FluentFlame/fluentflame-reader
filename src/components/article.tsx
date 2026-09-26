@@ -59,6 +59,96 @@ function shouldLoad(props: ArticleProps, target: SourceOpenTarget) {
     );
 }
 
+enum LoadStyle {
+    Standard,
+    FullContent,
+    Webpage,
+}
+
+function CommandBar(
+    props: ArticleProps,
+    loaded: boolean,
+    loadStyle: LoadStyle,
+    toggleFull: () => void,
+    toggleWebpage: () => void,
+    moreMenuProps: () => IContextualMenuProps,
+): React.JSX.Element {
+    return (
+        <div className="actions">
+            <div className="actions-spacer-left"></div>
+            <div className="source-name">
+                {loaded ? (
+                    props.source.iconurl && (
+                        <img className="favicon" src={props.source.iconurl} />
+                    )
+                ) : (
+                    <Spinner size={1} />
+                )}
+                {props.source.name}
+                {props.item.creator && (
+                    <span className="creator">{props.item.creator}</span>
+                )}
+            </div>
+            <CommandBarButton
+                title={
+                    props.item.hasRead
+                        ? intl.get("article.markUnread")
+                        : intl.get("article.markRead")
+                }
+                iconProps={
+                    props.item.hasRead
+                        ? { iconName: "StatusCircleRing" }
+                        : {
+                              iconName: "RadioBtnOn",
+                              style: {
+                                  fontSize: 14,
+                                  textAlign: "center",
+                              },
+                          }
+                }
+                onClick={() => props.toggleHasRead(props.item)}
+            />
+            <CommandBarButton
+                title={
+                    props.item.starred
+                        ? intl.get("article.unstar")
+                        : intl.get("article.star")
+                }
+                iconProps={{
+                    iconName: props.item.starred
+                        ? "FavoriteStarFill"
+                        : "FavoriteStar",
+                }}
+                onClick={() => props.toggleStarred(props.item)}
+            />
+            <CommandBarButton
+                title={intl.get("article.loadFull")}
+                className={loadStyle === LoadStyle.FullContent ? "active" : ""}
+                iconProps={{ iconName: "RawSource" }}
+                onClick={toggleFull}
+            />
+            <CommandBarButton
+                title={intl.get("article.loadWebpage")}
+                className={loadStyle === LoadStyle.Webpage ? "active" : ""}
+                iconProps={{ iconName: "Globe" }}
+                onClick={toggleWebpage}
+            />
+            <CommandBarButton
+                title={intl.get("more")}
+                iconProps={{ iconName: "More" }}
+                menuIconProps={{ style: { display: "none" } }}
+                menuProps={moreMenuProps()}
+            />
+            <div className="actions-spacer-right"></div>
+            <CommandBarButton
+                title={intl.get("close")}
+                iconProps={{ iconName: "BackToWindow" }}
+                onClick={props.dismiss}
+            />
+        </div>
+    );
+}
+
 class Article extends React.Component<ArticleProps, ArticleState> {
     webview: Electron.WebviewTag;
 
@@ -393,143 +483,73 @@ class Article extends React.Component<ArticleProps, ArticleState> {
         }&m=${this.state.loadFull ? 1 : 0}&an=${animPref}`;
     };
 
-    render = () => (
-        <FocusZone className="article">
-            <Stack horizontal style={{ height: 36 }}>
-                <span className="actions-spacer-left"></span>
-                <Stack
-                    className="actions"
-                    grow
-                    horizontal
-                    tokens={{ childrenGap: 12 }}>
-                    <Stack.Item grow>
-                        <span className="source-name">
-                            {this.state.loaded ? (
-                                this.props.source.iconurl && (
-                                    <img
-                                        className="favicon"
-                                        src={this.props.source.iconurl}
-                                    />
-                                )
-                            ) : (
-                                <Spinner size={1} />
-                            )}
-                            {this.props.source.name}
-                            {this.props.item.creator && (
-                                <span className="creator">
-                                    {this.props.item.creator}
-                                </span>
-                            )}
-                        </span>
-                    </Stack.Item>
-                    <CommandBarButton
-                        title={
-                            this.props.item.hasRead
-                                ? intl.get("article.markUnread")
-                                : intl.get("article.markRead")
+    render = () => {
+        let loadStyle = LoadStyle.Standard;
+        if (this.state.loadWebpage) {
+            loadStyle = LoadStyle.Webpage;
+        } else if (this.state.loadFull) {
+            loadStyle = LoadStyle.FullContent;
+        }
+        // TODO: We shouldn't actually have to pass the full props to this.
+        // But separating this is a pain.
+        let commandBar = CommandBar(
+            this.props,
+            this.state.loaded,
+            loadStyle,
+            this.toggleFull,
+            this.toggleWebpage,
+            this.moreMenuProps,
+        );
+        return (
+            <FocusZone className="article">
+                {commandBar}
+                {(!this.state.loadFull || this.state.fullContent) && (
+                    <webview
+                        id="article"
+                        className={this.state.error ? "error" : ""}
+                        key={
+                            this.props.item.iid +
+                            (this.state.loadWebpage ? "_" : "") +
+                            (this.state.loadFull ? "__" : "")
                         }
-                        iconProps={
-                            this.props.item.hasRead
-                                ? { iconName: "StatusCircleRing" }
-                                : {
-                                      iconName: "RadioBtnOn",
-                                      style: {
-                                          fontSize: 14,
-                                          textAlign: "center",
-                                      },
-                                  }
+                        src={
+                            this.state.loadWebpage
+                                ? this.props.item.link
+                                : this.articleView()
                         }
-                        onClick={() =>
-                            this.props.toggleHasRead(this.props.item)
+                        allowpopups={"true" as unknown as boolean}
+                        webpreferences="contextIsolation,disableDialogs,autoplayPolicy=document-user-activation-required"
+                        partition={
+                            this.state.loadWebpage ? "sandbox" : undefined
                         }
                     />
-                    <CommandBarButton
-                        title={
-                            this.props.item.starred
-                                ? intl.get("article.unstar")
-                                : intl.get("article.star")
-                        }
-                        iconProps={{
-                            iconName: this.props.item.starred
-                                ? "FavoriteStarFill"
-                                : "FavoriteStar",
-                        }}
-                        onClick={() =>
-                            this.props.toggleStarred(this.props.item)
-                        }
-                    />
-                    <CommandBarButton
-                        title={intl.get("article.loadFull")}
-                        className={this.state.loadFull ? "active" : ""}
-                        iconProps={{ iconName: "RawSource" }}
-                        onClick={this.toggleFull}
-                    />
-                    <CommandBarButton
-                        title={intl.get("article.loadWebpage")}
-                        className={this.state.loadWebpage ? "active" : ""}
-                        iconProps={{ iconName: "Globe" }}
-                        onClick={this.toggleWebpage}
-                    />
-                    <CommandBarButton
-                        title={intl.get("more")}
-                        iconProps={{ iconName: "More" }}
-                        menuIconProps={{ style: { display: "none" } }}
-                        menuProps={this.moreMenuProps()}
-                    />
-                </Stack>
-                <span className="actions-spacer-right"></span>
-                <Stack horizontal horizontalAlign="end">
-                    <CommandBarButton
-                        title={intl.get("close")}
-                        iconProps={{ iconName: "BackToWindow" }}
-                        onClick={this.props.dismiss}
-                    />
-                </Stack>
-            </Stack>
-            {(!this.state.loadFull || this.state.fullContent) && (
-                <webview
-                    id="article"
-                    className={this.state.error ? "error" : ""}
-                    key={
-                        this.props.item.iid +
-                        (this.state.loadWebpage ? "_" : "") +
-                        (this.state.loadFull ? "__" : "")
-                    }
-                    src={
-                        this.state.loadWebpage
-                            ? this.props.item.link
-                            : this.articleView()
-                    }
-                    allowpopups={"true" as unknown as boolean}
-                    webpreferences="contextIsolation,disableDialogs,autoplayPolicy=document-user-activation-required"
-                    partition={this.state.loadWebpage ? "sandbox" : undefined}
-                />
-            )}
-            {this.state.error && (
-                <Stack
-                    className="error-prompt"
-                    verticalAlign="center"
-                    horizontalAlign="center"
-                    tokens={{ childrenGap: 12 }}>
-                    <Icon iconName="HeartBroken" style={{ fontSize: 32 }} />
+                )}
+                {this.state.error && (
                     <Stack
-                        horizontal
+                        className="error-prompt"
+                        verticalAlign="center"
                         horizontalAlign="center"
-                        tokens={{ childrenGap: 7 }}>
-                        <small>{intl.get("article.error")}</small>
-                        <small>
-                            <Link onClick={this.webviewReload}>
-                                {intl.get("article.reload")}
-                            </Link>
-                        </small>
+                        tokens={{ childrenGap: 12 }}>
+                        <Icon iconName="HeartBroken" style={{ fontSize: 32 }} />
+                        <Stack
+                            horizontal
+                            horizontalAlign="center"
+                            tokens={{ childrenGap: 7 }}>
+                            <small>{intl.get("article.error")}</small>
+                            <small>
+                                <Link onClick={this.webviewReload}>
+                                    {intl.get("article.reload")}
+                                </Link>
+                            </small>
+                        </Stack>
+                        <span style={{ fontSize: 11 }}>
+                            {this.state.errorDescription}
+                        </span>
                     </Stack>
-                    <span style={{ fontSize: 11 }}>
-                        {this.state.errorDescription}
-                    </span>
-                </Stack>
-            )}
-        </FocusZone>
-    );
+                )}
+            </FocusZone>
+        );
+    };
 }
 
 export default Article;
