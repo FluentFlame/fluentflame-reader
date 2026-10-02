@@ -244,7 +244,10 @@ export interface NewsblurPostResponse extends NewsblurResponse {
 }
 
 export interface NewsblurAuthResponse extends NewsblurPostResponse {
-    errors: Record</*reason*/ string, /*long reason*/ string> | null /*ok*/;
+    errors:
+        | Record</*reason*/ string, /*long reason*/ string>
+        | null /*ok*/
+        | { __all__: string[] };
 }
 
 export interface NewsblurFeedsResponse extends NewsblurResponse {
@@ -288,7 +291,7 @@ interface NewsblurFeed {
     feed_title: string;
     feed_address: string;
     feed_link: string;
-    last_story_date: dateString;
+    last_story_date: dateString | null;
 }
 
 interface NewsblurStory {
