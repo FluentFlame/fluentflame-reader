@@ -16,7 +16,7 @@ npm version patch -m 'Bump to %s'
 To do a new dev-release, run the following `npm` command:
 
 ```bash
-npm version --preid dev -m 'Bump to %s'
+npm version prerelease --preid dev -m 'Bump to %s'
 ```
 
 Push these up the main repository. NOTE, doing so requires the uploader to
