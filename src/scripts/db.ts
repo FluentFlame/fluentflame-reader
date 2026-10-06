@@ -294,7 +294,11 @@ function byteLength(str: string) {
 }
 
 export async function init() {
-    await migrateLovefieldSourcesDB("sourcesDB", 3);
+    try {
+        await migrateLovefieldSourcesDB("sourcesDB", 3);
+    } catch (e: any) {
+        console.error("Error migrating sources DB", e);
+    }
     try {
         await migrateLovefieldItemsDB("itemsDB", 1);
     } catch (e) {

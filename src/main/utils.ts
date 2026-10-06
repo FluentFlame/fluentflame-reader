@@ -7,13 +7,20 @@ import {
     clipboard,
     systemPreferences,
 } from "electron";
+import path from "path";
+import { getFonts } from "font-list";
+import { promises, writeFile } from "fs";
+
 import pkg from "../../package.json";
 import { WindowManager } from "./window";
 import { trimContent, trimString } from "./pure-utils";
-import { promises, writeFile } from "fs";
 import { ImageCallbackTypes, TouchBarTexts } from "../schema-types";
 import { initMainTouchBar } from "./touchbar";
-import { getFonts } from "font-list";
+
+function getAutosavePath() {
+    const userDataPath = app.getPath("userData");
+    return `${userDataPath}/autosaves/ffr_autosave.frdata`;
+}
 
 export function setUtilsListeners(manager: WindowManager) {
     async function openExternal(url: string, background = false) {
@@ -156,6 +163,37 @@ export function setUtilsListeners(manager: WindowManager) {
                 }
             }
             return null;
+        },
+    );
+
+    ipcMain.handle("write-autosave", async (_, writeContent: string) => {
+        const autosavePath = getAutosavePath();
+        try {
+            const dirStat = await promises.stat(path.dirname(autosavePath), {
+                throwIfNoEntry: false,
+            });
+            if (dirStat == undefined) {
+                await promises.mkdir(path.dirname(autosavePath));
+            }
+            await promises.writeFile(getAutosavePath(), writeContent);
+        } catch (err: any) {
+            console.error("Failed to write autosave", err);
+        }
+    });
+
+    ipcMain.handle(
+        "get-last-autosave-timestamp",
+        async (): Promise<number | undefined> => {
+            const autosavePath = getAutosavePath();
+            try {
+                const result = await promises.stat(autosavePath, {
+                    throwIfNoEntry: false,
+                });
+                return result?.mtimeMs;
+            } catch (err: any) {
+                console.error(`Failed to stat ${autosavePath}`, err);
+                return undefined;
+            }
         },
     );
 
