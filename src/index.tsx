@@ -11,6 +11,7 @@ import { initApp, openTextMenu } from "./scripts/models/app";
 import { startPool } from "./scripts/fetch-pool";
 import { rootStore } from "./scripts/reducer";
 import { initThemeUpdateListener } from "./scripts/settings";
+import { renewAutosave } from "./scripts/autosave";
 
 startPool(); // Start global fetch pool.
 initThemeUpdateListener();
@@ -21,6 +22,8 @@ applyThemeSettings();
 initializeIcons("icons/");
 
 rootStore.dispatch(initApp());
+
+renewAutosave();
 
 window.utils.addMainContextListener((pos, text) => {
     rootStore.dispatch(openTextMenu(pos, text));

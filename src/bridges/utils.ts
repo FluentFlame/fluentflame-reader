@@ -64,6 +64,14 @@ const utilsBridge = {
         )) as string;
     },
 
+    autosaveBackupData: (writeContent: string): Promise<void> => {
+        return ipcRenderer.invoke("write-autosave", writeContent);
+    },
+
+    getLastAutosaveTimestamp: (): Promise<number | undefined> => {
+        return ipcRenderer.invoke("get-last-autosave-timestamp");
+    },
+
     getCacheSize: async (): Promise<number> => {
         return await ipcRenderer.invoke("get-cache");
     },
