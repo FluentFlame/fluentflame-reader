@@ -5,6 +5,8 @@
       "esModuleInterop": true,
       "target": "ESNext",
       "module": "ESNext",
-      "moduleResolution": "Bundler"
-    }
+      "moduleResolution": "Bundler",
+      "types": ["mocha", "node"]
+    },
+    "include": ["./tests/**/*"]
 }
