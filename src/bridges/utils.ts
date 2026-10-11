@@ -72,8 +72,17 @@ const utilsBridge = {
         return ipcRenderer.invoke("get-last-autosave-timestamp");
     },
 
-    notifyOfRecoveryNeeded: async (): Promise<any> => {
-        return ipcRenderer.invoke("notify-of-recovery-needed");
+    notifyOfRecoveryNeeded: async (
+        title: string,
+        detail: string,
+        buttons: string[],
+    ): Promise<any> => {
+        return ipcRenderer.invoke(
+            "notify-of-recovery-needed",
+            title,
+            detail,
+            buttons,
+        );
     },
 
     getCacheSize: async (): Promise<number> => {

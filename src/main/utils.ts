@@ -204,10 +204,12 @@ export function setUtilsListeners(manager: WindowManager) {
 
     ipcMain.handle(
         "notify-of-recovery-needed",
-        async (): Promise<AutosaveNotifyResponse> => {
-            const title = "Database Corruption Detected";
-            const detail =
-                "IndexedDB database appears to be corrupted, and an autosave file has been detected.\n\nRecover from autosave?";
+        async (
+            _,
+            title: string,
+            detail: string,
+            buttons: string[],
+        ): Promise<AutosaveNotifyResponse> => {
             if (manager.hasWindow()) {
                 const dialogResponse = await dialog.showMessageBox(
                     manager.mainWindow,
@@ -216,18 +218,18 @@ export function setUtilsListeners(manager: WindowManager) {
                         title: title,
                         message: title,
                         detail: detail,
-                        buttons: ["Ignore", "Delete autosave", "Recover"],
-                        cancelId: 0,
+                        buttons: buttons,
+                        cancelId: 1,
                         defaultId: 2,
                     },
                 );
                 const autosavePath = getAutosavePath();
                 switch (dialogResponse.response) {
                     case 0:
-                        return { response: "ignored" };
-                    case 1:
                         await promises.rm(autosavePath);
                         return { response: "deleted" };
+                    case 1:
+                        return { response: "ignored" };
                     case 2:
                         const contents = await promises.readFile(autosavePath, {
                             encoding: "utf8",
