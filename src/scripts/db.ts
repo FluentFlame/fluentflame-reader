@@ -3,6 +3,13 @@ import { SourceRule } from "./models/rule";
 import { Dexie, type EntityTable, type Transaction } from "dexie";
 import type { ThumbnailAttributes } from "./thumb-utils";
 
+// Used to determine if the database has been initialised
+// or corrupted.
+export interface IntegrityEntry {
+    index: number;
+    timestamp: Date;
+}
+
 export interface SourceEntry {
     sid: number;
     url: string;
@@ -37,9 +44,11 @@ export interface ItemEntry {
 }
 
 export const fluentDB = new Dexie("MainDB") as Dexie & {
+    integrity: EntityTable<IntegrityEntry, "index">;
     sources: EntityTable<SourceEntry, "sid">;
     items: EntityTable<ItemEntry, "iid">;
 };
+
 fluentDB.version(4).stores({
     sources: `++sid, &url`,
     items: `++iid, source, date, serviceRef`,
@@ -76,6 +85,13 @@ fluentDB
         items: `++iid, source, date, serviceRef`,
     })
     .upgrade(migrateOpenTarget);
+
+// Introduce Database Integrity Validation Table.
+fluentDB.version(9).stores({
+    integrity: `++index`,
+    sources: `++sid, &url`,
+    items: `++iid, source, date, serviceRef`,
+});
 
 export async function calculateItemSize(): Promise<number> {
     await fluentDB.open();

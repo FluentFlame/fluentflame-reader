@@ -1,8 +1,13 @@
+/**
+ * pure-utils.ts is a collection of utilities that are self-contained, and require
+ * no inter-package imports. None are stateful.
+ */
+
 /** Ensure we don't have too long of a message. */
 export function trimContent(
     s: string,
     charLen: number = 512,
-    lineLen: number = 5,
+    lineLen: number = 10,
 ): string {
     return limitLines(trimString(s, charLen), lineLen);
 }

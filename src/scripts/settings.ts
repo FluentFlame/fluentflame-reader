@@ -201,6 +201,7 @@ export interface DatabaseConfig {
     globalRules: any[];
 }
 
+/** Interface to represent the current Fluentflame settings as serialised. */
 export interface FluentflameSettingConfig {
     version: string;
 
@@ -212,6 +213,13 @@ export interface FluentflameSettingConfig {
     sourceGroups: any[];
     view?: number; // Deprecated.
     viewConfig: ViewConfig;
+}
+
+/** Interface to represent the old Fluent Reader settings that are omitted. */
+interface FluentReaderMigrationEntries {
+    nedb?: any;
+    useNeDB?: any;
+    lovefield?: any;
 }
 
 export async function exportAll() {
@@ -235,9 +243,11 @@ function isFluentReaderExport(jsonObject: any) {
 }
 
 /**
- * Migrate Fluent Reader exports.
+ * Migrate Fluent Reader exports to Fluentflame Reader.
  */
-function migrateExport(input: any): FluentflameSettingConfig {
+function migrateExport(
+    input: FluentflameSettingConfig & FluentReaderMigrationEntries,
+): FluentflameSettingConfig {
     console.log("Identified an input from Fluent Reader, trying to migrate...");
     return {
         version: input.version, // This gets updated in update-scripts.
@@ -289,6 +299,9 @@ function migrateExport(input: any): FluentflameSettingConfig {
     };
 }
 
+/**
+ * Ask the user to load a configuration, then load it.
+ */
 export async function importAll(): Promise<boolean> {
     const filters = [{ name: intl.get("app.frData"), extensions: ["frdata"] }];
     let data = await window.utils.showOpenDialog(filters);
@@ -303,13 +316,25 @@ export async function importAll(): Promise<boolean> {
     );
     if (!confirmed) return true;
     let configs = JSON.parse(data);
+    return loadFromConfig(configs);
+}
 
+/**
+ * Load a configuration.
+ *
+ * @jsonObject: A configuration, either from Fluentflame or Fluent Reader.
+ */
+export async function loadFromConfig(
+    jsonObject: FluentflameSettingConfig & FluentReaderMigrationEntries,
+): Promise<boolean> {
     await db.fluentDB.sources.clear();
     await db.fluentDB.items.clear();
 
-    const newConfigs: FluentflameSettingConfig = isFluentReaderExport(configs)
-        ? migrateExport(configs)
-        : configs;
+    const newConfigs: FluentflameSettingConfig = isFluentReaderExport(
+        jsonObject,
+    )
+        ? migrateExport(jsonObject)
+        : (jsonObject as FluentflameSettingConfig);
     newConfigs.database.sources.forEach((s) => {
         s.lastFetched = new Date(s.lastFetched);
         if (!s.textDir) s.textDir = SourceTextDirection.LTR;
@@ -324,7 +349,13 @@ export async function importAll(): Promise<boolean> {
     });
 
     await db.fluentDB.items.bulkAdd(newConfigs.database.items);
+    // Ensure we actually update integrity entry.
+    const integrityPromise = db.fluentDB.integrity.put({
+        index: 0,
+        timestamp: new Date(),
+    });
     delete newConfigs.database;
     window.settings.setAll(newConfigs);
+    await integrityPromise;
     return false;
 }

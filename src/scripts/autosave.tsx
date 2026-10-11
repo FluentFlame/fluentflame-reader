@@ -1,25 +1,71 @@
-import * as db from "./db";
+/**
+ * Autosaves have somewhat complicated logic, because it would be really bad
+ * if we autosaved over a good save with a bad save. So, we have to put in
+ * some very reliable heuristics to figure out if we recently lost some data.
+ *
+ * This is the purpose of the `integrity` table in the IndexedDB database.
+ * Specifically, if we see we had an autosave available, yet the `integrity`
+ * is empty, it means that we wiped that table. Since that never happens in
+ * the renderer code paths, it's very likely there was a corruption and it
+ * was wiped silently by Electron on `IndexedDB.open`. We then can condition
+ * on that, and recommend recovery.
+ */
+
+import { fluentDB, type ItemEntry, type SourceEntry } from "./db";
+import { loadFromConfig } from "./settings";
+
+const ONE_DAY = 24 * 60 * 60 * 1000;
+
+export enum AutosaveResponse {
+    SUCCESS = 0,
+    SKIPPED = 1,
+    INTEGRITY_FAILED = 2,
+}
+
+export async function handleAutosaves(): Promise<void> {
+    const autosaveResp = await renewAutosave();
+    if (autosaveResp === AutosaveResponse.INTEGRITY_FAILED) {
+        // Dangerous area! Everything in the DB is invalid!
+        const response = await window.utils.notifyOfRecoveryNeeded();
+        if (response.response === "recovered") {
+            // Resets integrity table itself.
+            await loadFromConfig(JSON.parse(response.contents));
+        } else if (response.response === "deleted") {
+            fluentDB.integrity.put({ index: 0, timestamp: new Date() });
+        }
+    } else {
+        fluentDB.integrity.put({ index: 0, timestamp: new Date() });
+    }
+}
 
 /**
  * Renew the autosave file in userData if it's been long enough.
  */
-export async function renewAutosave() {
-    const oneDay = 24 * 60 * 60 * 1000;
+async function renewAutosave(): Promise<AutosaveResponse> {
     const autosaveMTimeMs = await window.utils.getLastAutosaveTimestamp();
-    const autosaveStartTime = Date.now();
-    if (autosaveStartTime < autosaveMTimeMs + oneDay) {
-        console.debug("Autosave still current, not rewriting.");
-        return;
+    const integrityVals = await fluentDB.integrity.toArray();
+    if (autosaveMTimeMs !== undefined && integrityVals.length === 0) {
+        console.error(
+            "Prior autosave exists, and current IndexedDB" +
+                " integrity check failed. Database is corrupt.",
+        );
+        return AutosaveResponse.INTEGRITY_FAILED;
     }
-    let sources: db.SourceEntry[];
-    let items: db.ItemEntry[];
-    const transaction = db.fluentDB.transaction(
+
+    const autosaveStartTime = Date.now();
+    if (autosaveStartTime < autosaveMTimeMs + ONE_DAY) {
+        console.debug("Autosave still current, not rewriting.");
+        return AutosaveResponse.SKIPPED;
+    }
+    let sources: SourceEntry[];
+    let items: ItemEntry[];
+    const transaction = fluentDB.transaction(
         "r",
-        db.fluentDB.sources,
-        db.fluentDB.items,
+        fluentDB.sources,
+        fluentDB.items,
         async () => {
-            sources = await db.fluentDB.sources.toArray();
-            items = await db.fluentDB.items.toArray();
+            sources = await fluentDB.sources.toArray();
+            items = await fluentDB.items.toArray();
         },
     );
     const output = window.settings.getAll();
@@ -34,4 +80,5 @@ export async function renewAutosave() {
         "Completed autosave in " +
             `${Math.round(autosaveEndTime - autosaveStartTime)}ms.`,
     );
+    return AutosaveResponse.SUCCESS;
 }

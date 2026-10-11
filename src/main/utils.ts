@@ -17,9 +17,14 @@ import { trimContent, trimString } from "./pure-utils";
 import { ImageCallbackTypes, TouchBarTexts } from "../schema-types";
 import { initMainTouchBar } from "./touchbar";
 
+export type AutosaveNotifyResponse =
+    | { response: "ignored" }
+    | { response: "deleted" }
+    | { response: "recovered"; contents: string };
+
 function getAutosavePath() {
     const userDataPath = app.getPath("userData");
-    return `${userDataPath}/autosaves/ffr_autosave.frdata`;
+    return path.join(userDataPath, "autosaves", "ffr_autosave.frdata");
 }
 
 export function setUtilsListeners(manager: WindowManager) {
@@ -193,6 +198,51 @@ export function setUtilsListeners(manager: WindowManager) {
             } catch (err: any) {
                 console.error(`Failed to stat ${autosavePath}`, err);
                 return undefined;
+            }
+        },
+    );
+
+    ipcMain.handle(
+        "notify-of-recovery-needed",
+        async (): Promise<AutosaveNotifyResponse> => {
+            const title = "Database Corruption Detected";
+            const detail =
+                "IndexedDB database appears to be corrupted, and an autosave file has been detected.\n\nRecover from autosave?";
+            if (manager.hasWindow()) {
+                const dialogResponse = await dialog.showMessageBox(
+                    manager.mainWindow,
+                    {
+                        type: "error",
+                        title: title,
+                        message: title,
+                        detail: detail,
+                        buttons: ["Ignore", "Delete autosave", "Recover"],
+                        cancelId: 0,
+                        defaultId: 2,
+                    },
+                );
+                const autosavePath = getAutosavePath();
+                switch (dialogResponse.response) {
+                    case 0:
+                        return { response: "ignored" };
+                    case 1:
+                        await promises.rm(autosavePath);
+                        return { response: "deleted" };
+                    case 2:
+                        const contents = await promises.readFile(autosavePath, {
+                            encoding: "utf8",
+                        });
+                        return { response: "recovered", contents: contents };
+                    default:
+                        // Unreachable.
+                        throw Error("Unreachable");
+                }
+            } else {
+                dialog.showErrorBox(
+                    title,
+                    "Unable to recover automatically, but autosave exists.",
+                );
+                return { response: "ignored" };
             }
         },
     );
