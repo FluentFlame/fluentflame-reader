@@ -81,6 +81,14 @@
         "Vertical": "Vertical",
         "font": "Font"
     },
+    "autosave": {
+        "corruption": {
+            "title": "Database corruption detected",
+            "detail": "IndexedDB database appears to be corrupted, and an autosave file has been detected.\n\nRecover from autosave?",
+            "delete": "Delete autosave",
+            "recover": "Recover"
+        }
+    },
     "context": {
         "share": "Share",
         "read": "Read",

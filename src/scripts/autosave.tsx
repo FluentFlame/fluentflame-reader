@@ -11,6 +11,8 @@
  * on that, and recommend recovery.
  */
 
+import intl from "react-intl-universal";
+
 import { fluentDB, type ItemEntry, type SourceEntry } from "./db";
 import { loadFromConfig } from "./settings";
 
@@ -26,7 +28,18 @@ export async function handleAutosaves(): Promise<void> {
     const autosaveResp = await renewAutosave();
     if (autosaveResp === AutosaveResponse.INTEGRITY_FAILED) {
         // Dangerous area! Everything in the DB is invalid!
-        const response = await window.utils.notifyOfRecoveryNeeded();
+        const title = intl.get("autosave.corruption.title");
+        const detail = intl.get("autosave.corruption.detail");
+        const buttons = [
+            intl.get("autosave.corruption.delete"),
+            intl.get("close"),
+            intl.get("autosave.corruption.recover"),
+        ];
+        const response = await window.utils.notifyOfRecoveryNeeded(
+            title,
+            detail,
+            buttons,
+        );
         if (response.response === "recovered") {
             // Resets integrity table itself.
             await loadFromConfig(JSON.parse(response.contents));
