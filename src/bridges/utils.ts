@@ -5,7 +5,7 @@ import {
     TouchBarTexts,
     WindowStateListenerType,
 } from "../schema-types";
-import { CustomArgs } from "../general-types";
+import { type CustomArgs, type AutosaveNotifyResponse } from "../general-types";
 import { IObjectWithKey } from "@fluentui/react";
 
 const utilsBridge = {
@@ -72,11 +72,11 @@ const utilsBridge = {
         return ipcRenderer.invoke("get-last-autosave-timestamp");
     },
 
-    notifyOfRecoveryNeeded: async (
+    notifyOfRecoveryNeeded: (
         title: string,
         detail: string,
         buttons: string[],
-    ): Promise<any> => {
+    ): Promise<AutosaveNotifyResponse> => {
         return ipcRenderer.invoke(
             "notify-of-recovery-needed",
             title,
