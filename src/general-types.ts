@@ -4,3 +4,8 @@ export type CustomArgs = {
     // Force using the window frame, regardless of platform.
     forceFrame: boolean;
 };
+
+export type AutosaveNotifyResponse =
+    | { response: "ignored" }
+    | { response: "deleted" }
+    | { response: "recovered"; contents: string };

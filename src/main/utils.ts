@@ -16,11 +16,7 @@ import { WindowManager } from "./window";
 import { trimContent, trimString } from "./pure-utils";
 import { ImageCallbackTypes, TouchBarTexts } from "../schema-types";
 import { initMainTouchBar } from "./touchbar";
-
-export type AutosaveNotifyResponse =
-    | { response: "ignored" }
-    | { response: "deleted" }
-    | { response: "recovered"; contents: string };
+import { type AutosaveNotifyResponse } from "../general-types";
 
 function getAutosavePath() {
     const userDataPath = app.getPath("userData");
