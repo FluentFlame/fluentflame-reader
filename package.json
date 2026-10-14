@@ -57,7 +57,7 @@
   ],
   "repository": "github:FluentFlame/fluentflame-reader",
   "devDependencies": {
-    "@fluentui/react": "^8.123.6",
+    "@fluentui/react": "^8.125.8",
     "@types/chai": "^5.2.2",
     "@types/js-md5": "^0.8.0",
     "@types/jsdom": "^30.0.0",
