@@ -103,6 +103,7 @@ export const enum SyncService {
     Inoreader,
     Miniflux,
     Nextcloud,
+    NewsBlur,
 }
 
 export interface ServiceConfigs {
