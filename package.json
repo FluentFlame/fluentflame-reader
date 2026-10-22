@@ -94,7 +94,7 @@
     "dompurify": "^3.4.0",
     "https-browserify": "^1.0.0",
     "minimist": "^1.2.8",
-    "react": "^19.2.8",
+    "react": "^19.3.1",
     "react-dom": "^19.3.0",
     "react-intl-universal": "^2.2.5",
     "react-redux": "^9.3.0",
