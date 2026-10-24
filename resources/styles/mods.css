@@ -1,0 +1,196 @@
+/* Fluentflame Reader — card view refresh (preview) */
+.default-card {
+    --card-radius: 14px;
+    box-sizing: border-box;
+    width: 264px;
+    height: 280px;
+    margin: 12px 8px;
+    border-radius: var(--card-radius);
+    background: var(--white);
+    border: 1px solid color-mix(in srgb, var(--neutralDarker) 10%, transparent);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .06), 0 10px 28px rgba(0, 0, 0, .10);
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.default-card:hover,
+.ms-Fabric--isFocusVisible .default-card:focus {
+    transform: translateY(-3px);
+    border-color: color-mix(in srgb, var(--neutralDarker) 18%, transparent);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .08), 0 18px 44px rgba(0, 0, 0, .16);
+}
+.default-card:active {
+    transform: translateY(-1px) scale(.995);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .08), 0 8px 20px rgba(0, 0, 0, .12);
+}
+
+.default-card img.head,
+.default-card canvas.head,
+.default-card video.head {
+    height: 148px;
+    transition: transform .35s cubic-bezier(.2, .7, .2, 1);
+}
+.default-card:hover img.head,
+.default-card:hover canvas.head,
+.default-card:hover video.head {
+    transform: scale(1.045);
+}
+.default-card:has(.head)::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 148px;
+    background: linear-gradient(to bottom, transparent 55%, rgba(0, 0, 0, .30));
+    pointer-events: none;
+    z-index: 1;
+}
+.default-card.transform:hover img.head,
+.default-card.transform:hover canvas.head,
+.default-card.transform:hover video.head,
+.ms-Fabric--isFocusVisible .default-card.transform:focus img.head,
+.ms-Fabric--isFocusVisible .default-card.transform:focus canvas.head,
+.ms-Fabric--isFocusVisible .default-card.transform:focus video.head {
+    transform: scale(1.045);
+}
+.default-card.transform:hover p,
+.default-card.transform:hover h3,
+.ms-Fabric--isFocusVisible .default-card.transform:focus p,
+.ms-Fabric--isFocusVisible .default-card.transform:focus h3 {
+    transform: none;
+}
+
+.default-card .info {
+    margin: 8px 14px 0;
+    line-height: 16px;
+    align-items: center;
+}
+.default-card .info img {
+    width: 16px;
+    height: 16px;
+    margin-right: 7px;
+    border-radius: 4px;
+    object-fit: cover;
+}
+.default-card .info span.name {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .01em;
+    color: var(--neutralSecondary);
+}
+.default-card .info span.time {
+    font-size: 11px;
+    color: var(--neutralTertiaryAlt);
+    white-space: nowrap;
+}
+.default-card .read-indicator::after {
+    width: 7px;
+    height: 7px;
+    margin: 4.5px 5px;
+    border-radius: 50%;
+    background: #ffaa44;
+    box-shadow: 0 0 0 3px rgba(255, 170, 68, .16);
+}
+
+.default-card h3.title {
+    margin: 6px 14px 0;
+    font-size: 16px;
+    line-height: 22px;
+    font-weight: 700;
+    letter-spacing: -.01em;
+    -webkit-line-clamp: 2;
+}
+.default-card.read h3.title { font-weight: 600; }
+
+.default-card p.snippet {
+    margin: 4px 14px 0;
+    font-size: 13px;
+    line-height: 18px;
+    color: var(--neutralSecondary);
+    -webkit-line-clamp: 2;
+    transform: none;
+    opacity: 1;
+}
+.default-card p.snippet.show { transform: none; }
+
+.default-card.read { color: var(--neutralSecondary); }
+.default-card.read img.head,
+.default-card.read canvas.head,
+.default-card.read video.head {
+    opacity: .72;
+    filter: saturate(.75);
+}
+
+.default-card:not(:has(.head)) {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 18px 0;
+    background:
+        radial-gradient(130% 110% at 0% 0%, color-mix(in srgb, var(--primary) 22%, transparent), transparent 62%),
+        radial-gradient(100% 90% at 100% 100%, color-mix(in srgb, #8764b8 14%, transparent), transparent 58%),
+        var(--white);
+}
+.default-card:not(:has(.head)) .bg { display: none; }
+.default-card:not(:has(.head))::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), color-mix(in srgb, var(--primary) 35%, #8764b8));
+    pointer-events: none;
+    z-index: 2;
+}
+.default-card:not(:has(.head)) .info img {
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    margin-right: 10px;
+}
+.default-card:not(:has(.head)) .info { margin-top: 0; }
+.default-card:not(:has(.head)) h3.title { -webkit-line-clamp: 4; font-size: 17px; line-height: 23px; }
+.default-card:not(:has(.head)) p.snippet { -webkit-line-clamp: 3; }
+
+.ms-Fabric--isFocusVisible .card:focus::after {
+    border-radius: 10px;
+    top: 3px;
+    left: 3px;
+    width: calc(100% - 8px);
+    height: calc(100% - 8px);
+}
+
+/* YouTube cards: real thumbnail + play badge */
+.default-card.ff-yt { background: var(--white); }
+.ff-yt-head {
+    position: relative;
+    height: 148px;
+    overflow: hidden;
+    background: #000;
+}
+.ff-yt-head img.head {
+    display: block;
+    width: 100%;
+    height: 148px;
+    object-fit: cover;
+}
+.ff-yt-play {
+    position: absolute;
+    z-index: 3;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, .62);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    line-height: 1;
+    padding-left: 3px;
+    box-sizing: border-box;
+    pointer-events: none;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, .35);
+}
+.default-card.ff-yt .info { margin-top: 8px; }
+.default-card.ff-yt.ff-yt-no-snippet h3.title { -webkit-line-clamp: 3; }

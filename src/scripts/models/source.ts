@@ -73,12 +73,23 @@ export class RSSSource {
         item: MyParserItem,
     ): Promise<RSSItem | null> {
         let i = new RSSItem(item, source);
-        const items = await db.fluentDB.items
-            .where("date")
-            .equals(i.date)
-            .and((item) => item.source === i.source && item.title === i.title)
-            .limit(1)
-            .toArray();
+        // Deduplicate by link when available. Feeds without a stable date
+        // (or with a future date) would otherwise be re-inserted every fetch.
+        const items = i.link
+            ? await db.fluentDB.items
+                  .where("[source+link]")
+                  .equals([i.source, i.link])
+                  .limit(1)
+                  .toArray()
+            : await db.fluentDB.items
+                  .where("date")
+                  .equals(i.date)
+                  .and(
+                      (item) =>
+                          item.source === i.source && item.title === i.title,
+                  )
+                  .limit(1)
+                  .toArray();
         if (items.length === 0) {
             await RSSItem.parseContent(i, item);
             if (source.rules) SourceRule.applyAll(source.rules, i);

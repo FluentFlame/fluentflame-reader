@@ -22,9 +22,11 @@ class Time extends React.Component<TimeProps> {
     }
 
     displayTime(past: Date, now: Date): string {
-        // difference in seconds
+        // difference in minutes
         let diff = (now.getTime() - past.getTime()) / 60000;
-        if (diff < 1) return intl.get("time.now");
+        // Never render a future date as "now"; show its actual date instead.
+        if (diff < 0) return past.toLocaleDateString();
+        else if (diff < 1) return intl.get("time.now");
         else if (diff < 60) return Math.floor(diff) + intl.get("time.m");
         else if (diff < 1440) return Math.floor(diff / 60) + intl.get("time.h");
         else return Math.floor(diff / 1440) + intl.get("time.d");

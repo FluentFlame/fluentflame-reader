@@ -55,9 +55,16 @@ export class RSSItem {
         this.title = item.title || null;
         this.link = item.link || "";
         this.fetchedDate = new Date();
-        this.date = new Date(
+        const publishedDate = new Date(
             item.isoDate ?? item.pubDate ?? item.updated ?? this.fetchedDate,
         );
+        // Some feeds publish scheduled items with a future date. Keep them
+        // from being pinned to the top forever and displayed as "now".
+        this.date =
+            Number.isNaN(publishedDate.getTime()) ||
+            publishedDate.getTime() > this.fetchedDate.getTime()
+                ? this.fetchedDate
+                : publishedDate;
         this.thumbnails = [];
         this.thumbnailJobs = [];
         this.creator = item.creator;
@@ -344,20 +351,39 @@ export function fetchItems(
                     : sids
                           .map((sid) => sourcesState[sid])
                           .filter((s) => !s.serviceRef);
-            for (let source of sources) {
-                let promise = RSSSource.fetchItems(source);
-                promise.then(() =>
-                    dispatch(
-                        updateSource({
-                            ...source,
-                            lastFetched: new Date(),
-                        }),
-                    ),
-                );
-                promise.finally(() => dispatch(fetchItemsIntermediate()));
-                promises.push(promise);
-            }
-            dispatch(fetchItemsRequest(promises.length));
+            dispatch(fetchItemsRequest(sources.length));
+            // Limit the number of simultaneous feed requests. Fetching all
+            // sources at once saturates the network and makes one slow feed
+            // hold up the whole refresh.
+            const maxConcurrent = 24;
+            let nextSource = 0;
+            const workers = Array.from(
+                { length: Math.min(maxConcurrent, sources.length) },
+                async () => {
+                    while (nextSource < sources.length) {
+                        const source = sources[nextSource++];
+                        const promise = RSSSource.fetchItems(source);
+                        promise.then(() =>
+                            dispatch(
+                                updateSource({
+                                    ...source,
+                                    lastFetched: new Date(),
+                                }),
+                            ),
+                        );
+                        promise.finally(() =>
+                            dispatch(fetchItemsIntermediate()),
+                        );
+                        promises.push(promise);
+                        try {
+                            await promise;
+                        } catch (e) {
+                            // Promise.allSettled below reports the failure.
+                        }
+                    }
+                },
+            );
+            await Promise.all(workers);
             const results = await Promise.allSettled(promises);
             return await new Promise<void>((resolve, reject) => {
                 let items = new Array<RSSItem>();

@@ -93,6 +93,13 @@ fluentDB.version(9).stores({
     items: `++iid, source, date, serviceRef`,
 });
 
+// Add a compound index so items can be deduplicated by source + link.
+fluentDB.version(10).stores({
+    integrity: `++index`,
+    sources: `++sid, &url`,
+    items: `++iid, source, date, serviceRef, [source+link]`,
+});
+
 export async function calculateItemSize(): Promise<number> {
     await fluentDB.open();
     let result = 0;
