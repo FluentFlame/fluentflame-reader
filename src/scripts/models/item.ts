@@ -1,6 +1,6 @@
 import { type ItemEntry, fluentDB } from "../db";
 import intl from "react-intl-universal";
-import { type MyParserItem, timeoutPromise } from "../utils";
+import { type MyParserItem, itemDate, timeoutPromise } from "../utils";
 import {
     type ThumbnailAttributes,
     generateThumbnailAttrList,
@@ -55,7 +55,7 @@ export class RSSItem {
         this.title = item.title || null;
         this.link = item.link || "";
         this.fetchedDate = new Date();
-        this.date = new Date(item.isoDate ?? item.pubDate ?? this.fetchedDate);
+        this.date = itemDate(item, this.fetchedDate);
         this.thumbnails = [];
         this.thumbnailJobs = [];
         this.creator = item.creator;

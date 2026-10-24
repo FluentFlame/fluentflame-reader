@@ -59,11 +59,20 @@ const rssParser = new Parser({
             ["media:thumbnail", "mediaThumbnails", { keepArray: true }],
             ["content:encoded", "fullContent"],
             ["media:content", "mediaContent", { keepArray: true }],
+            ["atom:updated", "atomUpdated"],
         ],
     },
 });
 type extractGeneric<Type> = Type extends Parser<infer _, infer U> ? U : never;
 export type MyParserItem = extractGeneric<typeof rssParser> & Parser.Item;
+
+/** An item's publication date, preferring the standard fields and falling
+ * back to Atom's `updated` (some feeds omit `pubDate`/`isoDate`). */
+export function itemDate(item: MyParserItem, fallback: Date): Date {
+    return new Date(
+        item.isoDate ?? item.pubDate ?? item.atomUpdated ?? fallback,
+    );
+}
 
 const CHARSET_RE = /charset=([^()<>@,;:\"/[\]?.=\s]*)/i;
 const XML_ENCODING_RE = /^<\?xml.+encoding="(.+?)".*?\?>/i;
@@ -424,4 +433,6 @@ export function timeoutPromise<T>(
 
 export const exportedForTesting = {
     getPotentialFavicons,
+    itemDate,
+    rssParser,
 };
