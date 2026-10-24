@@ -1,6 +1,8 @@
 import { type ItemEntry, fluentDB } from "../db";
 import intl from "react-intl-universal";
 import { type MyParserItem, timeoutPromise } from "../utils";
+import { ThumbnailTypePref } from "../../schema-types";
+import { getYouTubeId, youtubeThumbnailUrl } from "../youtube";
 import {
     type ThumbnailAttributes,
     generateThumbnailAttrList,
@@ -134,6 +136,20 @@ export class RSSItem {
         // Ensure we don't spend more than 1 second on loading the thumbnails.
         const jobsComplete = Promise.allSettled(item.thumbnailJobs);
         await Promise.race([jobsComplete, timeoutPromise(1000)]);
+        // YouTube feeds usually don't expose media thumbnails. Use the
+        // predictable i.ytimg.com cover instead.
+        if (item.thumb == null && (!item.thumbnails || item.thumbnails.length === 0)) {
+            const youtubeId = getYouTubeId(item.link);
+            if (youtubeId) {
+                item.thumbnails = [
+                    {
+                        medium: "image",
+                        url: youtubeThumbnailUrl(youtubeId),
+                        type: ThumbnailTypePref.Other,
+                    },
+                ];
+            }
+        }
     }
 }
 

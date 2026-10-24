@@ -194,3 +194,27 @@
 }
 .default-card.ff-yt .info { margin-top: 8px; }
 .default-card.ff-yt.ff-yt-no-snippet h3.title { -webkit-line-clamp: 3; }
+
+/* YouTube card play badge */
+.default-card .yt-play {
+    position: absolute;
+    z-index: 3;
+    top: 74px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, .62);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    line-height: 1;
+    padding-left: 3px;
+    box-sizing: border-box;
+    pointer-events: none;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, .35);
+}

@@ -2,6 +2,7 @@ import * as React from "react";
 import intl from "react-intl-universal";
 import { renderToString } from "react-dom/server";
 import { RSSItem } from "../scripts/models/item";
+import { getYouTubeId, youtubeEmbedPath } from "../scripts/youtube";
 import {
     Stack,
     CommandBarButton,
@@ -500,6 +501,12 @@ class Article extends React.Component<ArticleProps, ArticleState> {
             this.toggleWebpage,
             this.moreMenuProps,
         );
+        const youtubeId = getYouTubeId(this.props.item.link);
+        const articleSrc = youtubeId
+            ? youtubeEmbedPath(youtubeId)
+            : this.state.loadWebpage
+              ? this.props.item.link
+              : this.articleView();
         return (
             <FocusZone className="article">
                 {commandBar}
@@ -512,15 +519,15 @@ class Article extends React.Component<ArticleProps, ArticleState> {
                             (this.state.loadWebpage ? "_" : "") +
                             (this.state.loadFull ? "__" : "")
                         }
-                        src={
-                            this.state.loadWebpage
-                                ? this.props.item.link
-                                : this.articleView()
-                        }
+                        src={articleSrc}
                         allowpopups={"true" as unknown as boolean}
                         webpreferences="contextIsolation,disableDialogs,autoplayPolicy=document-user-activation-required"
                         partition={
-                            this.state.loadWebpage ? "sandbox" : undefined
+                            youtubeId
+                                ? undefined
+                                : this.state.loadWebpage
+                                  ? "sandbox"
+                                  : undefined
                         }
                     />
                 )}

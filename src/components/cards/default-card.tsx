@@ -5,6 +5,7 @@ import Highlights from "./highlights";
 import { SourceTextDirection } from "../../scripts/models/source";
 import { RSSItem } from "../../scripts/models/item";
 import CardThumbnail from "./thumbnail";
+import { getYouTubeId } from "../../scripts/youtube";
 
 const className = (props: Card.Props) => {
     let cn = ["card", "default-card"];
@@ -18,6 +19,7 @@ const className = (props: Card.Props) => {
         cn.push("transform");
     if (props.item.hidden) cn.push("hidden");
     if (props.source.textDir === SourceTextDirection.RTL) cn.push("rtl");
+    if (getYouTubeId(props.item.link)) cn.push("yt-card");
     return cn.join(" ");
 };
 
@@ -29,6 +31,7 @@ function DefaultCard(props: Card.Props): React.JSX.Element {
     const title = RSSItem.getTitle(props.item);
     const hasThumbnail =
         props.item.thumbnails?.length > 0 || props.item.thumb != null;
+    const youtubeId = getYouTubeId(props.item.link);
     return (
         <div
             className={className(props)}
@@ -43,6 +46,7 @@ function DefaultCard(props: Card.Props): React.JSX.Element {
                 width={HEADER_IMG_WIDTH * RESCALE_FACTOR}
                 height={HEADER_IMG_HEIGHT * RESCALE_FACTOR}
             />
+            {youtubeId && <span className="yt-play">▶</span>}
             <CardInfo source={props.source} item={props.item} />
             <h3 className="title">
                 <Highlights text={title} filter={props.filter} title />

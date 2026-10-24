@@ -1,8 +1,9 @@
-import { app, ipcMain, Menu, nativeTheme } from "electron";
+import { app, ipcMain, Menu, nativeTheme, session } from "electron";
 import { ThemeSettings, type SchemaTypes } from "./schema-types";
 import { getStore } from "./main/settings";
 import { performUpdate, maybeRenameOldConfig } from "./main/update-scripts";
 import { WindowManager } from "./main/window";
+import { startYouTubeServer } from "./main/youtube-server";
 import { type CustomArgs } from "./general-types";
 import minimist from "minimist";
 
@@ -58,6 +59,32 @@ function init() {
     const store = getStore();
     performUpdate(store);
     nativeTheme.themeSource = store.get("theme", ThemeSettings.Default);
+
+    startYouTubeServer();
+    app.whenReady().then(async () => {
+        // Avoid YouTube's consent wall inside the embedded player. These
+        // cookies are harmless if the user already made a choice.
+        const expirationDate = Date.now() / 1000 + 31536000;
+        for (const [name, value] of [
+            ["SOCS", "CAI"],
+            ["CONSENT", "YES+cb"],
+        ]) {
+            try {
+                await session.defaultSession.cookies.set({
+                    url: "https://www.youtube.com",
+                    name,
+                    value,
+                    domain: ".youtube.com",
+                    path: "/",
+                    secure: true,
+                    sameSite: "no_restriction",
+                    expirationDate,
+                });
+            } catch (e) {
+                // Ignore cookie failures.
+            }
+        }
+    });
 
     const args = parseArgs();
     CUSTOM_ARGS = {

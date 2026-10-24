@@ -27,8 +27,15 @@ Evita saturar la red y que un feed lento bloquee el refresco completo.
 - `resources/styles/mods.css` (nuevo) e importado al final de `resources/index.css`.
 - Incluye el rediseño de tarjetas: 264×280, radio 14px, portada 16:9, degradado, hover, snippet visible, estados leídos y tarjetas sin portada.
 
+### 5. YouTube
+- `src/scripts/youtube.ts`: extracción de IDs y URL de miniatura/embed.
+- `src/scripts/models/item.ts`: si el feed no trae miniatura y el enlace es de YouTube, se usa `i.ytimg.com`.
+- `src/components/cards/default-card.tsx`: clase `yt-card` y badge ▶.
+- `src/components/article.tsx`: para YouTube carga el reproductor iframe en lugar de la página completa.
+- `src/main/youtube-server.ts`: servidor local en `127.0.0.1:39217` que sirve el iframe (YouTube rechaza el embed desde `file://` con error 153).
+- `src/electron.ts`: arranca el servidor y fija cookies de consentimiento de YouTube.
+
 ## Pendiente / siguientes mods
-- Llevar al código (no solo al inyector) las miniaturas de YouTube y el reproductor iframe.
 - Migración opcional para limpiar duplicados antiguos ya existentes.
 - Revisar el resto de feeds sin fecha para no depender de aislamientos manuales.
 
