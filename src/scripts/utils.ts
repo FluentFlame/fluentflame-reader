@@ -56,6 +56,9 @@ const rssParser = new Parser({
         item: [
             "thumb",
             "image",
+            // Part of an atom namespace even in RSS.
+            // xmlns:atom="http://www.w3.org/2005/Atom"
+            ["atom:updated", "updated"],
             ["media:thumbnail", "mediaThumbnails", { keepArray: true }],
             ["content:encoded", "fullContent"],
             ["media:content", "mediaContent", { keepArray: true }],
