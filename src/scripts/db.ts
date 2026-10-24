@@ -100,6 +100,25 @@ fluentDB.version(10).stores({
     items: `++iid, source, date, serviceRef, [source+link]`,
 });
 
+// Repair items already stored with a future date (scheduled releases).
+fluentDB
+    .version(11)
+    .stores({
+        integrity: `++index`,
+        sources: `++sid, &url`,
+        items: `++iid, source, date, serviceRef, [source+link]`,
+    })
+    .upgrade(async (tx) => {
+        const now = new Date();
+        await tx.table("items").toCollection().modify((item) => {
+            const date = new Date(item.date);
+            if (!Number.isNaN(date.getTime()) && date.getTime() > now.getTime()) {
+                const fetched = new Date(item.fetchedDate);
+                item.date = Number.isNaN(fetched.getTime()) ? now : fetched;
+            }
+        });
+    });
+
 export async function calculateItemSize(): Promise<number> {
     await fluentDB.open();
     let result = 0;

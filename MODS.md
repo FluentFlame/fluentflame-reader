@@ -9,6 +9,7 @@ Rama: `mods/local-ui`.
 ### 1. Fechas futuras
 - `src/scripts/models/item.ts`: si un feed publica un ítem con fecha futura, se usa la fecha de descarga (`fetchedDate`) en lugar de dejarlo clavado arriba para siempre.
 - `src/components/utils/time.tsx`: una fecha futura nunca se muestra como “now”; se muestra su fecha real.
+- `src/scripts/db.ts` (versión 11): migración que corrige los ítems con fecha futura que ya estaban guardados.
 
 Esto corrige el caso de “Visual Studio Code 1.144 (Insiders)”: el feed trae `2026-10-28`, y la app lo mostraba como “now” y siempre primero.
 
