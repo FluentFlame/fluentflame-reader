@@ -1,7 +1,8 @@
 import * as React from "react";
 import { RSSItem } from "../../scripts/models/item";
 import CachedImg from "./cached-img";
-import { getThumbnailTypePref } from "../../scripts/settings";
+import { type ThumbnailTypePref } from "../../schema-types";
+import { type RootState, useAppSelector } from "../../scripts/reducer";
 
 type CardThumbnailProps = {
     item: RSSItem;
@@ -25,8 +26,13 @@ const mediaElement = (
     );
 };
 
+/** Selector for the thumbnail preference. */
+function useThumbnailTypePref(state: RootState): ThumbnailTypePref {
+    return state.app.thumbnailTypePref;
+}
+
 function CardThumbnail(props: CardThumbnailProps): React.JSX.Element {
-    const preferredThumbnailType = getThumbnailTypePref();
+    const preferredThumbnailType = useAppSelector(useThumbnailTypePref);
     const preferredThumbnail = props.item.thumbnails?.filter(
         (t) => t.type === preferredThumbnailType,
     )?.[0];

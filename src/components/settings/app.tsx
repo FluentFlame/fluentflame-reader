@@ -18,15 +18,16 @@ import {
     getThemeSettings,
     setThemeSettings,
     getAnimationMotionPref,
-    setAnimationMotionPref,
     setDefaultOpenTargetPref,
     getNativeWindowFramePref,
     setNativeWindowFramePref,
     exportAll,
-    getThumbnailTypePref,
-    setThumbnailTypePref,
 } from "../../scripts/settings";
-import { SET_DEFAULT_OPEN_TARGET } from "../../scripts/models/app";
+import {
+    SET_DEFAULT_OPEN_TARGET,
+    setThumbnailPref,
+    setAnimationPref,
+} from "../../scripts/models/app";
 import {
     ChoiceGroup,
     DefaultButton,
@@ -382,13 +383,18 @@ function PacSettings() {
     );
 }
 
+/** Selector for the animation preference. */
+function useAnimationMotionPref(state: RootState): AnimationMotionPref {
+    return state.app.animationMotionPref;
+}
+
 /**
  * React component for animation preference dropdown.
  */
 function AnimationPreferences(): React.JSX.Element {
-    const [animationProp, setAnimationProp] = React.useState(
-        getAnimationMotionPref(),
-    );
+    const dispatch = useAppDispatch();
+    const animationPref = useAppSelector(useAnimationMotionPref);
+
     const preferenceOptions: IDropdownOption[] = [
         {
             key: AnimationMotionPref.System,
@@ -408,8 +414,7 @@ function AnimationPreferences(): React.JSX.Element {
         },
     ];
     const prefChange = (_: any, item: IDropdownOption) => {
-        setAnimationMotionPref(item.key as AnimationMotionPref);
-        setAnimationProp(item.key as AnimationMotionPref);
+        dispatch(setAnimationPref(item.key as AnimationMotionPref));
     };
 
     return (
@@ -421,7 +426,7 @@ function AnimationPreferences(): React.JSX.Element {
                 <Stack.Item>
                     <Dropdown
                         options={preferenceOptions}
-                        selectedKey={animationProp}
+                        selectedKey={animationPref}
                         onChange={prefChange}
                         style={{ width: 200 }}
                     />
@@ -459,10 +464,14 @@ function NativeWindowFramePreference(): React.JSX.Element {
     );
 }
 
+/** Selector for the thumbnail preference. */
+function useThumbnailTypePref(state: RootState): ThumbnailTypePref {
+    return state.app.thumbnailTypePref;
+}
+
 function ThumbnailTypePreferences() {
-    const [thumbnailType, setThumbnailType] = React.useState(
-        getThumbnailTypePref(),
-    );
+    const dispatch = useAppDispatch();
+    const thumbnailType = useAppSelector(useThumbnailTypePref);
     const preferenceOptions: IDropdownOption[] = [
         {
             key: ThumbnailTypePref.OpenGraph,
@@ -484,8 +493,7 @@ function ThumbnailTypePreferences() {
         },
     ];
     const prefChange = (_: any, item: IDropdownOption) => {
-        setThumbnailTypePref(item.key as ThumbnailTypePref);
-        setThumbnailType(item.key as ThumbnailTypePref);
+        dispatch(setThumbnailPref(item.key as ThumbnailTypePref));
     };
 
     return (

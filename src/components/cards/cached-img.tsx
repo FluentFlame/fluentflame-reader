@@ -24,10 +24,7 @@ class CachedImg extends React.Component<ImgProps> {
     private readonly _canvasRef = React.createRef<HTMLCanvasElement>();
     private _needsRescaling: boolean = true;
     private _imgSource:
-        | HTMLImageElement
-        | HTMLVideoElement
-        | VideoFrame[]
-        | null = null;
+        HTMLImageElement | HTMLVideoElement | VideoFrame[] | null = null;
     private _animationTimeout: NodeJS.Timeout | null = null;
     private _requestVideoFrameCallback: number | null = null;
     private _maxCanvasWidth: number;
@@ -143,14 +140,15 @@ class CachedImg extends React.Component<ImgProps> {
     }
 
     private async renderImage(): Promise<void> {
-        const animationMotionPref = getAnimationMotionPref();
-        const realisedAnimationMotionPref =
-            animationMotionPref !== AnimationMotionPref.System
-                ? animationMotionPref
-                : window.utils.systemPreferencesGetAnimationSettings()
-                        .prefersReducedMotion
-                  ? AnimationMotionPref.Off
-                  : AnimationMotionPref.On;
+        const realisedAmpPromise = getAnimationMotionPref().then(
+            (animationMotionPref) =>
+                animationMotionPref !== AnimationMotionPref.System
+                    ? animationMotionPref
+                    : window.utils.systemPreferencesGetAnimationSettings()
+                            .prefersReducedMotion
+                      ? AnimationMotionPref.Off
+                      : AnimationMotionPref.On,
+        );
         if (CachedImg._cache.has(this.props.src)) {
             const imgSource = CachedImg._cache.get(this.props.src);
             if (imgSource === placeholderImageSource) {
@@ -223,15 +221,17 @@ class CachedImg extends React.Component<ImgProps> {
                     );
                     this._requestVideoFrameCallback = null;
                 }
-                const requestFrame = () => {
+                const requestFrame = async () => {
                     this.draw(video);
+                    const realisedAnimationMotionPref =
+                        await realisedAmpPromise;
                     if (realisedAnimationMotionPref === AnimationMotionPref.On)
                         this._requestVideoFrameCallback =
                             video.requestVideoFrameCallback(requestFrame);
                 };
                 if (video.readyState < video.HAVE_CURRENT_DATA)
                     video.addEventListener("loadeddata", requestFrame);
-                else requestFrame();
+                else await requestFrame();
             } else {
                 const frames = this._imgSource;
                 let frameIndex = 0;
@@ -239,11 +239,13 @@ class CachedImg extends React.Component<ImgProps> {
                     clearTimeout(this._animationTimeout);
                     this._animationTimeout = null;
                 }
-                const drawFrame = () => {
+                const drawFrame = async () => {
                     if (frames.length === 0) return;
                     const frame = frames[frameIndex];
                     const duration = frame.duration / 1000;
                     this.draw(frame);
+                    const realisedAnimationMotionPref =
+                        await realisedAmpPromise;
                     if (
                         frames.length > 1 &&
                         realisedAnimationMotionPref === AnimationMotionPref.On
@@ -255,7 +257,7 @@ class CachedImg extends React.Component<ImgProps> {
                         );
                     }
                 };
-                drawFrame();
+                await drawFrame();
             }
         }
     }

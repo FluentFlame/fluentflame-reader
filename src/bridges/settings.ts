@@ -53,11 +53,11 @@ const settingsBridge = {
         });
     },
 
-    getAnimationMotionPref: (): AnimationMotionPref => {
-        return ipcRenderer.sendSync("get-animation-motion-pref");
+    getAnimationMotionPref: (): Promise<AnimationMotionPref> => {
+        return ipcRenderer.invoke("get-animation-motion-pref");
     },
-    setAnimationMotionPref: (pref: AnimationMotionPref) => {
-        ipcRenderer.invoke("set-animation-motion-pref", pref);
+    setAnimationMotionPref: (pref: AnimationMotionPref): Promise<void> => {
+        return ipcRenderer.invoke("set-animation-motion-pref", pref);
     },
 
     getNativeWindowFramePref: (): boolean => {
@@ -67,11 +67,11 @@ const settingsBridge = {
         ipcRenderer.invoke("set-window-native-frame-pref", pref);
     },
 
-    getThumbnailTypePref: (): ThumbnailTypePref => {
-        return ipcRenderer.sendSync("get-thumbnail-type-pref");
+    getThumbnailTypePref: (): Promise<ThumbnailTypePref> => {
+        return ipcRenderer.invoke("get-thumbnail-type-pref");
     },
-    setThumbnailTypePref: (pref: ThumbnailTypePref) => {
-        ipcRenderer.invoke("set-thumbnail-type-pref", pref);
+    setThumbnailTypePref: (pref: ThumbnailTypePref): Promise<void> => {
+        return ipcRenderer.invoke("set-thumbnail-type-pref", pref);
     },
 
     setLocaleSettings: (option: string) => {

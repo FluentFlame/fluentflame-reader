@@ -104,8 +104,8 @@ export function setThemeListener(manager: WindowManager) {
 }
 
 const ANIMATION_MOTION_PREF_KEY = "animationMotionPref";
-ipcMain.on("get-animation-motion-pref", (event) => {
-    event.returnValue = getStore().get(
+ipcMain.handle("get-animation-motion-pref", () => {
+    return getStore().get(
         ANIMATION_MOTION_PREF_KEY,
         AnimationMotionPref.System,
     );
@@ -126,11 +126,8 @@ ipcMain.handle("set-window-native-frame-pref", (_, pref: boolean) => {
 });
 
 const THUMBNAIL_TYPE_PREF = "thumbnailTypePref";
-ipcMain.on("get-thumbnail-type-pref", (event) => {
-    event.returnValue = getStore().get(
-        THUMBNAIL_TYPE_PREF,
-        ThumbnailTypePref.OpenGraph,
-    );
+ipcMain.handle("get-thumbnail-type-pref", () => {
+    return getStore().get(THUMBNAIL_TYPE_PREF, ThumbnailTypePref.OpenGraph);
 });
 ipcMain.handle("set-thumbnail-type-pref", (_, pref: ThumbnailTypePref) => {
     getStore().set(THUMBNAIL_TYPE_PREF, pref);
