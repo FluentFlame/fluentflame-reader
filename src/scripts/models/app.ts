@@ -30,10 +30,16 @@ import {
     getCurrentLocale,
     setThemeDefaultFont,
     hasWindowFrame,
+    setAnimationMotionPref,
+    setThumbnailTypePref,
 } from "../settings";
 import locales from "../i18n/_locales";
 import { SYNC_SERVICE, ServiceActionTypes } from "./service";
-import { SourceOpenTarget } from "../../schema-types";
+import {
+    AnimationMotionPref,
+    SourceOpenTarget,
+    ThumbnailTypePref,
+} from "../../schema-types";
 
 export const enum ContextMenuType {
     Hidden,
@@ -85,7 +91,11 @@ export class AppState {
     menu = getWindowBreakpoint() && window.settings.getDefaultMenu();
     menuKey = ALL;
     title = "";
+
     defaultOpenTarget = SourceOpenTarget.Local;
+    animationMotionPref = AnimationMotionPref.System;
+    thumbnailTypePref = ThumbnailTypePref.OpenGraph;
+
     addSourceModal = {
         display: false,
     };
@@ -196,6 +206,8 @@ export const SET_SETTINGS_TAB = "SET_SETTINGS_TAB";
 export const SAVE_SETTINGS = "SAVE_SETTINGS";
 export const FREE_MEMORY = "FREE_MEMORY";
 export const SET_DEFAULT_OPEN_TARGET = "SET_DEFAULT_OPEN_TARGET";
+export const SET_THUMBNAIL_TYPE_PREF = "SET_THUMBNAIL_TYPE_PREF";
+export const SET_ANIMATION_MOTION_PREF = "SET_ANIMATION_MOTION_PREF";
 
 interface ToggleSettingsAction {
     type: typeof TOGGLE_SETTINGS;
@@ -218,12 +230,22 @@ interface SetDefaultOpenTargetAction {
     type: typeof SET_DEFAULT_OPEN_TARGET;
     value: SourceOpenTarget;
 }
+interface SetThumbnailTypePref {
+    type: typeof SET_THUMBNAIL_TYPE_PREF;
+    value: ThumbnailTypePref;
+}
+interface SetAnimationMotionPref {
+    type: typeof SET_ANIMATION_MOTION_PREF;
+    value: AnimationMotionPref;
+}
 export type SettingsActionTypes =
-    | ToggleSettingsAction
+    | FreeMemoryAction
+    | SaveSettingsAction
+    | SetAnimationMotionPref
     | SetDefaultOpenTargetAction
     | SetSettingsTabAction
-    | SaveSettingsAction
-    | FreeMemoryAction;
+    | SetThumbnailTypePref
+    | ToggleSettingsAction;
 
 const SHOW_ADD_SOURCE_MODAL = "SHOW_ADD_SOURCE_MODAL";
 const HIDE_ADD_SOURCE_MODAL = "HIDE_ADD_SOURCE_MODAL";
@@ -236,8 +258,7 @@ interface HideAddSourceModalAction {
 }
 
 export type AddSourceModalActionTypes =
-    | ShowAddSourceModalAction
-    | HideAddSourceModalAction;
+    ShowAddSourceModalAction | HideAddSourceModalAction;
 
 export function showAddSourceModal(): ShowAddSourceModalAction {
     return { type: SHOW_ADD_SOURCE_MODAL };
@@ -245,6 +266,20 @@ export function showAddSourceModal(): ShowAddSourceModalAction {
 
 export function hideAddSourceModal(): HideAddSourceModalAction {
     return { type: HIDE_ADD_SOURCE_MODAL };
+}
+
+export function setThumbnailPref(
+    pref: ThumbnailTypePref,
+): SetThumbnailTypePref {
+    setThumbnailTypePref(pref);
+    return { type: SET_THUMBNAIL_TYPE_PREF, value: pref };
+}
+
+export function setAnimationPref(
+    pref: AnimationMotionPref,
+): SetAnimationMotionPref {
+    setAnimationMotionPref(pref);
+    return { type: SET_ANIMATION_MOTION_PREF, value: pref };
 }
 
 export function closeContextMenu(): AppThunk {
@@ -452,6 +487,12 @@ export function initApp(): AppThunk {
                 dispatch({
                     type: SET_DEFAULT_OPEN_TARGET,
                     value: defaultOpenTarget,
+                });
+                const thumbnailPref =
+                    await window.settings.getThumbnailTypePref();
+                dispatch({
+                    type: SET_THUMBNAIL_TYPE_PREF,
+                    value: thumbnailPref,
                 });
                 await dispatch(initSources());
             })
@@ -770,6 +811,16 @@ export function appReducer(
             return {
                 ...state,
                 defaultOpenTarget: action.value,
+            };
+        case SET_THUMBNAIL_TYPE_PREF:
+            return {
+                ...state,
+                thumbnailTypePref: action.value,
+            };
+        case SET_ANIMATION_MOTION_PREF:
+            return {
+                ...state,
+                animationMotionPref: action.value,
             };
         case TOGGLE_LOGS:
             return {

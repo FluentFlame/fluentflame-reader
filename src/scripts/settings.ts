@@ -93,13 +93,13 @@ export function initThemeUpdateListener() {
     });
 }
 
-export function getThumbnailTypePref(): ThumbnailTypePref {
+export async function getThumbnailTypePref(): Promise<ThumbnailTypePref> {
     return window.settings.getThumbnailTypePref();
 }
-export function setThumbnailTypePref(pref: ThumbnailTypePref) {
-    window.settings.setThumbnailTypePref(pref);
+export function setThumbnailTypePref(pref: ThumbnailTypePref): Promise<void> {
+    return window.settings.setThumbnailTypePref(pref);
 }
-export function getAnimationMotionPref(): AnimationMotionPref {
+export async function getAnimationMotionPref(): Promise<AnimationMotionPref> {
     return window.settings.getAnimationMotionPref();
 }
 export function setAnimationMotionPref(pref: AnimationMotionPref) {
@@ -125,8 +125,8 @@ export function hasWindowFrame() {
         getNativeWindowFramePref()
     );
 }
-export function applyAnimationMotionPref() {
-    const pref = getAnimationMotionPref();
+export async function applyAnimationMotionPref(): Promise<void> {
+    const pref = await getAnimationMotionPref();
     let realisedPref = pref;
     if (pref === AnimationMotionPref.System) {
         const animationSettings =
