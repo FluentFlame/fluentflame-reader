@@ -9,7 +9,7 @@
 }:
 let
   pname = "fluentflame-reader";
-  version = "2.2.0-dev.1";
+  version = "2.2.0-dev.3";
   myElectron = electron;
   desktopItem = makeDesktopItem {
     name = pname;
