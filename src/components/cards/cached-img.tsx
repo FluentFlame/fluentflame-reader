@@ -142,13 +142,6 @@ class CachedImg extends React.Component<ImgProps> {
     }
 
     private async renderImage(): Promise<void> {
-        const realisedAmpPromise =
-            this._animationMotionPref !== AnimationMotionPref.System
-                ? this._animationMotionPref
-                : window.utils.systemPreferencesGetAnimationSettings()
-                        .prefersReducedMotion
-                  ? AnimationMotionPref.Off
-                  : AnimationMotionPref.On;
         if (CachedImg._cache.has(this.props.src)) {
             const imgSource = CachedImg._cache.get(this.props.src);
             if (imgSource === placeholderImageSource) {
@@ -213,51 +206,63 @@ class CachedImg extends React.Component<ImgProps> {
                     this.forceUpdate();
                     return;
                 }
-            } else if (this._imgSource instanceof HTMLVideoElement) {
-                const video = this._imgSource;
-                if (this._requestVideoFrameCallback !== null) {
-                    video.cancelVideoFrameCallback(
-                        this._requestVideoFrameCallback,
-                    );
-                    this._requestVideoFrameCallback = null;
-                }
-                const requestFrame = async () => {
-                    this.draw(video);
-                    const realisedAnimationMotionPref =
-                        await realisedAmpPromise;
-                    if (realisedAnimationMotionPref === AnimationMotionPref.On)
-                        this._requestVideoFrameCallback =
-                            video.requestVideoFrameCallback(requestFrame);
-                };
-                if (video.readyState < video.HAVE_CURRENT_DATA)
-                    video.addEventListener("loadeddata", requestFrame);
-                else await requestFrame();
             } else {
-                const frames = this._imgSource;
-                let frameIndex = 0;
-                if (this._animationTimeout) {
-                    clearTimeout(this._animationTimeout);
-                    this._animationTimeout = null;
-                }
-                const drawFrame = async () => {
-                    if (frames.length === 0) return;
-                    const frame = frames[frameIndex];
-                    const duration = frame.duration / 1000;
-                    this.draw(frame);
-                    const realisedAnimationMotionPref =
-                        await realisedAmpPromise;
-                    if (
-                        frames.length > 1 &&
-                        realisedAnimationMotionPref === AnimationMotionPref.On
-                    ) {
-                        frameIndex = (frameIndex + 1) % frames.length;
-                        this._animationTimeout = setTimeout(
-                            () => drawFrame(),
-                            duration,
+                const realisedAmp =
+                    this._animationMotionPref !== AnimationMotionPref.System
+                        ? this._animationMotionPref
+                        : window.utils.systemPreferencesGetAnimationSettings()
+                                .prefersReducedMotion
+                          ? AnimationMotionPref.Off
+                          : AnimationMotionPref.On;
+
+                if (this._imgSource instanceof HTMLVideoElement) {
+                    const video = this._imgSource;
+                    if (this._requestVideoFrameCallback !== null) {
+                        video.cancelVideoFrameCallback(
+                            this._requestVideoFrameCallback,
                         );
+                        this._requestVideoFrameCallback = null;
                     }
-                };
-                await drawFrame();
+                    const requestFrame = async () => {
+                        this.draw(video);
+                        const realisedAnimationMotionPref = realisedAmp;
+                        if (
+                            realisedAnimationMotionPref ===
+                            AnimationMotionPref.On
+                        )
+                            this._requestVideoFrameCallback =
+                                video.requestVideoFrameCallback(requestFrame);
+                    };
+                    if (video.readyState < video.HAVE_CURRENT_DATA)
+                        video.addEventListener("loadeddata", requestFrame);
+                    else await requestFrame();
+                } else {
+                    const frames = this._imgSource;
+                    let frameIndex = 0;
+                    if (this._animationTimeout) {
+                        clearTimeout(this._animationTimeout);
+                        this._animationTimeout = null;
+                    }
+                    const drawFrame = async () => {
+                        if (frames.length === 0) return;
+                        const frame = frames[frameIndex];
+                        const duration = frame.duration / 1000;
+                        this.draw(frame);
+                        const realisedAnimationMotionPref = realisedAmp;
+                        if (
+                            frames.length > 1 &&
+                            realisedAnimationMotionPref ===
+                                AnimationMotionPref.On
+                        ) {
+                            frameIndex = (frameIndex + 1) % frames.length;
+                            this._animationTimeout = setTimeout(
+                                () => drawFrame(),
+                                duration,
+                            );
+                        }
+                    };
+                    await drawFrame();
+                }
             }
         }
     }
