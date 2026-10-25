@@ -1,9 +1,9 @@
 import * as React from "react";
 import { AnimationMotionPref } from "../../schema-types";
-import { getAnimationMotionPref } from "../../scripts/settings";
 
 type ImgProps = {
     src: string;
+    animationPref: AnimationMotionPref;
     className?: string;
     width?: number;
     height?: number;
@@ -22,6 +22,7 @@ class CachedImg extends React.Component<ImgProps> {
         | PlaceholderImageSource
     >();
     private readonly _canvasRef = React.createRef<HTMLCanvasElement>();
+    private _animationMotionPref: AnimationMotionPref;
     private _needsRescaling: boolean = true;
     private _imgSource:
         HTMLImageElement | HTMLVideoElement | VideoFrame[] | null = null;
@@ -33,6 +34,7 @@ class CachedImg extends React.Component<ImgProps> {
 
     constructor(props: ImgProps) {
         super(props);
+        this._animationMotionPref = props.animationPref;
         this._maxCanvasWidth = props.width ?? 512;
         this._maxCanvasHeight = props.height ?? 512;
     }
@@ -140,15 +142,13 @@ class CachedImg extends React.Component<ImgProps> {
     }
 
     private async renderImage(): Promise<void> {
-        const realisedAmpPromise = getAnimationMotionPref().then(
-            (animationMotionPref) =>
-                animationMotionPref !== AnimationMotionPref.System
-                    ? animationMotionPref
-                    : window.utils.systemPreferencesGetAnimationSettings()
-                            .prefersReducedMotion
-                      ? AnimationMotionPref.Off
-                      : AnimationMotionPref.On,
-        );
+        const realisedAmpPromise =
+            this._animationMotionPref !== AnimationMotionPref.System
+                ? this._animationMotionPref
+                : window.utils.systemPreferencesGetAnimationSettings()
+                        .prefersReducedMotion
+                  ? AnimationMotionPref.Off
+                  : AnimationMotionPref.On;
         if (CachedImg._cache.has(this.props.src)) {
             const imgSource = CachedImg._cache.get(this.props.src);
             if (imgSource === placeholderImageSource) {
