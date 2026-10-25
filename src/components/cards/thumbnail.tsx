@@ -1,7 +1,10 @@
 import * as React from "react";
 import { RSSItem } from "../../scripts/models/item";
 import CachedImg from "./cached-img";
-import { type ThumbnailTypePref } from "../../schema-types";
+import {
+    type AnimationMotionPref,
+    type ThumbnailTypePref,
+} from "../../schema-types";
 import { type RootState, useAppSelector } from "../../scripts/reducer";
 
 type CardThumbnailProps = {
@@ -13,6 +16,7 @@ type CardThumbnailProps = {
 
 const mediaElement = (
     src: string,
+    animationPref: AnimationMotionPref,
     className: string,
     width: number | null,
     height: number | null,
@@ -20,11 +24,17 @@ const mediaElement = (
     return (
         <CachedImg
             src={src}
+            animationPref={animationPref}
             className={className}
             width={width}
             height={height}></CachedImg>
     );
 };
+
+/** Selector for animation motion preferences. */
+function useAnimationMotionPref(state: RootState) {
+    return state.app.animationMotionPref;
+}
 
 /** Selector for the thumbnail preference. */
 function useThumbnailTypePref(state: RootState): ThumbnailTypePref {
@@ -33,6 +43,8 @@ function useThumbnailTypePref(state: RootState): ThumbnailTypePref {
 
 function CardThumbnail(props: CardThumbnailProps): React.JSX.Element {
     const preferredThumbnailType = useAppSelector(useThumbnailTypePref);
+    const animationMotionPref = useAppSelector(useAnimationMotionPref);
+
     const preferredThumbnail = props.item.thumbnails?.filter(
         (t) => t.type === preferredThumbnailType,
     )?.[0];
@@ -40,6 +52,7 @@ function CardThumbnail(props: CardThumbnailProps): React.JSX.Element {
     return selectedThumbnail
         ? mediaElement(
               new URL(selectedThumbnail.url, props.item.link).toString(),
+              animationMotionPref,
               props.className,
               props.width,
               props.height,
