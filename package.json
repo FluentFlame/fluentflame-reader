@@ -85,7 +85,7 @@
     "tsx": "^4.23.15",
     "typescript": "^5.8.2",
     "webpack": "^5.112.0",
-    "webpack-cli": "^7.2.3"
+    "webpack-cli": "^7.3.1"
   },
   "dependencies": {
     "@redux-devtools/core": "^5.0.0",
