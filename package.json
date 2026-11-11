@@ -73,7 +73,7 @@
     "electron-react-devtools": "^0.5.3",
     "electron-store": "^11.0.2",
     "electron-window-state": "^5.0.3",
-    "fake-indexeddb": "^6.2.5",
+    "fake-indexeddb": "^6.2.8",
     "font-list": "^2.1.0",
     "html-webpack-plugin": "^5.5.3",
     "js-md5": "^0.9.2",
