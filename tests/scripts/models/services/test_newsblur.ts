@@ -8,6 +8,8 @@ import {
     NewsblurStoriesResponse,
 } from "../../../../src/scripts/models/services/newsblur";
 import { afterEach } from "mocha";
+import { RSSSource } from "../../../../src/scripts/models/source";
+import { JSDOM } from "jsdom";
 
 // Configs
 
@@ -196,6 +198,8 @@ const NEWSBLUR_FETCH_STARRED: NewsblurStoriesResponse = {
 let original = {
     fetch: null as null | typeof fetch,
     consoleError: null as null | typeof console.error,
+    // window: null as null | typeof global.window,
+    domParser: null as null | typeof DOMParser
 };
 const mockFetch = (fn: typeof fetch) => {
     if (original.fetch == null) {
@@ -213,6 +217,10 @@ const mockConsoleError = (fn: typeof console.error) => {
         throw new Error("console.error already mocked");
     }
 };
+const mockDomParser = () => {
+    original.domParser = global.DOMParser;
+    global.DOMParser = (new JSDOM()).window.DOMParser;
+};
 const unmock = () => {
     if (original.fetch != null) {
         global.fetch = original.fetch;
@@ -221,6 +229,9 @@ const unmock = () => {
     if (original.consoleError != null) {
         console.error = original.consoleError;
         original.consoleError = null;
+    }
+    if (original.domParser != null) {
+        global.DOMParser = original.domParser;
     }
 };
 
@@ -298,12 +309,60 @@ describe("newsblurServiceHooks", () => {
         assert.equal(
             unreads.size,
             NEWSBLUR_FETCH_STORIES_PIVOT.stories.length +
-                NEWSBLUR_FETCH_STORIES_XKCD.stories.length,
+            NEWSBLUR_FETCH_STORIES_XKCD.stories.length,
         );
         assert.equal(starreds.size, NEWSBLUR_FETCH_STARRED.stories.length);
     });
     // 4. can fetch from/to service
+    it("can fetch from/to service", async () => {
+        /* WORK IN PROGRESS */
+        mockFetch((req, _) => {
+            const url = //
+                req instanceof URL
+                    ? req
+                    : new URL(req instanceof Request ? req.url : req);
+            if (url.hostname != "newsblur.com") {
+                return Promise.resolve(new Response("Not found", { status: 404 }))
+            } else if (url.pathname == "/reader/feeds") {
+                return makeResponse(NEWSBLUR_FETCH_FEEDS);
+            } else if (url.pathname.startsWith("/reader/feed/")) {
+                switch (url.pathname.split("/").at(-1)) {
+                    case FEED_PIVOT_ID:
+                        return makeResponse(NEWSBLUR_FETCH_STORIES_PIVOT);
+                    case FEED_XKCD_ID:
+                        return makeResponse(NEWSBLUR_FETCH_STORIES_XKCD);
+                }
+            }
+            return makeBadResponse("Url not recognized");
+        });
+        const mockDispatch: any = (_d: any, _payload: any) => null;
+        const mockGetState: any = () => ({
+            service: CONFIGS,
+            sources: Object.fromEntries(
+                Object.values(NEWSBLUR_FETCH_FEEDS.feeds).map(
+                    (f): [string, RSSSource] => {
+                        const source = new RSSSource(
+                            f.feed_address,
+                            f.feed_title,
+                        );
+                        source.serviceRef = String(f.id);
+                        return [source.serviceRef, source];
+                    },
+                ),
+            ),
+        });
+        mockDomParser();
+        assert.exists(newsblurServiceHooks.fetchItems);
+        const res = await newsblurServiceHooks.fetchItems()(
+            mockDispatch,
+            mockGetState,
+            undefined,
+        );
+        const [items, configs] = res;
+        assert.equal(items.at(0)?.title, "Momentum Demonstration");
+    });
     // 5. can mark unreads and start
+
 });
 
 // Helpers
