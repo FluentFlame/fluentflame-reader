@@ -410,7 +410,7 @@ export const newsblurServiceHooks: ServiceHooks = {
         // get sources that possess ref/id given by service, associate new items
         const sourceMap = new Map<string, RSSSource>(
             Object.values(state.sources)
-                .filter((s) => s.serviceRef)
+                .filter((s) => Boolean(s.serviceRef))
                 .map((s) => [s.serviceRef, s]),
         );
 
