@@ -246,9 +246,9 @@ export interface NewsblurPostResponse extends NewsblurResponse {
 
 export interface NewsblurAuthResponse extends NewsblurPostResponse {
     errors:
-        | Record</*reason*/ string, /*long reason*/ string>
-        | null /*ok*/
-        | { __all__: string[] };
+    | Record</*reason*/ string, /*long reason*/ string>
+    | null /*ok*/
+    | { __all__: string[] };
 }
 
 export interface NewsblurFeedsResponse extends NewsblurResponse {
@@ -402,7 +402,7 @@ export const newsblurServiceHooks: ServiceHooks = {
         return [unread, starred];
     },
 
-    // get and set remote items
+    /** get and set remote items */
     fetchItems: () => async (_, getState) => {
         const state = getState();
         const configs = state.service as NewsBlurConfigs;
