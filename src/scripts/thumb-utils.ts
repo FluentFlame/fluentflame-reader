@@ -1,5 +1,5 @@
 import { ThumbnailTypePref } from "../schema-types";
-import { Pool, startPool } from "./fetch-pool";
+import { Pool, startPool, stopPool } from "./fetch-pool";
 
 const THUMBNAIL_FETCH_POOLS = new Map<String, Pool>();
 
@@ -11,6 +11,18 @@ function getPool(url: URL): Pool {
     startPool(pool);
     THUMBNAIL_FETCH_POOLS.set(url.hostname, pool);
     return pool;
+}
+
+/**
+ * Stop and clean up all fetch pools.
+ *
+ * Primarily used for testing so we safely stop all pool resources.
+ */
+export function resetAllPools() {
+    for (const pool of THUMBNAIL_FETCH_POOLS.values()) {
+        stopPool(pool);
+    }
+    THUMBNAIL_FETCH_POOLS.clear();
 }
 
 export interface ThumbnailAttributes {

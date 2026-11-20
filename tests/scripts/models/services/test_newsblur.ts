@@ -1,4 +1,6 @@
 import { assert } from "chai";
+import { JSDOM } from "jsdom";
+import { afterEach } from "mocha";
 import { SyncService } from "../../../../src/schema-types";
 import {
     type NewsblurAuthResponse,
@@ -7,9 +9,9 @@ import {
     newsblurServiceHooks,
     NewsblurStoriesResponse,
 } from "../../../../src/scripts/models/services/newsblur";
-import { afterEach } from "mocha";
 import { RSSSource } from "../../../../src/scripts/models/source";
-import { JSDOM } from "jsdom";
+import { startPool, stopPool } from "../../../../src/scripts/fetch-pool";
+import { resetAllPools } from "../../../../src/scripts/thumb-utils";
 
 // Configs
 
@@ -199,7 +201,7 @@ let original = {
     fetch: null as null | typeof fetch,
     consoleError: null as null | typeof console.error,
     // window: null as null | typeof global.window,
-    domParser: null as null | typeof DOMParser
+    domParser: null as null | typeof DOMParser,
 };
 const mockFetch = (fn: typeof fetch) => {
     if (original.fetch == null) {
@@ -219,7 +221,7 @@ const mockConsoleError = (fn: typeof console.error) => {
 };
 const mockDomParser = () => {
     original.domParser = global.DOMParser;
-    global.DOMParser = (new JSDOM()).window.DOMParser;
+    global.DOMParser = new JSDOM().window.DOMParser;
 };
 const unmock = () => {
     if (original.fetch != null) {
@@ -238,7 +240,17 @@ const unmock = () => {
 // Tests
 
 describe("newsblurServiceHooks", () => {
-    afterEach(unmock);
+    let poolID: any;
+    beforeEach(() => {
+        poolID = startPool();
+    });
+    afterEach(() => {
+        unmock();
+        if (poolID != null) {
+            stopPool(poolID);
+        }
+        resetAllPools();
+    });
     // 1. can authenticate
     it("can authenticate", async () => {
         mockFetch(() => makeResponse(NEWSBLUR_AUTH_SUCCESS));
@@ -309,7 +321,7 @@ describe("newsblurServiceHooks", () => {
         assert.equal(
             unreads.size,
             NEWSBLUR_FETCH_STORIES_PIVOT.stories.length +
-            NEWSBLUR_FETCH_STORIES_XKCD.stories.length,
+                NEWSBLUR_FETCH_STORIES_XKCD.stories.length,
         );
         assert.equal(starreds.size, NEWSBLUR_FETCH_STARRED.stories.length);
     });
@@ -322,7 +334,9 @@ describe("newsblurServiceHooks", () => {
                     ? req
                     : new URL(req instanceof Request ? req.url : req);
             if (url.hostname != "newsblur.com") {
-                return Promise.resolve(new Response("Not found", { status: 404 }))
+                return Promise.resolve(
+                    new Response("Not found", { status: 404 }),
+                );
             } else if (url.pathname == "/reader/feeds") {
                 return makeResponse(NEWSBLUR_FETCH_FEEDS);
             } else if (url.pathname.startsWith("/reader/feed/")) {
@@ -358,11 +372,13 @@ describe("newsblurServiceHooks", () => {
             mockGetState,
             undefined,
         );
-        const [items, configs] = res;
+        const [items, _configs] = res;
         assert.equal(items.at(0)?.title, "Momentum Demonstration");
+        await Promise.allSettled(
+            items.map((i) => Promise.allSettled(i.thumbnailJobs ?? [])),
+        );
     });
     // 5. can mark unreads and start
-
 });
 
 // Helpers
